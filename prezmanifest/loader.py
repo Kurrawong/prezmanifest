@@ -23,16 +23,12 @@ from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef
 
 try:
-    from prezmanifest import MRR, OLIS
-    from prezmanifest import validate
+    from prezmanifest import MRR, OLIS, validate, __version__
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, OLIS
-    from prezmanifest import validate
-
-__version__ = "1.0.0"
+    from prezmanifest import MRR, OLIS, validate, __version__
 
 
 def load(

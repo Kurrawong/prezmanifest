@@ -59,7 +59,13 @@ from pyshacl import validate
 from rdflib import Graph
 from rdflib import PROF, SDO, SKOS
 
-__version__ = "1.0.0"
+try:
+    from prezmanifest import __version__
+except ImportError:
+    import sys
+
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import __version__
 
 
 def create_table(g: Graph, t="markdown") -> str:

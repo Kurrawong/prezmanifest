@@ -1,15 +1,15 @@
 from pathlib import Path
 
-from prezmanifest import validator
+from prezmanifest import validate
 
 
 def test_validator_valid():
-    assert validator.validate(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
+    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
 
 
 def test_validator_invalid_01():
     try:
-        validator.validate(
+        validate(
             Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl"
         )
     except ValueError as e:
@@ -18,7 +18,7 @@ def test_validator_invalid_01():
 
 def test_validator_invalid_03():
     try:
-        validator.validate(
+        validate(
             Path(__file__).parent / "demo-vocabs" / "manifest-invalid-02.ttl"
         )
     except ValueError as e:
@@ -27,7 +27,7 @@ def test_validator_invalid_03():
 
 def test_validator_invalid_02():
     try:
-        validator.validate(
+        validate(
             Path(__file__).parent / "demo-vocabs" / "manifest-invalid-03.ttl"
         )
     except ValueError as e:

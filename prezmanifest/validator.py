@@ -1,7 +1,12 @@
-"""Validate a prezmanifest file
+"""Validate a Prez Manifest file.
+
+This script performs both SHACL validation to ensure the Manifest is valid according to the Prez Manifest
+specification (see https://prez.dev/manifest/) and checks that all the resources indicated by the Manifest
+- whether local files/folders or remote resources on the Internet - are reachable.
 
 ~$ python validate.py {MANIFEST_FILE_PATH}"""
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -9,6 +14,14 @@ import httpx
 from kurrawong.utils import load_graph
 from pyshacl import validate as shacl_validate
 from rdflib.namespace import PROF
+
+try:
+    from prezmanifest import __version__
+except ImportError:
+    import sys
+
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import __version__
 
 
 def validate(manifest: Path) -> bool:
@@ -53,5 +66,37 @@ def validate(manifest: Path) -> bool:
     return manifest_graph
 
 
+def setup_cli_parser(args=None):
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="{version}".format(version=__version__),
+    )
+
+    parser.add_argument(
+        "manifest",
+        help="A Manifest file to process",
+        type=Path,
+    )
+
+    return parser.parse_args(args)
+
+
+def cli(args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    args = setup_cli_parser(args)
+
+    validate(args.manifest)
+
+
 if __name__ == "__main__":
-    validate(Path(sys.argv[1]).resolve())
+    retval = cli(sys.argv[1:])
+    if retval is not None:
+        sys.exit(retval)
+
