@@ -15,9 +15,11 @@ This repository contains the `prez-manifest` Python package that provides a seri
 
 == Installation & Use
 
-This Python package is intended to be used on the command line on Linux/UNIX-like systems. It can be installed using https://python-poetry.org[Poetry]. It may one day be published on https://pypi.org[PyPI].
+This Python package is intended to be used on the command line on Linux/UNIX-like systems and/or as a Python library, called directly from other Python code.
 
-Please see the test files for each function for examples of use.
+It can be installed using https://python-poetry.org[Poetry]. It may one day be published on https://pypi.org[PyPI].
+
+Please see the `documentor.py`, `loader.py`, & `validator.py` files in the `prezmanifest` folder and the test files in `test` for documentation text and examples of use.
 
 
 == Testing
