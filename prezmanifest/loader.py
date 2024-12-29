@@ -19,9 +19,7 @@ from pathlib import Path
 from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef, Dataset
 
-from prezmanifest.ns_mrr import MRR
-from prezmanifest.ns_olis import OLIS
-from prezmanifest.validator import validate
+from prezmanifest import MRR, OLIS, PREZ, validate
 from kurrawong.format import make_dataset, export_quads
 from kurrawong.utils import load_graph
 

@@ -20,6 +20,11 @@ This Python package is intended to be used on the command line on Linux/UNIX-lik
 Please see the test files for each function for examples of use.
 
 
+== Testing
+
+Run `python -m pytest` in the top-level folder to test. You must have Docker Desktop running to allow all loader tests to be executed.
+
+
 == License
 
 This code is available for reuse according to the https://opensource.org/license/bsd-3-clause[BSD 3-Clause License].

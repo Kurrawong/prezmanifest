@@ -14,3 +14,24 @@ class MRR(DefinedNamespace):
     CatalogueAndResourceModel: URIRef
     CompleteCatalogueAndResourceLabels: URIRef
     IncompleteCatalogueAndResourceLabels: URIRef
+
+
+class OLIS(DefinedNamespace):
+
+    _NS = Namespace("https://olis.dev/")
+    _fail = True
+
+    NamedGraph: URIRef
+    RealGraph: URIRef
+    SystemGraph: URIRef
+    VirtualGraph: URIRef
+
+    isAliasFor: URIRef
+
+
+class PREZ(DefinedNamespace):
+
+    _NS = Namespace("https://prez.dev/")
+    _fail = True
+
+    Manifest: URIRef
