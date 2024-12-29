@@ -17,10 +17,10 @@ dcterms:hasPart
     schema:description "The status of this register entry"@en ;
 .
 
-rdf:type
-    rdfs:label "type" ;
-    schema:description "The subject is an instance of a class." ;
-.
+#rdf:type
+#    rdfs:label "type" ;
+#    schema:description "The subject is an instance of a class." ;
+#.
 
 rdfs:label
     rdfs:label "label" ;

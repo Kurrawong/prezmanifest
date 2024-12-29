@@ -1,13 +1,13 @@
 """
-This script creates an n-quads files containing the following by parsing a Prez Manifest:
+Either creates an n-quads files containing the content of a Manifest file or uploads the content to Fuseki.
+
+It creates:
 
  1. A Named Graph for each resource using the item's IRI as the graph IRI
  2. A Named Graph for the catalogue, either using the catalogue's IRI as the graph IRI + "-catalogue" if given, or by making one up - a Blank Node
  3. All the triples in resources with roles mrr:CompleteCatalogueAndResourceLabels & mrr:IncompleteCatalogueAndResourceLabels within a Named Graph with IRI <https://background>
  4. An Olis Virtual Graph, <https://olis.dev/VirtualGraph> object using the catalogue IRI, if give, which is as an alias for all the Named Graphs from 1., 2. & 3.
  5. Multiple entries in the System Graph - Named Graph with IRI <https://olis.dev/SystemGraph> - for each Named and the Virtual Graph from 1., 2. & 3.
-
-Optionally this scrit can upload the n-quads file to a SPARQL endpoint.
 
 Run this script with the -h flag for more help, i.e. ~$ python loader.py -h
 """
@@ -16,12 +16,21 @@ import argparse
 import sys
 from pathlib import Path
 
-from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
-from rdflib import Graph, URIRef, Dataset
-
-from prezmanifest import MRR, OLIS, PREZ, validate
 from kurrawong.format import make_dataset, export_quads
+from kurrawong.fuseki import upload
 from kurrawong.utils import load_graph
+from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
+from rdflib import Graph, URIRef
+
+try:
+    from prezmanifest import MRR, OLIS
+    from prezmanifest import validate
+except ImportError:
+    import sys
+
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import MRR, OLIS
+    from prezmanifest import validate
 
 __version__ = "1.0.0"
 
@@ -79,8 +88,8 @@ def load(
                     # export the Catalogue data
                     if destination_file is not None:
                         export_quads(make_dataset(c, catalogue_iri), destination_file)
-                    else:
-                        pass
+                    else:  # SPARQL
+                        upload(sparql_endpoint, c, catalogue_iri)
 
         # non-catalogue resources
         for s, o in g.subject_objects(PROF.hasResource):
@@ -91,7 +100,6 @@ def load(
                     MRR.IncompleteCatalogueAndResourceLabels,
                     MRR.ResourceData,
                 ]:
-
                     for artifact in g.objects(o, PROF.hasArtifact):
                         if not len(str(artifact).split("*")) > 1:
                             files = [manifest.parent / Path(str(artifact))]
@@ -103,6 +111,8 @@ def load(
 
                         for f in files:
                             fg = Graph().parse(f)
+                            # fg.bind("rdf", RDF)
+
                             if role == MRR.ResourceData:
                                 resource_iri = fg.value(
                                     predicate=RDF.type, object=SKOS.ConceptScheme
@@ -115,13 +125,18 @@ def load(
                                 resource_iri = URIRef("http://background")
 
                             vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
-                            export_quads(make_dataset(fg, resource_iri), destination_file)
+                            if destination_file is not None:
+                                export_quads(
+                                    make_dataset(fg, resource_iri), destination_file
+                                )
+                            else:  # SPARQL
+                                upload(sparql_endpoint, fg, resource_iri)
 
         # export the System Graph
         if destination_file is not None:
             export_quads(make_dataset(vg, OLIS.SystemGraph), destination_file)
-        else:
-            pass
+        else:  # SPARQL
+            upload(sparql_endpoint, vg, OLIS.SystemGraph, append=True)
 
     return True
 
@@ -129,6 +144,7 @@ def load(
 def setup_cli_parser(args=None):
 
     parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group(required=True)
 
     parser.add_argument(
         "-v",
@@ -137,18 +153,22 @@ def setup_cli_parser(args=None):
         version="{version}".format(version=__version__),
     )
 
-    parser.add_argument(
+    group.add_argument(
         "-e",
         "--endpoint",
-        help="The SPARQL endpoint you want to load the data into",
-        required=True,
+        help="The SPARQL endpoint you want to load the data into. Cannot be specified when destination is.",
+    )
+
+    group.add_argument(
+        "-d",
+        "--destination",
+        help="The n-quads file you want to export the data into. Cannot be specified when endpoint is.",
     )
 
     parser.add_argument(
-        "prezmanifest",
-        help="A prezmanifest file to process",
-        type=argparse.FileType("r"),
-        required=True,
+        "manifest",
+        help="A Manifest file to process",
+        type=Path,
     )
 
     return parser.parse_args(args)
@@ -160,17 +180,10 @@ def cli(args=None):
 
     args = setup_cli_parser(args)
 
-    #
-    #   Do stuff here
-    #
+    load(args.manifest, args.endpoint, args.destination)
 
 
 if __name__ == "__main__":
-    manifest = Path(__file__).parent / "tests" / "demo-vocabs" / "prezmanifest.ttl"
-    results_file = Path(__file__).parent / "results.trig"
-    print()
-    print(load(manifest, destination_file=results_file, sparql_endpoint="x"))
-    exit()
     retval = cli(sys.argv[1:])
     if retval is not None:
         sys.exit(retval)

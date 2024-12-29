@@ -1,8 +1,10 @@
-from prezmanifest import load
-from pathlib import Path
-from rdflib import Dataset, URIRef
 import warnings
+from pathlib import Path
+
 from kurrawong.fuseki import query, upload
+from rdflib import Dataset, URIRef
+
+from prezmanifest import load
 
 
 def test_fuseki_query(fuseki_container):
@@ -30,9 +32,7 @@ def test_fuseki_query(fuseki_container):
         "XXX", TESTING_GRAPH
     )
 
-    r = query(
-        SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True
-    )
+    r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
 
     count = int(r[0]["count"]["value"])
 
@@ -50,7 +50,9 @@ def test_fuseki_query(fuseki_container):
 
 
 def test_load_to_quads_file():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)  # ignore RDFLib's ConjunctiveGraph warning
+    warnings.filterwarnings(
+        "ignore", category=DeprecationWarning
+    )  # ignore RDFLib's ConjunctiveGraph warning
     manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
     results_file = Path(__file__).parent / "results.trig"
 
@@ -74,3 +76,23 @@ def test_load_to_quads_file():
     Path(results_file).unlink()
 
 
+def test_load_to_fuseki(fuseki_container):
+    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+
+    manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
+    load(manifest, sparql_endpoint=SPARQL_ENDPOINT)
+
+    q = """
+        SELECT (COUNT(DISTINCT ?g) AS ?count)
+        WHERE {
+            GRAPH ?g {
+                ?s ?p ?o 
+            }
+        }      
+        """
+
+    r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+
+    count = int(r[0]["count"]["value"])
+
+    assert count == 5
