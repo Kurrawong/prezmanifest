@@ -97,13 +97,13 @@ def load(
                     MRR.ResourceData,
                 ]:
                     for artifact in g.objects(o, PROF.hasArtifact):
-                        if not len(str(artifact).split("*")) > 1:
+                        if not "*" in str(artifact):
                             files = [manifest.parent / Path(str(artifact))]
                         else:
-                            glob_parts = str(artifact).split("*")
-                            files = Path(manifest.parent / Path(glob_parts[0])).glob(
-                                "*" + glob_parts[1]
-                            )
+                            artifact_str = str(artifact)
+                            glob_marker_location = artifact_str.find("*")
+                            glob_parts = [artifact_str[:glob_marker_location], artifact_str[glob_marker_location:]]
+                            files = Path(manifest.parent / Path(glob_parts[0])).glob(glob_parts[1])
 
                         for f in files:
                             fg = Graph().parse(f)
