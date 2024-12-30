@@ -4,7 +4,12 @@ from textwrap import dedent
 import pytest
 from rdflib import Graph
 
-from prezmanifest import create_table
+try:
+    from prezmanifest import create_table
+except ImportError:
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import create_table
 
 
 def test_create_table_01():

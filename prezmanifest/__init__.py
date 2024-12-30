@@ -1,4 +1,6 @@
-__version__ = "1.0.0"
+import importlib.metadata
+
+__version__ = importlib.metadata.version(__package__)
 
 from .definednamespaces import MRR, OLIS, PREZ
 from .documentor import create_table

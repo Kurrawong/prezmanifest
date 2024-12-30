@@ -1,15 +1,16 @@
 [tool.poetry]
-name = "Prez Manifest"
-version = "0.1.0"
-description = ""
+name = "prezmanifest"
+version = "0.2.1"
+description = "A Python package that provides a series of functions to work with Prez Manifests."
 authors = ["Nicholas Car <nick@kurrawong.ai>"]
-package-mode = false
+license = "BSD-3-Clause"
+readme = "README.adoc"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-mkdocs-material = "^8.3.9"
 pyshacl = "^0.29.0"
-kurrawong = {path = "/Users/nick/work/kurrawong/kurrawong-python", develop = true}
+kurra = "^0.6.1"
+importlib-metadata = {version = "^8.5.0", optional = true}
 
 [tool.poetry.dev-dependencies]
 

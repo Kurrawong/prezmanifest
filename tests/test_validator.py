@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from prezmanifest import validate
+try:
+    from prezmanifest import validate
+except ImportError:
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import validate
 
 
 def test_validator_valid():

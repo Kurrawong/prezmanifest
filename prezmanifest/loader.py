@@ -16,9 +16,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from kurrawong.format import make_dataset, export_quads
-from kurrawong.fuseki import upload
-from kurrawong.utils import load_graph
+from kurra.format import make_dataset, export_quads
+from kurra.fuseki import upload
+from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef
 

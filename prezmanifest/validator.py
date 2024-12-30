@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 import httpx
-from kurrawong.utils import load_graph
+from kurra.utils import load_graph
 from pyshacl import validate as shacl_validate
 from rdflib.namespace import PROF
 

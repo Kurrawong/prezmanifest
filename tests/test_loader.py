@@ -1,10 +1,15 @@
 import warnings
 from pathlib import Path
 
-from kurrawong.fuseki import query, upload
+from kurra.fuseki import query, upload
 from rdflib import Dataset, URIRef
 
-from prezmanifest import load
+try:
+    from prezmanifest import load
+except ImportError:
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+    from prezmanifest import load
 
 
 def test_fuseki_query(fuseki_container):
