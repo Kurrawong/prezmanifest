@@ -1,5 +1,6 @@
 import warnings
 from pathlib import Path
+import pytest
 
 from kurra.fuseki import query, upload
 from rdflib import Dataset, URIRef
@@ -10,6 +11,32 @@ except ImportError:
     import sys
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import load
+
+
+def test_load_only_one_set():
+    warnings.filterwarnings(
+        "ignore", category=DeprecationWarning
+    )  # ignore RDFLib's ConjunctiveGraph warning
+
+    manifest_path = Path(Path(__file__).parent / "demo-vocabs/manifest.ttl")
+
+    with pytest.raises(ValueError):
+        load(manifest_path)
+
+    with pytest.raises(ValueError):
+        load(manifest_path, sparql_endpoint="http://fake.com", destination_file=Path("some-fake-path"))
+
+    with pytest.raises(ValueError):
+        load(manifest_path, destination_file=Path("some-fake-path"), return_data_type="Graph")
+
+    load(manifest_path, destination_file=Path("temp.trig"))
+
+    Path("temp.trig").unlink(missing_ok=True)
+
+    try:
+        load(manifest_path, return_data_type="hello")
+    except ValueError as e:
+        assert str(e) == "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
 
 
 def test_fuseki_query(fuseki_container):

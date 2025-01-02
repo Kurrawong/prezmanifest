@@ -15,7 +15,7 @@ PREFIX schema: <https://schema.org/>
         [
             prof:hasArtifact "vocabs/*.ttl" ;
             # prof:hasRole mrr:ResourceData ;
-            schema:description "skos:ConceptsScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
+            schema:description "skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
             schema:name "Content Data"
         ] ,
         [
