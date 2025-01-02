@@ -19,8 +19,9 @@ from pathlib import Path
 from kurra.format import make_dataset, export_quads
 from kurra.fuseki import upload
 from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
-from rdflib import Graph, URIRef
+from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
+from rdflib import Graph, URIRef, Dataset
+from typing import Literal as TLiteral
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
@@ -35,21 +36,73 @@ def load(
     manifest: Path,
     sparql_endpoint: str = None,
     destination_file: Path = None,
-):
+    return_data_type: TLiteral["Graph", "Dataset", None] = None
+) -> None | Graph | Dataset:
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
     (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
     given SPARQL Endpoint."""
 
-    if sparql_endpoint is not None and destination_file is not None:
+    if return_data_type == "Dataset":
+        dataset_holder = Dataset()
+
+    if return_data_type == "Graph":
+        graph_holder = Graph()
+
+    return_data_value_error_message = "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
+
+    def _export(data: Graph | Dataset, iri, sparql_endpoint, destination_file, return_data_type, append=False):
+        if type(data) is Dataset:
+            if iri is not None:
+                raise ValueError("If the data is a Dataset, the parameter iri must be None")
+
+            if destination_file is not None:
+                export_quads(data, destination_file)
+            elif sparql_endpoint is not None:
+                for g in data.graphs():
+                    if g.identifier != URIRef("urn:x-rdflib:default"):
+                        _export(g, g.identifier, sparql_endpoint, None, None)
+            else:
+                if return_data_type == "Dataset":
+                    return data
+                elif return_data_type == "Graph":
+                    gx = Graph()
+                    for g in data.graphs():
+                        if g.identifier != URIRef("urn:x-rdflib:default"):
+                            for s, p, o in g.triples((None, None, None)):
+                                gx.add((s, p, o))
+                    return gx
+
+        elif type(data) is Graph:
+            if iri is None:
+                raise ValueError("If the data is a GRaph, the parameter iri must not be None")
+
+            msg = f"exporting {iri} "
+            if destination_file is not None:
+                msg += f"to file {destination_file} "
+                export_quads(make_dataset(data, iri), destination_file)
+            elif sparql_endpoint is not None:
+                msg += f"to SPARQL Endpoint {sparql_endpoint}"
+                upload(sparql_endpoint, data, iri, append)
+            else:  # returning data
+                if return_data_type == "Dataset":
+                    msg += "to Dataset"
+                    for s, p, o in data:
+                        dataset_holder.add((s, p, o, iri))
+                elif return_data_type == "Graph":
+                    msg += "to Graph"
+                    for s, p, o in data:
+                        graph_holder.add((s, p, o))
+                else:
+                    raise ValueError(return_data_value_error_message)
+
+            print(msg)
+
+    if sum(x is not None for x in [sparql_endpoint, destination_file, return_data_type]) != 1:
         raise ValueError(
-            "You may only specify either a sparql_endpoint or a export_quads_file, not both"
-        )
-    elif sparql_endpoint is None and destination_file is None:
-        raise ValueError(
-            "You must specify either a sparql_endpoint or a export_quads_file, not neither"
+            "You must specify exactly 1 of sparql_endpoint, destination_file or return_data_type",
         )
 
-    # load and validate prezmanifest
+    # load and validate manifest
     g = validate(manifest)
 
     MANIFEST_ROOT_DIR = manifest.parent
@@ -82,10 +135,7 @@ def load(
                     vg.add((vg_iri, SDO.name, vg_name))
 
                     # export the Catalogue data
-                    if destination_file is not None:
-                        export_quads(make_dataset(c, catalogue_iri), destination_file)
-                    else:  # SPARQL
-                        upload(sparql_endpoint, c, catalogue_iri)
+                    _export(c, catalogue_iri, sparql_endpoint, destination_file, return_data_type)
 
         # non-catalogue resources
         for s, o in g.subject_objects(PROF.hasResource):
@@ -106,39 +156,49 @@ def load(
                             files = Path(manifest.parent / Path(glob_parts[0])).glob(glob_parts[1])
 
                         for f in files:
-                            fg = Graph().parse(f)
-                            # fg.bind("rdf", RDF)
+                            if str(f.name).endswith(".ttl"):
+                                fg = Graph().parse(f)
+                                # fg.bind("rdf", RDF)
 
-                            if role == MRR.ResourceData:
-                                resource_iri = fg.value(
-                                    predicate=RDF.type, object=SKOS.ConceptScheme
-                                )
+                                if role == MRR.ResourceData:
+                                    resource_iri = fg.value(predicate=RDF.type, object=SKOS.ConceptScheme) or fg.value(predicate=RDF.type, object=OWL.Ontology)
 
-                            if role in [
-                                MRR.CompleteCatalogueAndResourceLabels,
-                                MRR.IncompleteCatalogueAndResourceLabels,
-                            ]:
-                                resource_iri = URIRef("http://background")
+                                if role in [
+                                    MRR.CompleteCatalogueAndResourceLabels,
+                                    MRR.IncompleteCatalogueAndResourceLabels,
+                                ]:
+                                    resource_iri = URIRef("http://background")
 
-                            vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
-                            if destination_file is not None:
-                                export_quads(
-                                    make_dataset(fg, resource_iri), destination_file
-                                )
-                            else:  # SPARQL
-                                upload(sparql_endpoint, fg, resource_iri)
+                                if resource_iri is None:
+                                    raise ValueError(f"Could not determine Resource IRI for file {f}")
+
+                                vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
+
+                                # export one Resource
+                                _export(fg, resource_iri, sparql_endpoint, destination_file, return_data_type)
+                            elif str(f.name).endswith(".trig"):
+                                d = Dataset()
+                                d.parse(f)
+                                for g in d.graphs():
+                                    if g.identifier != URIRef("urn:x-rdflib:default"):
+                                        vg.add((vg_iri, OLIS.isAliasFor, g.identifier))
+                                _export(d, None, sparql_endpoint, destination_file, return_data_type)
+
 
         # export the System Graph
-        if destination_file is not None:
-            export_quads(make_dataset(vg, OLIS.SystemGraph), destination_file)
-        else:  # SPARQL
-            upload(sparql_endpoint, vg, OLIS.SystemGraph, append=True)
+        _export(vg, OLIS.SystemGraph, sparql_endpoint, destination_file, return_data_type, append=True)
 
-    return True
+    if return_data_type == "Dataset":
+        return dataset_holder
+    elif return_data_type == "Graph":
+        return graph_holder
+    elif return_data_type is None:
+        pass  # return nothing
+    else:
+        raise ValueError(return_data_value_error_message)
 
 
 def setup_cli_parser(args=None):
-
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
 
@@ -176,7 +236,11 @@ def cli(args=None):
 
     args = setup_cli_parser(args)
 
-    load(args.manifest, args.endpoint, args.destination)
+    load(
+        Path(args.manifest),
+        args.endpoint if args.endpoint is not None else None,
+        Path(args.destination) if args.destination is not None else None,
+    )
 
 
 if __name__ == "__main__":
