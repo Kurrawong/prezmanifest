@@ -7,10 +7,10 @@ license = "BSD-3-Clause"
 readme = "README.adoc"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.12,<4.0"
 pyshacl = "^0.29.0"
 kurra = "^0.6.1"
-importlib-metadata = {version = "^8.5.0", optional = true}
+labelify = {path = "/Users/nick/work/kurrawong/labelify"}
 
 [tool.poetry.dev-dependencies]
 
