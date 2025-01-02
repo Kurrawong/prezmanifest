@@ -24,7 +24,7 @@ PREFIX schema: <https://schema.org/>
         [
             prof:hasArtifact "vocabs/*.ttl" ;
             prof:hasRole mrr:ContentData ;
-            schema:description "skos:ConceptsScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
+            schema:description "skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
             schema:name "Content"
         ] ,
         [
@@ -45,7 +45,7 @@ Output:
 Resource | Role | Description
 --- | --- | ---
 Catalogue Definition, [`catalogue.ttl`](catalogue.ttl) | [Container Data](https://prez.dev/ManifestResourceRoles/ContainerData) | The definition of, and medata for, the container which here is a dcat:Catalog object
-Content, [`vocabs/*.ttl`](vocabs/*.ttl) | [Content Data](https://prez.dev/ManifestResourceRoles/ContentData) | skos:ConceptsScheme objects in RDF (Turtle) files in the vocabs/ folder
+Content, [`vocabs/*.ttl`](vocabs/*.ttl) | [Content Data](https://prez.dev/ManifestResourceRoles/ContentData) | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
 Profile Definition, [`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Container & Content Model](https://prez.dev/ManifestResourceRoles/ContainerAndContentModel) | The default Prez profile for Records API
 Labels file, [`_background/labels.ttl`](_background/labels.ttl) | [Complete Content and Container Labels](https://prez.dev/ManifestResourceRoles/CompleteContainerAndContentLabels) | An RDF file containing all the labels for the container content
 """
@@ -55,32 +55,25 @@ import sys
 from pathlib import Path
 from urllib.parse import ParseResult, urlparse
 
-from pyshacl import validate
-from rdflib import Graph
-from rdflib import PROF, SDO, SKOS
+from rdflib import DCAT, DCTERMS, PROF, SDO, SKOS, Graph
+from kurra.utils import load_graph
 
 try:
-    from prezmanifest import __version__
+    from prezmanifest import MRR, validate, __version__
+    from prezmanifest.utils import *
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import __version__
+    from prezmanifest import MRR, validate, __version__
+    from prezmanifest.utils import *
 
 
-def create_table(g: Graph, t="markdown") -> str:
-    # add in the Roles Vocab for role labels
-    g.parse(Path(__file__).parent / "mrr.ttl")
-
-    # validate it before proceeding
-    valid, validation_graph, validation_text = validate(
-        g, shacl_graph=str(Path(__file__).parent / "validator.ttl")
-    )
-    if not valid:
-        txt = "Your Manifest is not valid:"
-        txt += "\n\n"
-        txt += validation_text
-        raise ValueError(txt)
+def create_table(manifest: Path, t="markdown") -> str:
+    MANIFEST_ROOT_DIR = manifest.parent
+    # load and validate manifest
+    validate(manifest)
+    manifest_graph = load_graph(manifest)
 
     if t == "asciidoc":
         header = "|===\n| Resource | Role | Description\n\n"
@@ -88,20 +81,20 @@ def create_table(g: Graph, t="markdown") -> str:
         header = "Resource | Role | Description\n--- | --- | ---\n"
 
     body = ""
-    for s, o in g.subject_objects(PROF.hasResource):
-        a = str(g.value(o, PROF.hasArtifact))
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        a = str(manifest_graph.value(o, PROF.hasArtifact))
         if t == "asciidoc":
             artifact = f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]'
         else:
             artifact = f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})'
-        role_iri = g.value(o, PROF.hasRole)
-        role_label = g.value(role_iri, SKOS.prefLabel)
+        role_iri = manifest_graph.value(o, PROF.hasRole)
+        role_label = manifest_graph.value(role_iri, SKOS.prefLabel)
         if t == "asciidoc":
             role = f"{role_iri}[{role_label}]"
         else:
             role = f"[{role_label}]({role_iri})"
-        name = g.value(o, SDO.name)
-        description = g.value(o, SDO.description)
+        name = manifest_graph.value(o, SDO.name)
+        description = manifest_graph.value(o, SDO.description)
         n = f"{name}, {artifact}" if name is not None else f"{artifact}"
         d = description if description is not None else ""
         if t == "asciidoc":
@@ -115,6 +108,39 @@ def create_table(g: Graph, t="markdown") -> str:
         footer = ""
 
     return (header + body + footer).strip()
+
+
+def create_catalogue(manifest: Path):
+    MANIFEST_ROOT_DIR = manifest.parent
+    # load and validate manifest
+    validate(manifest)
+    manifest_graph = load_graph(manifest)
+
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
+            if role == MRR.CatalogueData:
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+                    # the artifact can only be a triples file (not a quads file)
+                    catalogue = load_graph(MANIFEST_ROOT_DIR / artifact)
+
+    # get the IRI of the catalogue
+    catalogue_iri = catalogue.value(predicate=RDF.type, object=DCAT.Catalog)
+
+    # non-catalogue resources
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
+            if role in [
+                MRR.CompleteCatalogueAndResourceLabels,
+                MRR.IncompleteCatalogueAndResourceLabels,
+                MRR.ResourceData,
+            ]:
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+                    for f in get_files_from_artifact(manifest, artifact):
+                        for iri in sorted(get_identifier_from_file(f)):
+                            if iri != URIRef("urn:x-rdflib:default"):
+                                catalogue.add((catalogue_iri, DCTERMS.hasPart, iri))
+
+    return catalogue
 
 
 def setup_cli_parser(args=None):
@@ -141,16 +167,22 @@ def setup_cli_parser(args=None):
     )
 
     parser.add_argument(
+        "function",
+        help="The documentation function you wish to perform",
+        choices=["table", "catalogue"],
+    )
+
+    parser.add_argument(
         "-t",
         "--type",
-        help="The type of markup you want to export: Markdown or ASCCIDOC",
+        help="The type of markup you want to export: Markdown or ASCCIDOC. Only relevant for the 'table' function",
         choices=["markdown", "asciidoc"],
         default="markdown",
     )
 
     parser.add_argument(
         "input",
-        help="File, Folder or Sparql Endpoint to read RDF from",
+        help="A Prez Manifest file",
         type=url_file_or_folder,
     )
 
@@ -163,10 +195,10 @@ def cli(args=None):
 
     args = setup_cli_parser(args)
 
-    # parse the target file
-    g = Graph().parse(args.input)
-
-    print(create_table(g, t=args.type))
+    if args.function == "table":
+        print(create_table(args.input, t=args.type))
+    else:
+        print(create_catalogue(args.input).serialize(format="longturtle"))
 
 
 if __name__ == "__main__":
