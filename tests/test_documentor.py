@@ -3,13 +3,14 @@ from textwrap import dedent
 
 import pytest
 from rdflib import Graph
+from rdflib.compare import isomorphic
 
 try:
-    from prezmanifest import create_table
+    from prezmanifest import create_table, create_catalogue
 except ImportError:
     import sys
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import create_table
+    from prezmanifest import create_table, create_catalogue
 
 
 def test_create_table_01():
@@ -52,3 +53,10 @@ def test_create_table_02():
 
     with pytest.raises(ValueError):
         create_table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
+
+
+def test_create_catalogue():
+    expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
+    actual = create_catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl")
+
+    assert isomorphic(actual, expected)

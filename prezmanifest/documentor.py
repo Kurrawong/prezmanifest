@@ -118,6 +118,7 @@ def create_catalogue(manifest: Path):
     validate(manifest)
     manifest_graph = load_graph(manifest)
 
+    catalogue = Graph()
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for role in manifest_graph.objects(o, PROF.hasRole):
             if role == MRR.CatalogueData:
@@ -131,11 +132,7 @@ def create_catalogue(manifest: Path):
     # non-catalogue resources
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for role in manifest_graph.objects(o, PROF.hasRole):
-            if role in [
-                MRR.CompleteCatalogueAndResourceLabels,
-                MRR.IncompleteCatalogueAndResourceLabels,
-                MRR.ResourceData,
-            ]:
+            if role == MRR.ResourceData:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     for f in get_files_from_artifact(manifest, artifact):
                         for iri in sorted(get_identifier_from_file(f)):
