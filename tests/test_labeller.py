@@ -1,6 +1,7 @@
 from pathlib import Path
 from rdflib import Graph
 from rdflib.compare import isomorphic
+from kurra.fuseki import upload, query
 
 try:
     from prezmanifest import label
@@ -32,15 +33,7 @@ def test_label_iris():
         output="iris"
     )
 
-    assert len(iris) == 4
-
-    iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
-        output="iris",
-        additional_context="http://localhost:3030/ds/query"
-    )
-
-    assert len(iris) == 3
+    assert len(iris) == 5
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
@@ -52,23 +45,20 @@ def test_label_iris():
     assert len(iris) == 25
 
 
-def test_label_rdf():
-    rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest.ttl",
-        "rdf",
-        "http://localhost:3030/ds/query"
-    )
+def test_label_iris_sparql(fuseki_container):
+    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl", graph_name="http://test")
 
-    assert len(rdf) == 0
-
-    rdf = label(
+    iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
-        "rdf",
-        "http://localhost:3030/ds/query"
+        output="iris",
+        additional_context=SPARQL_ENDPOINT
     )
 
-    assert len(rdf) == 54
+    assert len(iris) == 3
 
+
+def test_label_rdf():
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         "rdf",
@@ -76,15 +66,73 @@ def test_label_rdf():
 
     assert not rdf
 
+    rdf = label(
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        output="rdf",
+        additional_context=Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
+    )
 
-def test_label_manifest():
+    assert len(rdf) == 54
+
+
+def test_label_rdf_sparql(fuseki_container):
+    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+
+    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+
+    rdf = label(
+        Path(__file__).parent / "demo-vocabs/manifest.ttl",
+        "rdf",
+        SPARQL_ENDPOINT
+    )
+
+    assert len(rdf) == 0
+
+    rdf = label(
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        "rdf",
+        SPARQL_ENDPOINT
+    )
+
+    assert len(rdf) == 0
+
+    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/labels-2.ttl", graph_name="http://test")
+
+    rdf = label(
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        "rdf",
+        SPARQL_ENDPOINT
+    )
+
+    assert len(rdf) == 2
+
+    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+
+    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/_background/labels.ttl", graph_name="http://test")
+
+    rdf = label(
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        "rdf",
+        SPARQL_ENDPOINT
+    )
+
+    assert len(rdf) == 54
+
+
+def test_label_manifest(fuseki_container):
+    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+
+    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+
+    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/_background/labels.ttl", graph_name="http://test")
+
     original_manifest_path = Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"
     original_manifest_contents = original_manifest_path.read_text()
 
     label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         # output="manifest" is default
-        additional_context="http://localhost:3030/ds/query"
+        additional_context=SPARQL_ENDPOINT
     )
 
     expected_updated_manifest = Graph().parse(
@@ -124,7 +172,7 @@ def test_label_manifest():
 
     resulting_manifest = Graph().parse(original_manifest_path)
 
-    assert  isomorphic(resulting_manifest, expected_updated_manifest)
+    assert isomorphic(resulting_manifest, expected_updated_manifest)
 
     # replace this test's results and with original
     Path(original_manifest_path.parent / "labels-additional.ttl").unlink()
