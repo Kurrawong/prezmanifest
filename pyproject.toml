@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "prezmanifest"
-version = "0.2.2"
+version = "0.2.3"
 description = "A Python package that provides a series of functions to work with Prez Manifests."
 authors = ["Nicholas Car <nick@kurrawong.ai>"]
 license = "BSD-3-Clause"
-readme = "README.adoc"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"
