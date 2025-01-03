@@ -1,16 +1,15 @@
 # Prez Manifest
 
-A Prez Manifest is an RDF file that describes and links to a set of resources that can be loaded into an RDF database for the [Prez graph database publication system](http://prez.dev) to provide access to.
+_A Prez Manifest is an RDF file that describes and links to a set of resources that can be loaded into an RDF database for the [Prez graph database publication system](http://prez.dev) to provide access to. The Prez Manifest specification is online at: <https://prez.dev/manifest/>._
 
-The Prez Manifest specification is online at:
+This repository contains the `prezmanifest` Python package that provides a series of functions to work with Prez Manifests. The functions provided are:
 
-* <https://prez.dev/manifest/>
-
-This repository contains the `prez-manifest` Python package that provides a series of functions to work with Prez Manifests. The functions provided are:
-
-* `create_table`: creates an ASCIIDOC or Markdown table of Manifest content from a Manifest file
+* **documentation**: 
+    * `create_table` creates an ASCIIDOC or Markdown table of Manifest content from a Manifest file
+    * `create_catalgue`: creates an RDF file from catalogue metadata and with `hasPart` relations to all resources indicated in the Manifest 
 * `validate`: validates that a Manifest file conforms to the specification and that all linked-to assets are available
 * `load`: loads a Manifest file, and all the content it specifies, into either an n-quads file or a Fuseki database
+* `labeller`: lists IRIs for which no labels are present in any Manifest resource or outputs an RDF file of labels for IRIs missing them if additional context (files or folders of RDF or a SPARQL Endpoint) are supplied. Can also create a new resource within a Manifest containing newly generated labels 
 
 
 ## Installation & Use
@@ -19,7 +18,7 @@ This Python package is intended to be used on the command line on Linux/UNIX-lik
 
 It is available on [PyPI](https://pypi.org) at <https://pypi.org/project/prezmanifest/> so can be installed using [Poetry](https://python-poetry.org) or PIP.
 
-You can also install the latest, unstable, release from it's version control repository: <https://github.com/Kurrawong/prez-manifest/>.
+You can also install the latest, unstable, release from its version control repository: <https://github.com/Kurrawong/prez-manifest/>.
 
 Please see the `documentor.py`, `loader.py`, & `validator.py` files in the `prezmanifest` folder and the test files in `test` for documentation text and examples of use.
 
