@@ -335,22 +335,20 @@ typer = ">=0.9.0,<1.0.0"
 
 [[package]]
 name = "labelify"
-version = "0.3.2"
+version = "0.3.8"
 description = "Analyse an RDF graph to find URI's without human readable labels."
 optional = false
-python-versions = "^3.12"
-files = []
-develop = false
+python-versions = "<4.0,>=3.12"
+files = [
+    {file = "labelify-0.3.8-py3-none-any.whl", hash = "sha256:7d7d7352f2172d73418300158a78e00fb9f131a5c2b3a7516d3148f249f35ab5"},
+    {file = "labelify-0.3.8.tar.gz", hash = "sha256:8bf2aea5dece3f896eb8dacc1b1dea6c70fc944e7061343b02828bbfb275b935"},
+]
 
 [package.dependencies]
-html5rdf = "^1.2.1"
-kurra = "^0.6.1"
-rdflib = "^7.0.0"
-sparqlwrapper = "^2.0.0"
-
-[package.source]
-type = "directory"
-url = "../labelify"
+html5rdf = ">=1.2.1,<2.0.0"
+kurra = ">=0.6.1,<0.7.0"
+rdflib = ">=7.0.0,<8.0.0"
+sparqlwrapper = ">=2.0.0,<3.0.0"
 
 [[package]]
 name = "markdown-it-py"
@@ -498,13 +496,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyparsing"
-version = "3.2.0"
+version = "3.2.1"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pyparsing-3.2.0-py3-none-any.whl", hash = "sha256:93d9577b88da0bbea8cc8334ee8b918ed014968fd2ec383e868fb8afb1ccef84"},
-    {file = "pyparsing-3.2.0.tar.gz", hash = "sha256:cbf74e27246d595d9a74b186b810f6fbb86726dbf3b9532efb343f6d7294fe9c"},
+    {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
+    {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
 ]
 
 [package.extras]
@@ -884,4 +882,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<4.0"
-content-hash = "add36fafa5da4b5a79b48e0beccc1a331648138e170369c0a655ce735abbeff7"
+content-hash = "a525885b9cc983607372d42119cbb5153ae72cc3cd5493af74990c6f9711905d"

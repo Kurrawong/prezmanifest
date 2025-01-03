@@ -24,9 +24,7 @@ def test_create_table_01():
         """
     ).strip()
 
-    g = Graph().parse(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
-
-    result = create_table(g)
+    result = create_table(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
 
     print()
     print()
@@ -52,7 +50,5 @@ def test_create_table_02():
         """
     ).strip()
 
-    g = Graph().parse(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
-
     with pytest.raises(ValueError):
-        create_table(g)
+        create_table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")

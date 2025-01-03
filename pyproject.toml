@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "prezmanifest"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Python package that provides a series of functions to work with Prez Manifests."
 authors = ["Nicholas Car <nick@kurrawong.ai>"]
 license = "BSD-3-Clause"
@@ -10,7 +10,7 @@ readme = "README.adoc"
 python = ">=3.12,<4.0"
 pyshacl = "^0.29.0"
 kurra = "^0.6.1"
-labelify = {path = "/Users/nick/work/kurrawong/labelify"}
+labelify = "^0.3.8"
 
 [tool.poetry.dev-dependencies]
 

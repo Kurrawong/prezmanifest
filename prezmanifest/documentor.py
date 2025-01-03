@@ -70,10 +70,12 @@ except ImportError:
 
 
 def create_table(manifest: Path, t="markdown") -> str:
-    MANIFEST_ROOT_DIR = manifest.parent
     # load and validate manifest
     validate(manifest)
     manifest_graph = load_graph(manifest)
+
+    # add in MRR vocab
+    manifest_graph += load_graph(Path(__file__).parent / "mrr.ttl")
 
     if t == "asciidoc":
         header = "|===\n| Resource | Role | Description\n\n"

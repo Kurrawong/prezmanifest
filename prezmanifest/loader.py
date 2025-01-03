@@ -22,14 +22,17 @@ from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef, Dataset
 from typing import Literal as TLiteral
+import logging
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
+    from prezmanifest.utils import get_files_from_artifact
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import MRR, OLIS, validate, __version__
+    from prezmanifest.utils import get_files_from_artifact
 
 
 def load(
@@ -95,26 +98,26 @@ def load(
                 else:
                     raise ValueError(return_data_value_error_message)
 
-            print(msg)
+            logging.info(msg)
 
     if sum(x is not None for x in [sparql_endpoint, destination_file, return_data_type]) != 1:
         raise ValueError(
             "You must specify exactly 1 of sparql_endpoint, destination_file or return_data_type",
         )
 
-    # load and validate manifest
-    g = validate(manifest)
-
     MANIFEST_ROOT_DIR = manifest.parent
+    # load and validate manifest
+    validate(manifest)
+    manifest_graph = load_graph(manifest)
 
     vg = Graph()
     vg_iri = None
 
-    for s, o in g.subject_objects(PROF.hasResource):
-        for role in g.objects(o, PROF.hasRole):
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
             # The catalogue - must be processed first
             if role == MRR.CatalogueData:
-                for artifact in g.objects(o, PROF.hasArtifact):
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     # load the Catalogue, determine the Virtual Graph & Catalogue IRIs
                     # and fail if we can't see a Catalogue object
                     c = load_graph(MANIFEST_ROOT_DIR / str(artifact))
@@ -138,24 +141,16 @@ def load(
                     _export(c, catalogue_iri, sparql_endpoint, destination_file, return_data_type)
 
         # non-catalogue resources
-        for s, o in g.subject_objects(PROF.hasResource):
-            for role in g.objects(o, PROF.hasRole):
+        for s, o in manifest_graph.subject_objects(PROF.hasResource):
+            for role in manifest_graph.objects(o, PROF.hasRole):
                 # The data files & background - must be processed after Catalogue
                 if role in [
                     MRR.CompleteCatalogueAndResourceLabels,
                     MRR.IncompleteCatalogueAndResourceLabels,
                     MRR.ResourceData,
                 ]:
-                    for artifact in g.objects(o, PROF.hasArtifact):
-                        if not "*" in str(artifact):
-                            files = [manifest.parent / Path(str(artifact))]
-                        else:
-                            artifact_str = str(artifact)
-                            glob_marker_location = artifact_str.find("*")
-                            glob_parts = [artifact_str[:glob_marker_location], artifact_str[glob_marker_location:]]
-                            files = Path(manifest.parent / Path(glob_parts[0])).glob(glob_parts[1])
-
-                        for f in files:
+                    for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+                        for f in get_files_from_artifact(manifest, artifact):
                             if str(f.name).endswith(".ttl"):
                                 fg = Graph().parse(f)
                                 # fg.bind("rdf", RDF)
