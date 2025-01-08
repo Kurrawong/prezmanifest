@@ -1,5 +1,7 @@
 import warnings
 from pathlib import Path
+
+import httpx
 import pytest
 
 from kurra.fuseki import query, upload
@@ -9,6 +11,7 @@ try:
     from prezmanifest import load
 except ImportError:
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import load
 
@@ -124,6 +127,28 @@ def test_load_to_fuseki(fuseki_container):
         """
 
     r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+
+    count = int(r[0]["count"]["value"])
+
+    assert count == 5
+
+
+def test_load_to_fuseki_basic_auth(fuseki_container):
+    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
+
+    manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
+    load(manifest, sparql_endpoint=SPARQL_ENDPOINT, sparql_username="admin", sparql_password="admin")
+
+    q = """
+        SELECT (COUNT(DISTINCT ?g) AS ?count)
+        WHERE {
+            GRAPH ?g {
+                ?s ?p ?o 
+            }
+        }      
+        """
+    client = httpx.Client(auth=("admin", "admin"))
+    r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True, http_client=client)
 
     count = int(r[0]["count"]["value"])
 
