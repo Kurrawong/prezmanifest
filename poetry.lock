@@ -332,14 +332,14 @@ files = [
 
 [[package]]
 name = "kurra"
-version = "1.0.0"
+version = "1.0.1"
 description = "A Python package of RDF data manipulation functions that can be called from the command line or other software"
 optional = false
 python-versions = "<4.0.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "kurra-1.0.0-py3-none-any.whl", hash = "sha256:cfc580e87b2d09093ec96d615f36011cb6cd050d53b688847d4e486fb5c1a606"},
-    {file = "kurra-1.0.0.tar.gz", hash = "sha256:26567afaef5df8c9de9067645867af95a329f0c8dea2b7fa1245140c3e83eed3"},
+    {file = "kurra-1.0.1-py3-none-any.whl", hash = "sha256:4964d9a90f5120634a0b3b8d5757385276733f69dc157c276efaa68fcf0b1f43"},
+    {file = "kurra-1.0.1.tar.gz", hash = "sha256:32d59c679d237b51ef5d369fa6a2799bdbbf41ce6473c22780199ffc9396dcee"},
 ]
 
 [package.dependencies]

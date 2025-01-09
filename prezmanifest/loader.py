@@ -182,6 +182,7 @@ def load(
                         data=c,
                         iri=catalogue_iri,
                         client=client,
+                        sparql_endpoint=sparql_endpoint,
                         destination_file=destination_file,
                         return_data_type=return_data_type,
                     )
@@ -228,6 +229,7 @@ def load(
                                     data=fg,
                                     iri=resource_iri,
                                     client=client,
+                                    sparql_endpoint=sparql_endpoint,
                                     destination_file=destination_file,
                                     return_data_type=return_data_type,
                                 )
@@ -241,6 +243,7 @@ def load(
                                     data=d,
                                     iri=None,
                                     client=client,
+                                    sparql_endpoint=sparql_endpoint,
                                     destination_file=destination_file,
                                     return_data_type=return_data_type
                                 )
@@ -250,6 +253,7 @@ def load(
             data=vg,
             iri=OLIS.SystemGraph,
             client=client,
+            sparql_endpoint=sparql_endpoint,
             destination_file=destination_file,
             return_data_type=return_data_type,
             append=True
