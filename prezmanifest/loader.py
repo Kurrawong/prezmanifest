@@ -19,14 +19,12 @@ from getpass import getpass
 from pathlib import Path
 from typing import Literal as TLiteral
 
+import httpx
 from kurra.db import upload
 from kurra.file import make_dataset, export_quads
 from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef, Dataset
-from typing import Literal as TLiteral
-import logging
-import httpx
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
@@ -40,12 +38,12 @@ except ImportError:
 
 
 def load(
-        manifest: Path,
-        sparql_endpoint: str = None,
-        sparql_username: str = None,
-        sparql_password: str = None,
-        destination_file: Path = None,
-        return_data_type: TLiteral["Graph", "Dataset", None] = None,
+    manifest: Path,
+    sparql_endpoint: str = None,
+    sparql_username: str = None,
+    sparql_password: str = None,
+    destination_file: Path = None,
+    return_data_type: TLiteral["Graph", "Dataset", None] = None,
 ) -> None | Graph | Dataset:
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
     (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
@@ -68,7 +66,8 @@ def load(
                 if not sys.stdin.isatty():
                     # if not possible to prompt for a password
                     raise ValueError(
-                        "A password must be given if a sparql username is set")
+                        "A password must be given if a sparql username is set"
+                    )
                 sparql_password = getpass()
             auth = httpx.BasicAuth(sparql_username, sparql_password)
         client = httpx.Client(base_url=sparql_endpoint, auth=auth)
@@ -95,7 +94,13 @@ def load(
             elif sparql_endpoint is not None:
                 for g in data.graphs():
                     if g.identifier != URIRef("urn:x-rdflib:default"):
-                        _export(data=g, iri=g.identifier, client=client, destination_file=None, return_data_type=None)
+                        _export(
+                            data=g,
+                            iri=g.identifier,
+                            client=client,
+                            destination_file=None,
+                            return_data_type=None,
+                        )
             else:
                 if return_data_type == "Dataset":
                     return data
@@ -119,8 +124,13 @@ def load(
                 export_quads(make_dataset(data, iri), destination_file)
             elif sparql_endpoint is not None:
                 msg += f"to SPARQL Endpoint {sparql_endpoint}"
-                upload(url=sparql_endpoint, file_or_str_or_graph=data, graph_name=iri, append=append,
-                       http_client=client)
+                upload(
+                    url=sparql_endpoint,
+                    file_or_str_or_graph=data,
+                    graph_name=iri,
+                    append=append,
+                    http_client=client,
+                )
             else:  # returning data
                 if return_data_type == "Dataset":
                     msg += "to Dataset"
@@ -204,11 +214,9 @@ def load(
 
                                 if role == MRR.ResourceData:
                                     resource_iri = fg.value(
-                                        predicate=RDF.type,
-                                        object=SKOS.ConceptScheme
+                                        predicate=RDF.type, object=SKOS.ConceptScheme
                                     ) or fg.value(
-                                        predicate=RDF.type,
-                                        object=OWL.Ontology
+                                        predicate=RDF.type, object=OWL.Ontology
                                     )
 
                                 if role in [
@@ -245,7 +253,7 @@ def load(
                                     client=client,
                                     sparql_endpoint=sparql_endpoint,
                                     destination_file=destination_file,
-                                    return_data_type=return_data_type
+                                    return_data_type=return_data_type,
                                 )
 
         # export the System Graph
@@ -256,7 +264,7 @@ def load(
             sparql_endpoint=sparql_endpoint,
             destination_file=destination_file,
             return_data_type=return_data_type,
-            append=True
+            append=True,
         )
 
     if return_data_type == "Dataset":
@@ -286,9 +294,13 @@ def setup_cli_parser(args=None):
         help="The SPARQL endpoint you want to load the data into. Cannot be specified when destination is.",
     )
 
-    parser.add_argument("-u", "--username", help="(optional) SPARQL endpoint username for Basic Auth")
+    parser.add_argument(
+        "-u", "--username", help="(optional) SPARQL endpoint username for Basic Auth"
+    )
 
-    parser.add_argument("-p", "--password", help="(optional) SPARQL endpoint password for Basic Auth")
+    parser.add_argument(
+        "-p", "--password", help="(optional) SPARQL endpoint password for Basic Auth"
+    )
 
     group.add_argument(
         "-d",
@@ -316,7 +328,9 @@ def cli(args=None):
         sparql_endpoint=args.endpoint,
         sparql_username=args.username,
         sparql_password=args.password,
-        destination_file=Path(args.destination) if args.destination is not None else None,
+        destination_file=(
+            Path(args.destination) if args.destination is not None else None
+        ),
     )
 
 

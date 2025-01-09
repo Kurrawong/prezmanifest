@@ -1,7 +1,7 @@
-import httpx
 import warnings
 from pathlib import Path
 
+import httpx
 import pytest
 from kurra.db import upload, sparql
 from rdflib import Dataset, URIRef
@@ -144,10 +144,17 @@ def test_load_to_fuseki(fuseki_container):
 
 
 def test_load_to_fuseki_basic_auth(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
+    SPARQL_ENDPOINT = (
+        f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
+    )
 
     manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
-    load(manifest, sparql_endpoint=SPARQL_ENDPOINT, sparql_username="admin", sparql_password="admin")
+    load(
+        manifest,
+        sparql_endpoint=SPARQL_ENDPOINT,
+        sparql_username="admin",
+        sparql_password="admin",
+    )
 
     q = """
         SELECT (COUNT(DISTINCT ?g) AS ?count)
@@ -158,7 +165,13 @@ def test_load_to_fuseki_basic_auth(fuseki_container):
         }      
         """
     client = httpx.Client(auth=("admin", "admin"))
-    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True, http_client=client)
+    r = sparql(
+        SPARQL_ENDPOINT,
+        q,
+        return_python=True,
+        return_bindings_only=True,
+        http_client=client,
+    )
 
     count = int(r[0]["count"]["value"])
 
