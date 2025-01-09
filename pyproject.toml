@@ -8,7 +8,6 @@ authors = [
 license = "BSD-3-Clause"
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
-dependencies = ["dynamic"]
 
 [tool.poetry.dependencies]
 pyshacl = "^0.29.0"
