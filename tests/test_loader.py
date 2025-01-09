@@ -1,14 +1,15 @@
 import warnings
 from pathlib import Path
-import pytest
 
-from kurra.fuseki import query, upload
+import pytest
+from kurra.db import upload, sparql
 from rdflib import Dataset, URIRef
 
 try:
     from prezmanifest import load
 except ImportError:
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import load
 
@@ -24,10 +25,18 @@ def test_load_only_one_set():
         load(manifest_path)
 
     with pytest.raises(ValueError):
-        load(manifest_path, sparql_endpoint="http://fake.com", destination_file=Path("some-fake-path"))
+        load(
+            manifest_path,
+            sparql_endpoint="http://fake.com",
+            destination_file=Path("some-fake-path"),
+        )
 
     with pytest.raises(ValueError):
-        load(manifest_path, destination_file=Path("some-fake-path"), return_data_type="Graph")
+        load(
+            manifest_path,
+            destination_file=Path("some-fake-path"),
+            return_data_type="Graph",
+        )
 
     load(manifest_path, destination_file=Path("temp.trig"))
 
@@ -36,7 +45,10 @@ def test_load_only_one_set():
     try:
         load(manifest_path, return_data_type="hello")
     except ValueError as e:
-        assert str(e) == "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
+        assert (
+            str(e)
+            == "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
+        )
 
 
 def test_fuseki_query(fuseki_container):
@@ -64,7 +76,7 @@ def test_fuseki_query(fuseki_container):
         "XXX", TESTING_GRAPH
     )
 
-    r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
 
     count = int(r[0]["count"]["value"])
 
@@ -76,7 +88,7 @@ def test_fuseki_query(fuseki_container):
     print(q)
     print("QUERY")
 
-    r = query(SPARQL_ENDPOINT, q)
+    r = sparql(SPARQL_ENDPOINT, q)
 
     print(r)
 
@@ -123,7 +135,7 @@ def test_load_to_fuseki(fuseki_container):
         }      
         """
 
-    r = query(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
 
     count = int(r[0]["count"]["value"])
 

@@ -1,44 +1,38 @@
 from pathlib import Path
+
+from kurra.db import upload, sparql
 from rdflib import Graph
 from rdflib.compare import isomorphic
-from kurra.fuseki import upload, query
 
 try:
     from prezmanifest import label
 except ImportError:
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import load
 
 
 def test_label_iris():
     try:
-        label(
-            Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
-            output="x"
-        )
+        label(Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl", output="x")
     except ValueError as e:
         assert str(e) == "Parameter output is x but must be one of iris, rdf, manifest"
 
     iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
-        output="iris"
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl", output="iris"
     )
 
     assert len(iris) == 27
 
-
-    iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest.ttl",
-        output="iris"
-    )
+    iris = label(Path(__file__).parent / "demo-vocabs/manifest.ttl", output="iris")
 
     assert len(iris) == 5
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         output="iris",
-        additional_context= Path(__file__).parent / "demo-vocabs/labels-2.ttl",
+        additional_context=Path(__file__).parent / "demo-vocabs/labels-2.ttl",
     )
 
     # static context file has 2 relevant IRIs, so should be 27 - 2 = 25
@@ -47,12 +41,16 @@ def test_label_iris():
 
 def test_label_iris_sparql(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl", graph_name="http://test")
+    upload(
+        SPARQL_ENDPOINT,
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
+        graph_name="http://test",
+    )
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         output="iris",
-        additional_context=SPARQL_ENDPOINT
+        additional_context=SPARQL_ENDPOINT,
     )
 
     assert len(iris) == 3
@@ -69,7 +67,8 @@ def test_label_rdf():
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         output="rdf",
-        additional_context=Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
+        additional_context=Path(__file__).parent
+        / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
     )
 
     assert len(rdf) == 54
@@ -78,12 +77,10 @@ def test_label_rdf():
 def test_label_rdf_sparql(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
-    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+    sparql(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
 
     rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest.ttl",
-        "rdf",
-        SPARQL_ENDPOINT
+        Path(__file__).parent / "demo-vocabs/manifest.ttl", "rdf", SPARQL_ENDPOINT
     )
 
     assert len(rdf) == 0
@@ -91,29 +88,37 @@ def test_label_rdf_sparql(fuseki_container):
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         "rdf",
-        SPARQL_ENDPOINT
+        SPARQL_ENDPOINT,
     )
 
     assert len(rdf) == 0
 
-    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/labels-2.ttl", graph_name="http://test")
+    upload(
+        SPARQL_ENDPOINT,
+        Path(__file__).parent / "demo-vocabs/labels-2.ttl",
+        graph_name="http://test",
+    )
 
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         "rdf",
-        SPARQL_ENDPOINT
+        SPARQL_ENDPOINT,
     )
 
     assert len(rdf) == 2
 
-    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+    sparql(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
 
-    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/_background/labels.ttl", graph_name="http://test")
+    upload(
+        SPARQL_ENDPOINT,
+        Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
+        graph_name="http://test",
+    )
 
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         "rdf",
-        SPARQL_ENDPOINT
+        SPARQL_ENDPOINT,
     )
 
     assert len(rdf) == 54
@@ -122,17 +127,23 @@ def test_label_rdf_sparql(fuseki_container):
 def test_label_manifest(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
-    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+    sparql(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
 
-    upload(SPARQL_ENDPOINT, Path(__file__).parent / "demo-vocabs/_background/labels.ttl", graph_name="http://test")
+    upload(
+        SPARQL_ENDPOINT,
+        Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
+        graph_name="http://test",
+    )
 
-    original_manifest_path = Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"
+    original_manifest_path = (
+        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"
+    )
     original_manifest_contents = original_manifest_path.read_text()
 
     label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
         # output="manifest" is default
-        additional_context=SPARQL_ENDPOINT
+        additional_context=SPARQL_ENDPOINT,
     )
 
     expected_updated_manifest = Graph().parse(

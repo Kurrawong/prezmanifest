@@ -13,16 +13,16 @@ Run this script with the -h flag for more help, i.e. ~$ python loader.py -h
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
+from typing import Literal as TLiteral
 
-from kurra.format import make_dataset, export_quads
-from kurra.fuseki import upload
+from kurra.db import upload
+from kurra.file import make_dataset, export_quads
 from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef, Dataset
-from typing import Literal as TLiteral
-import logging
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
@@ -39,7 +39,7 @@ def load(
     manifest: Path,
     sparql_endpoint: str = None,
     destination_file: Path = None,
-    return_data_type: TLiteral["Graph", "Dataset", None] = None
+    return_data_type: TLiteral["Graph", "Dataset", None] = None,
 ) -> None | Graph | Dataset:
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
     (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
@@ -53,10 +53,19 @@ def load(
 
     return_data_value_error_message = "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
 
-    def _export(data: Graph | Dataset, iri, sparql_endpoint, destination_file, return_data_type, append=False):
+    def _export(
+        data: Graph | Dataset,
+        iri,
+        sparql_endpoint,
+        destination_file,
+        return_data_type,
+        append=False,
+    ):
         if type(data) is Dataset:
             if iri is not None:
-                raise ValueError("If the data is a Dataset, the parameter iri must be None")
+                raise ValueError(
+                    "If the data is a Dataset, the parameter iri must be None"
+                )
 
             if destination_file is not None:
                 export_quads(data, destination_file)
@@ -77,7 +86,9 @@ def load(
 
         elif type(data) is Graph:
             if iri is None:
-                raise ValueError("If the data is a GRaph, the parameter iri must not be None")
+                raise ValueError(
+                    "If the data is a GRaph, the parameter iri must not be None"
+                )
 
             msg = f"exporting {iri} "
             if destination_file is not None:
@@ -100,7 +111,12 @@ def load(
 
             logging.info(msg)
 
-    if sum(x is not None for x in [sparql_endpoint, destination_file, return_data_type]) != 1:
+    if (
+        sum(
+            x is not None for x in [sparql_endpoint, destination_file, return_data_type]
+        )
+        != 1
+    ):
         raise ValueError(
             "You must specify exactly 1 of sparql_endpoint, destination_file or return_data_type",
         )
@@ -138,7 +154,13 @@ def load(
                     vg.add((vg_iri, SDO.name, vg_name))
 
                     # export the Catalogue data
-                    _export(c, catalogue_iri, sparql_endpoint, destination_file, return_data_type)
+                    _export(
+                        c,
+                        catalogue_iri,
+                        sparql_endpoint,
+                        destination_file,
+                        return_data_type,
+                    )
 
         # non-catalogue resources
         for s, o in manifest_graph.subject_objects(PROF.hasResource):
@@ -156,7 +178,11 @@ def load(
                                 # fg.bind("rdf", RDF)
 
                                 if role == MRR.ResourceData:
-                                    resource_iri = fg.value(predicate=RDF.type, object=SKOS.ConceptScheme) or fg.value(predicate=RDF.type, object=OWL.Ontology)
+                                    resource_iri = fg.value(
+                                        predicate=RDF.type, object=SKOS.ConceptScheme
+                                    ) or fg.value(
+                                        predicate=RDF.type, object=OWL.Ontology
+                                    )
 
                                 if role in [
                                     MRR.CompleteCatalogueAndResourceLabels,
@@ -165,23 +191,43 @@ def load(
                                     resource_iri = URIRef("http://background")
 
                                 if resource_iri is None:
-                                    raise ValueError(f"Could not determine Resource IRI for file {f}")
+                                    raise ValueError(
+                                        f"Could not determine Resource IRI for file {f}"
+                                    )
 
                                 vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
 
                                 # export one Resource
-                                _export(fg, resource_iri, sparql_endpoint, destination_file, return_data_type)
+                                _export(
+                                    fg,
+                                    resource_iri,
+                                    sparql_endpoint,
+                                    destination_file,
+                                    return_data_type,
+                                )
                             elif str(f.name).endswith(".trig"):
                                 d = Dataset()
                                 d.parse(f)
                                 for g in d.graphs():
                                     if g.identifier != URIRef("urn:x-rdflib:default"):
                                         vg.add((vg_iri, OLIS.isAliasFor, g.identifier))
-                                _export(d, None, sparql_endpoint, destination_file, return_data_type)
-
+                                _export(
+                                    d,
+                                    None,
+                                    sparql_endpoint,
+                                    destination_file,
+                                    return_data_type,
+                                )
 
         # export the System Graph
-        _export(vg, OLIS.SystemGraph, sparql_endpoint, destination_file, return_data_type, append=True)
+        _export(
+            vg,
+            OLIS.SystemGraph,
+            sparql_endpoint,
+            destination_file,
+            return_data_type,
+            append=True,
+        )
 
     if return_data_type == "Dataset":
         return dataset_holder

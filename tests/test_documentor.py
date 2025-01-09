@@ -9,6 +9,7 @@ try:
     from prezmanifest import create_table, create_catalogue
 except ImportError:
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import create_table, create_catalogue
 
@@ -57,6 +58,8 @@ def test_create_table_02():
 
 def test_create_catalogue():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = create_catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl")
+    actual = create_catalogue(
+        Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl"
+    )
 
     assert isomorphic(actual, expected)

@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from rdflib import Graph
 from rdflib.namespace import RDF, SKOS
 

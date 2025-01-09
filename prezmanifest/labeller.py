@@ -3,6 +3,7 @@ Assesses a given Manifest, finds any IRIs in any of the given resources missing 
 a given source of labels, such as KurrawongAI's Semantic Background (https://github.com/kurrawong/semantic-background)
 repository.
 """
+
 import argparse
 import sys
 from pathlib import Path
@@ -12,7 +13,7 @@ from urllib.parse import ParseResult, urlparse
 from kurra.utils import load_graph
 from labelify import find_missing_labels, extract_labels
 from rdflib import Graph, BNode, Literal
-from rdflib.namespace import PROF, RDF
+from rdflib.namespace import PROF
 
 from prezmanifest.utils import get_files_from_artifact
 
@@ -30,13 +31,15 @@ def label(
     output: TLiteral["iris", "rdf", "manifest"] = "manifest",
     additional_context: Path | str | Graph = None,
 ) -> set | Graph | None:
-    """"Main function for labeller module"""
+    """ "Main function for labeller module"""
     # create the target from the Manifest
     manifest_content_graph = load(manifest, return_data_type="Graph")
 
     output_types = ["iris", "rdf", "manifest"]
     if output not in output_types:
-        raise ValueError(f"Parameter output is {output} but must be one of {', '.join(output_types)}")
+        raise ValueError(
+            f"Parameter output is {output} but must be one of {', '.join(output_types)}"
+        )
 
     # determine if any labelling context is given in Manifest
     context_graph = Graph()
@@ -52,7 +55,9 @@ def label(
                         context_graph += load_graph(f)
 
     if output == "iris":
-        return find_missing_labels(manifest_content_graph + context_graph, additional_context)
+        return find_missing_labels(
+            manifest_content_graph + context_graph, additional_context
+        )
 
     elif output == "rdf":
         iris = find_missing_labels(manifest_content_graph, context_graph)
@@ -89,15 +94,28 @@ def label(
                     ]:
                         context_roles.append(role)
 
-            if MRR.CompleteCatalogueAndResourceLabels in context_roles and len(context_roles) == 1:
+            if (
+                MRR.CompleteCatalogueAndResourceLabels in context_roles
+                and len(context_roles) == 1
+            ):
                 # If a CompleteCatalogueAndResourceLabels is present in Manifest and yet more labels were discovered,
                 # change CompleteCatalogueAndResourceLabels to IncompleteCatalogueAndResourceLabels and add another
                 for s, o in manifest_content_graph.subject_objects(PROF.hasRole):
                     if o == MRR.CompleteCatalogueAndResourceLabels:
                         manifest_only_graph.remove((s, PROF.hasRole, o))
-                        manifest_only_graph.add((manifest_iri, PROF.hasResource, new_resource))
-                        manifest_only_graph.add((new_resource, PROF.hasRole, MRR.IncompleteCatalogueAndResourceLabels))
-                        manifest_only_graph.add((new_resource, PROF.hasArtifact, Literal(new_artifact.name)))
+                        manifest_only_graph.add(
+                            (manifest_iri, PROF.hasResource, new_resource)
+                        )
+                        manifest_only_graph.add(
+                            (
+                                new_resource,
+                                PROF.hasRole,
+                                MRR.IncompleteCatalogueAndResourceLabels,
+                            )
+                        )
+                        manifest_only_graph.add(
+                            (new_resource, PROF.hasArtifact, Literal(new_artifact.name))
+                        )
             else:
                 # If an IncompleteCatalogueAndResourceLabels was present, add another IncompleteCatalogueAndResourceLabels
                 # which together make a CompleteCatalogueAndResourceLabels
@@ -105,15 +123,25 @@ def label(
                 # If none was present, add an IncompleteCatalogueAndResourceLabels or a CompleteCatalogueAndResourceLabels
                 # TODO: test for completeness of labelling and add in CompleteCatalogueAndResourceLabels if complete
                 manifest_only_graph.add((manifest_iri, PROF.hasResource, new_resource))
-                manifest_only_graph.add((new_resource, PROF.hasRole, MRR.IncompleteCatalogueAndResourceLabels))
-                manifest_only_graph.add((new_resource, PROF.hasArtifact, Literal(new_artifact.name)))
+                manifest_only_graph.add(
+                    (
+                        new_resource,
+                        PROF.hasRole,
+                        MRR.IncompleteCatalogueAndResourceLabels,
+                    )
+                )
+                manifest_only_graph.add(
+                    (new_resource, PROF.hasArtifact, Literal(new_artifact.name))
+                )
 
             manifest_only_graph.serialize(destination=manifest, format="longturtle")
 
         else:
-            raise Warning("No new labels have been generated for content in this Manifest. "
-                          "This could be because none were missing or because no new labels can be found in any "
-                          "supplied additional context.")
+            raise Warning(
+                "No new labels have been generated for content in this Manifest. "
+                "This could be because none were missing or because no new labels can be found in any "
+                "supplied additional context."
+            )
 
 
 def setup_cli_parser(args=None):

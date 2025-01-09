@@ -13,7 +13,6 @@ from pathlib import Path
 import httpx
 from kurra.utils import load_graph
 from pyshacl import validate as shacl_validate
-from rdflib import Graph
 from rdflib.namespace import PROF
 
 try:
@@ -101,4 +100,3 @@ if __name__ == "__main__":
     retval = cli(sys.argv[1:])
     if retval is not None:
         sys.exit(retval)
-

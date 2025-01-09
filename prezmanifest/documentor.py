@@ -55,8 +55,8 @@ import sys
 from pathlib import Path
 from urllib.parse import ParseResult, urlparse
 
-from rdflib import DCAT, DCTERMS, PROF, SDO, SKOS, Graph
 from kurra.utils import load_graph
+from rdflib import DCAT, DCTERMS, PROF, SDO
 
 try:
     from prezmanifest import MRR, validate, __version__
