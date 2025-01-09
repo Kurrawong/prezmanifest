@@ -25,7 +25,7 @@ Please see the `documentor.py`, `loader.py`, & `validator.py` files in the `prez
 
 ## Testing
 
-Run `python -m pytest` in the top-level folder to test. You must have Docker Desktop running to allow all loader tests to be executed.
+Run `python -m pytest` or `poetry run pytest` r similar - to execute pytest - in the top-level folder to test. You must have Docker Desktop running to allow all loader tests to be executed.
 
 
 ## License
