@@ -1,0 +1,6 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+rdfs:label rdfs:label "Label" .
+<http://background> rdfs:label "Background Graph" .
+<https://olis.dev/VirtualGraph> rdfs:label "Virtual Graph" .
+<https://olis.dev/isAliasFor> rdfs:label "is alias for" .
