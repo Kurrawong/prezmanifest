@@ -23,11 +23,11 @@ def test_label_iris():
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl", output="iris"
     )
 
-    assert len(iris) == 27
+    assert len(iris) == 24
 
     iris = label(Path(__file__).parent / "demo-vocabs/manifest.ttl", output="iris")
 
-    assert len(iris) == 5
+    assert len(iris) == 3
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
@@ -36,7 +36,7 @@ def test_label_iris():
     )
 
     # static context file has 2 relevant IRIs, so should be 27 - 2 = 25
-    assert len(iris) == 25
+    assert len(iris) == 22
 
 
 def test_label_iris_sparql(fuseki_container):
@@ -71,7 +71,7 @@ def test_label_rdf():
         / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
     )
 
-    assert len(rdf) == 54
+    assert len(rdf) == 47
 
 
 def test_label_rdf_sparql(fuseki_container):
@@ -121,7 +121,7 @@ def test_label_rdf_sparql(fuseki_container):
         SPARQL_ENDPOINT,
     )
 
-    assert len(rdf) == 54
+    assert len(rdf) == 49
 
 
 def test_label_manifest(fuseki_container):

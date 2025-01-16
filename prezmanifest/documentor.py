@@ -127,7 +127,8 @@ def create_catalogue(manifest: Path):
                     catalogue = load_graph(MANIFEST_ROOT_DIR / artifact)
 
     # get the IRI of the catalogue
-    catalogue_iri = catalogue.value(predicate=RDF.type, object=DCAT.Catalog)
+    catalogue_iri = catalogue.value(predicate=RDF.type, object=DCAT.Catalog) or \
+                    catalogue.value(predicate=RDF.type, object=SDO.DataCatalog)
 
     # non-catalogue resources
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
@@ -137,7 +138,7 @@ def create_catalogue(manifest: Path):
                     for f in get_files_from_artifact(manifest, artifact):
                         for iri in sorted(get_identifier_from_file(f)):
                             if iri != URIRef("urn:x-rdflib:default"):
-                                catalogue.add((catalogue_iri, DCTERMS.hasPart, iri))
+                                catalogue.add((catalogue_iri, SDO.hasPart, iri))
 
     return catalogue
 

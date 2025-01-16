@@ -171,7 +171,8 @@ def load(
                     # load the Catalogue, determine the Virtual Graph & Catalogue IRIs
                     # and fail if we can't see a Catalogue object
                     c = load_graph(MANIFEST_ROOT_DIR / str(artifact))
-                    vg_iri = c.value(predicate=RDF.type, object=DCAT.Catalog)
+                    vg_iri = c.value(predicate=RDF.type, object=DCAT.Catalog) or \
+                             c.value(predicate=RDF.type, object=SDO.DataCatalog)
                     if vg_iri is None:
                         raise ValueError(
                             f"ERROR: Could not create a Virtual Graph as no Catalog found in the Catalogue data"
@@ -217,6 +218,8 @@ def load(
                                         predicate=RDF.type, object=SKOS.ConceptScheme
                                     ) or fg.value(
                                         predicate=RDF.type, object=OWL.Ontology
+                                    ) or fg.value(
+                                        predicate=RDF.type, object=SDO.CreativeWork
                                     )
 
                                 if role in [

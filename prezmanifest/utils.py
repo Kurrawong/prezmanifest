@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 
 from rdflib import Literal, URIRef, Graph, Dataset
-from rdflib.namespace import OWL, RDF, SKOS
+from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS
 
 
 def get_files_from_artifact(
@@ -34,6 +34,9 @@ def get_identifier_from_file(file: Path) -> List[URIRef]:
         return [
             g.value(predicate=RDF.type, object=SKOS.ConceptScheme)
             or g.value(predicate=RDF.type, object=OWL.Ontology)
+            or g.value(predicate=RDF.type, object=DCAT.Resource)
+            or g.value(predicate=RDF.type, object=SDO.CreativeWork)
+            or g.value(predicate=RDF.type, object=SDO.Dataset)
         ]
     elif file.name.endswith(".trig"):
         gs = []

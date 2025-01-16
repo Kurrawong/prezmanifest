@@ -12,8 +12,8 @@ from urllib.parse import ParseResult, urlparse
 
 from kurra.utils import load_graph
 from labelify import find_missing_labels, extract_labels
-from rdflib import Graph, BNode, Literal
-from rdflib.namespace import PROF
+from rdflib import Graph, BNode, Literal, URIRef
+from rdflib.namespace import PROF, RDFS
 
 from prezmanifest.utils import get_files_from_artifact
 
@@ -53,6 +53,10 @@ def label(
                     artifact: Literal
                     for f in get_files_from_artifact(manifest, artifact):
                         context_graph += load_graph(f)
+
+    # add labels for system IRIs
+    context_graph.parse(Path(__file__).parent / "system-labels.ttl")
+
 
     if output == "iris":
         return find_missing_labels(
