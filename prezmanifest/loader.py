@@ -24,7 +24,7 @@ from kurra.db import upload
 from kurra.file import make_dataset, export_quads
 from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
-from rdflib import Graph, URIRef, Dataset
+from rdflib import Graph, URIRef, Dataset, Namespace
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
@@ -212,15 +212,11 @@ def load(
                             if str(f.name).endswith(".ttl"):
                                 fg = Graph().parse(f)
                                 # fg.bind("rdf", RDF)
-
+                                resource_iri = None
                                 if role == MRR.ResourceData:
-                                    resource_iri = fg.value(
-                                        predicate=RDF.type, object=SKOS.ConceptScheme
-                                    ) or fg.value(
-                                        predicate=RDF.type, object=OWL.Ontology
-                                    ) or fg.value(
-                                        predicate=RDF.type, object=SDO.CreativeWork
-                                    )
+                                    PM = Namespace("https://prez.dev/manifest-ontology/")
+                                    main_class = manifest_graph.value(subject=o, predicate=PM['mainClass'], default=SDO.CreativeWork)
+                                    resource_iri = fg.value(predicate=RDF.type, object=main_class)
 
                                 if role in [
                                     MRR.CompleteCatalogueAndResourceLabels,

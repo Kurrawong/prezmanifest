@@ -1,0 +1,23 @@
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX pm: <https://prez.dev/manifest-ontology/>
+PREFIX prof1: <http://www.w3.org/ns/dx/prof>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+<https://prez.dev/manifest-ontology>
+    a owl:Ontology ;
+    rdfs:label "Prez Manifest" ;
+    rdfs:comment "The Prez Manifest, provides a machine readable method of describing resources intended for use in the Prez system. This Ontology is a Work In Progress." ;
+    rdfs:seeAlso "https://prez.dev/manifest" ;
+    owl:versionIRI "0.0.1" ;
+    owl:versionInfo "Initial release of the Prez Manifest owl ontology" ;
+.
+
+pm:mainClass
+    a owl:ObjectProperty ;
+    rdfs:label "Main class" ;
+    rdfs:comment "Denotes the main class of thing for a prof:ResourceDescriptor. Defaults to schema:CreativeWork if not defined." ;
+    rdfs:domain prof1:ResourceDescriptor ;
+    rdfs:range rdfs:Class ;
+    skos:usageNote "The IRI of the first resource of type pm:mainClass, in the graph of the ResourceDescriptor artifacts will be used as the identifier of a named graph, to which the data will be loaded. " ;
+.
