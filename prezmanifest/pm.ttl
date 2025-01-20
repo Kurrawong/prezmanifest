@@ -16,8 +16,8 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 pm:mainClass
     a owl:ObjectProperty ;
     rdfs:label "Main class" ;
-    rdfs:comment "Denotes the main class of thing for a prof:ResourceDescriptor. Defaults to schema:CreativeWork if not defined." ;
+    rdfs:comment "Denotes the main class of thing in a prof:Artifact. Defaults to schema:CreativeWork if not defined." ;
     rdfs:domain prof1:ResourceDescriptor ;
     rdfs:range rdfs:Class ;
-    skos:usageNote "The IRI of the first resource of type pm:mainClass, in the graph of the ResourceDescriptor artifacts will be used as the identifier of a named graph, to which the data will be loaded. " ;
+    skos:usageNote "For each artifact in a prof:ResourceDescriptor, the IRI of the first instance of pm:mainClass will be used as the graph name for data loading of that artifact" ;
 .
