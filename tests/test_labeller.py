@@ -149,9 +149,11 @@ def test_label_manifest(fuseki_container):
     expected_updated_manifest = Graph().parse(
         data="""
         PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+        PREFIX pm: <https://prez.dev/manifest-ontology/>
         PREFIX prez: <https://prez.dev/>
         PREFIX prof: <http://www.w3.org/ns/dx/prof/>
         PREFIX schema: <https://schema.org/>
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
         
         []    a prez:Manifest ;
             prof:hasResource
@@ -168,6 +170,7 @@ def test_label_manifest(fuseki_container):
                 [
                     prof:hasArtifact "vocabs/*.ttl" ;
                     prof:hasRole mrr:ResourceData ;
+                    pm:mainClass skos:ConceptScheme ;
                     schema:description "skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
                     schema:name "Resource Data" ;
                 ] ,
@@ -183,9 +186,10 @@ def test_label_manifest(fuseki_container):
 
     resulting_manifest = Graph().parse(original_manifest_path)
 
-    assert isomorphic(resulting_manifest, expected_updated_manifest)
-
-    # replace this test's results and with original
-    Path(original_manifest_path.parent / "labels-additional.ttl").unlink()
-    original_manifest_path.unlink()
-    original_manifest_path.write_text(original_manifest_contents)
+    try:
+        assert isomorphic(resulting_manifest, expected_updated_manifest)
+    finally:
+        # replace this test's results with original
+        Path(original_manifest_path.parent / "labels-additional.ttl").unlink()
+        original_manifest_path.unlink()
+        original_manifest_path.write_text(original_manifest_contents)
