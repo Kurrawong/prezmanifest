@@ -1,4 +1,5 @@
 from pathlib import Path
+import pytest
 
 try:
     from prezmanifest import validate
@@ -32,6 +33,11 @@ def test_validator_invalid_02():
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-03.ttl")
     except ValueError as e:
         assert (
-            str(e)
-            == "Remote content link non-resolving: https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttlx"
+                str(e)
+                == "Remote content link non-resolving: https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttlx"
         )
+
+
+def test_validator_invalid_04():
+    with pytest.raises(ValueError, match="ShapeP06"):
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-04.ttl")

@@ -1,4 +1,5 @@
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX pm: <https://prez.dev/manifest-ontology/>
 PREFIX prez: <https://prez.dev/>
 PREFIX prof: <http://www.w3.org/ns/dx/prof/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -8,7 +9,7 @@ PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX val: <https://prez.dev/manifest-validator/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-<https://prez.dev/manifest-validator>
+prez:manifest-validator
     a owl:Ontology ;
     owl:versionIRI val:1.0.0 ;
     owl:versionInfo "1.0.0: First public version" ;
@@ -32,15 +33,40 @@ val:ShapeN02
         val:ShapeP02 ,
         val:ShapeP03 ,
         val:ShapeP04 ,
-        val:ShapeP05 ;
+        val:ShapeP05 ,
+        val:ShapeP06 ;
     sh:targetObjectsOf prof:hasResource ;
+.
+
+val:ShapeN03
+    a sh:NodeShape ;
+    sh:property
+        [
+            a sh:PropertyShape ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path skos:inScheme ;
+        ] ;
+    sh:targetObjectsOf prof:hasRole ;
+.
+
+<https://orcid.org/0000-0002-8742-7730>
+    a schema:Person ;
+    schema:email "nick@kurrawong.ai"^^xsd:anyURI ;
+    schema:identifier "https://orcid.org/0000-0002-8742-7730"^^xsd:anyURI ;
+    schema:memberOf <https://kurrawong.ai> ;
+    schema:name "Nicholas J. Car" ;
+.
+
+val:1.0.0
+    schema:name "1.0.0" ;
 .
 
 val:ShapeP01
     a sh:PropertyShape ;
-    sh:nodeKind sh:BlankNodeOrIRI ;
     sh:message "ShapeP01: You must supply at least one value for prof:hasResource for a prez:Manifest and it must be either a Blank Node or an IRI" ;
     sh:minCount 1 ;
+    sh:nodeKind sh:BlankNodeOrIRI ;
     sh:path prof:hasResource ;
 .
 
@@ -67,11 +93,11 @@ val:ShapeP04
     sh:maxCount 1 ;
     sh:message "ShapeP04: If you supply a schema:description for a prez:Manifest's Resource Descriptors, it must be either a plain string or a langString literal" ;
     sh:or (
-
+        
         [
             sh:datatype xsd:string ;
         ]
-
+        
         [
             sh:datatype rdf:langString ;
         ]
@@ -84,11 +110,11 @@ val:ShapeP05
     sh:maxCount 1 ;
     sh:message "ShapeP05: If you supply a schema:name for a prez:Manifest's Resource Descriptors, it must be either a plain string or a langString literal" ;
     sh:or (
-
+        
         [
             sh:datatype xsd:string ;
         ]
-
+        
         [
             sh:datatype rdf:langString ;
         ]
@@ -96,27 +122,11 @@ val:ShapeP05
     sh:path schema:name ;
 .
 
-val:ShapeN03
-    a sh:NodeShape ;
-    sh:targetObjectsOf prof:hasRole ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:path skos:inScheme ;
-    ] ;
-.
-
-val:1.0.0
-    schema:name "1.0.0" ;
-.
-
-<https://orcid.org/0000-0002-8742-7730>
-    a schema:Person ;
-    schema:email "nick@kurrawong.ai"^^xsd:anyURI ;
-    schema:identifier "https://orcid.org/0000-0002-8742-7730"^^xsd:anyURI ;
-    schema:memberOf <https://kurrawong.ai> ;
-    schema:name "Nicholas J. Car" ;
+val:ShapeP06
+    a sh:PropertyShape ;
+    sh:maxCount 1 ;
+    sh:message "ShapeP06: Only one main class property is allowed per Resource Descriptor." ;
+    sh:path pm:mainClass ;
 .
 
 <https://kurrawong.ai>
