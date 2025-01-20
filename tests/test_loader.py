@@ -178,34 +178,21 @@ def test_load_to_fuseki_basic_auth(fuseki_container):
     assert count == 5
 
 
-def test_mainclass(fuseki_container):
-    sparql_endpoint = (
-        f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-    )
+def test_mainclass():
     manifest = Path(__file__).parent / "demo-vocabs" / "cw-manifest.ttl"
-    load(manifest=manifest, sparql_endpoint=sparql_endpoint)
-    query = "SELECT DISTINCT ?g WHERE { GRAPH ?g { } }"
-    result = sparql(sparql_endpoint=sparql_endpoint, query=query, return_python=True)
-    named_graphs = [r['g']['value'] for r in result['results']['bindings']]
-    assert "https://example.com/a" in named_graphs
+    ds = load(manifest=manifest, return_data_type="Dataset")
+    named_graphs = [g.identifier for g in ds.graphs()]
+    assert URIRef("https://example.com/a") in named_graphs
 
 
-def test_mainclass_default(fuseki_container):
-    sparql_endpoint = (
-        f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-    )
+def test_mainclass_default():
     manifest = Path(__file__).parent / "demo-vocabs" / "cw-manifest-default.ttl"
-    load(manifest=manifest, sparql_endpoint=sparql_endpoint)
-    query = "SELECT DISTINCT ?g WHERE { GRAPH ?g { } }"
-    result = sparql(sparql_endpoint=sparql_endpoint, query=query, return_python=True)
-    named_graphs = [r['g']['value'] for r in result['results']['bindings']]
-    assert "https://example.com/a" in named_graphs
+    ds = load(manifest=manifest, return_data_type="Dataset")
+    named_graphs = [g.identifier for g in ds.graphs()]
+    assert URIRef("https://example.com/a") in named_graphs
 
 
-def test_mainclass_invalid(fuseki_container):
-    sparql_endpoint = (
-        f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-    )
+def test_mainclass_invalid():
     manifest = Path(__file__).parent / "demo-vocabs" / "cw-manifest-invalid.ttl"
     with pytest.raises(ValueError, match="Could not determine Resource IRI"):
-        load(manifest=manifest, sparql_endpoint=sparql_endpoint)
+        ds = load(manifest=manifest, return_data_type="Dataset")
