@@ -1,0 +1,22 @@
+PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+PREFIX pm: <https://prez.dev/manifest-ontology/>
+PREFIX prez: <https://prez.dev/>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX schema: <https://schema.org/>
+
+[]    a prez:Manifest ;
+    prof:hasResource
+        [
+            prof:hasArtifact "cw-catalog.ttl" ;
+            prof:hasRole mrr:CatalogueData ;
+            schema:description "Creative Works catalog definition" ;
+            schema:name "Catalogue Definition" ;
+        ] ,
+        [
+            prof:hasArtifact "cw-resources.ttl" ;
+            prof:hasRole mrr:ResourceData ;
+            pm:mainClass schema:Person ;
+            schema:description "schema:CreativeWork resources" ;
+            schema:name "Resource Data" ;
+        ] ; ;
+.

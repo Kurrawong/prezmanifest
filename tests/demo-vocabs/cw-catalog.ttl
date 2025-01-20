@@ -1,0 +1,11 @@
+PREFIX ex: <https://example.com/>
+PREFIX schema: <https://schema.org/>
+
+ex:cw-catalog
+    a schema:DataCatalog ;
+    schema:description "A testing catalogue for the Prez Manifest Loader tool" ;
+    schema:hasPart
+        ex:a ,
+        ex:b ;
+    schema:name "Creative Work Catalog" ;
+.

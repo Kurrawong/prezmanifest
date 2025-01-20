@@ -1,0 +1,12 @@
+PREFIX ex: <https://example.com/>
+PREFIX schema: <https://schema.org/>
+
+ex:a
+    a schema:CreativeWork ;
+    schema:headline "Creative Work A" ;
+.
+
+ex:b
+    a schema:CreativeWork ;
+    schema:headline "Creative Work B" ;
+.
