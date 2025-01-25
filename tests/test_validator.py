@@ -35,3 +35,7 @@ def test_validator_invalid_02():
             str(e)
             == "Remote content link non-resolving: https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttlx"
         )
+
+
+def test_validator_valid_multi():
+    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")

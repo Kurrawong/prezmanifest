@@ -46,7 +46,6 @@ val:ShapeP01
 
 val:ShapeP02
     a sh:PropertyShape ;
-    sh:maxCount 1 ;
     sh:message "ShapeP02: You must supply exactly one value for prof:hasArtifact for a prez:Manifest's Resource Descriptors and it must be a string that can be interpreted as a file path, either relative to the manifest file, or an absolute system path or a URL" ;
     sh:minCount 1 ;
     sh:nodeKind sh:Literal ;

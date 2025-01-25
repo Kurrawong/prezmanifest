@@ -13,6 +13,7 @@ from pathlib import Path
 import httpx
 from kurra.utils import load_graph
 from pyshacl import validate as shacl_validate
+from rdflib import Graph
 from rdflib.namespace import PROF
 
 try:
@@ -24,7 +25,7 @@ except ImportError:
     from prezmanifest import __version__
 
 
-def validate(manifest: Path) -> bool:
+def validate(manifest: Path) -> Graph:
     ME = Path(__file__)
     MANIFEST_ROOT_DIR = manifest.parent
 
@@ -41,6 +42,7 @@ def validate(manifest: Path) -> bool:
     # Content link validation
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+            print(artifact)
             artifact_str = str(artifact)
             if "http" in artifact_str:
                 r = httpx.get(artifact_str)
@@ -60,7 +62,7 @@ def validate(manifest: Path) -> bool:
             else:
                 # It must be a local
                 if not (MANIFEST_ROOT_DIR / artifact_str).is_file():
-                    print(
+                    raise ValueError(
                         f"Content link {MANIFEST_ROOT_DIR / artifact_str} is invalid - not a file"
                     )
 
