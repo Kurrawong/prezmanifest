@@ -2,15 +2,19 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import List
 
+from kurra.file import load_graph
 from rdflib import Literal, URIRef, Graph, Dataset, Node, BNode
 from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS
-from kurra.file import load_graph
 
 KNOWN_PROFILES = {
-    URIRef("http://www.opengis.net/def/geosparql"): Path(__file__).parent / "validator-geosparql-1.1.ttl",
-    URIRef("https://data.idnau.org/pid/cp"): Path(__file__).parent / "validator-idn-cp.ttl",
-    URIRef("https://w3id.org/profile/vocpub"): Path(__file__).parent / "validator-vocpub-4.10.ttl",
+    URIRef("http://www.opengis.net/def/geosparql"): Path(__file__).parent
+    / "validator-geosparql-1.1.ttl",
+    URIRef("https://data.idnau.org/pid/cp"): Path(__file__).parent
+    / "validator-idn-cp.ttl",
+    URIRef("https://w3id.org/profile/vocpub"): Path(__file__).parent
+    / "validator-vocpub-4.10.ttl",
 }
+
 
 def get_files_from_artifact(
     manifest_graph: Graph, manifest: Path, artifact: Node
@@ -32,7 +36,9 @@ def get_files_from_artifact(
 
             return Path(manifest.parent / Path(glob_parts[0])).glob(glob_parts[1])
     elif isinstance(artifact, BNode):
-        contentLocation = manifest_graph.value(subject=artifact, predicate=SDO.contentLocation)
+        contentLocation = manifest_graph.value(
+            subject=artifact, predicate=SDO.contentLocation
+        )
         return [manifest.parent / Path(str(contentLocation))]
     else:
         raise TypeError(f"Unsupported artifact type: {type(artifact)}")
@@ -66,7 +72,8 @@ def get_validator(manifest: Path, iri_or_path: URIRef | Literal) -> Graph:
     if isinstance(iri_or_path, URIRef):
         if not iri_or_path in KNOWN_PROFILES.keys():
             raise ValueError(
-                f"You have specified conformance to an unknown profile. Known profiles are {', '.join(KNOWN_PROFILES.keys())}")
+                f"You have specified conformance to an unknown profile. Known profiles are {', '.join(KNOWN_PROFILES.keys())}"
+            )
         return load_graph(KNOWN_PROFILES[iri_or_path])
 
     MANIFEST_ROOT_DIR = manifest.parent

@@ -47,14 +47,18 @@ def test_validator_valid_main_entity():
 
 def test_validator_invalid_main_entity():
     try:
-        validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid.ttl")
+        validate(
+            Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid.ttl"
+        )
     except ValueError as e:
         assert "N04" in str(e)
 
 
 def test_validator_invalid_main_entity2():
     try:
-        validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid2.ttl")
+        validate(
+            Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid2.ttl"
+        )
     except ValueError as e:
         assert "N04" in str(e)
 
@@ -64,12 +68,18 @@ def test_validator_valid_conformance():
 
 
 def test_validator_valid_conformance_local():
-    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local.ttl")
+    assert validate(
+        Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local.ttl"
+    )
 
 
 def test_validator_invalid_conformance_local():
     try:
-        validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local-invalid.ttl")
+        validate(
+            Path(__file__).parent
+            / "demo-vocabs"
+            / "manifest-conformance-local-invalid.ttl"
+        )
     except ValueError as e:
         assert "Message: Requirement 2.1.4, 2.2.1 or 2.3.1" in str(e)
 
@@ -85,6 +95,10 @@ def test_validator_valid_conformance_all():
 
 def test_validator_invalid_conformance_all():
     try:
-        validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-all-local-invalid.ttl")
+        validate(
+            Path(__file__).parent
+            / "demo-vocabs"
+            / "manifest-conformance-all-local-invalid.ttl"
+        )
     except ValueError as e:
         assert "Results (1)" in str(e)

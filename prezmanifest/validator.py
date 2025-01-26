@@ -36,16 +36,12 @@ def validate(manifest: Path) -> Graph:
             if 200 <= r.status_code < 400:
                 pass
             else:
-                raise ValueError(
-                    f"Remote content link non-resolving: {l_str}"
-                )
+                raise ValueError(f"Remote content link non-resolving: {l_str}")
         elif "*" in l_str:
             glob_parts = l_str.split("*")
             dir = Path(manifest.parent / Path(glob_parts[0]))
             if not Path(dir).is_dir():
-                raise ValueError(
-                    f"The content link {l_str} is not a directory"
-                )
+                raise ValueError(f"The content link {l_str} is not a directory")
         else:
             # It must be a local
             if not (MANIFEST_ROOT_DIR / l_str).is_file():
@@ -53,8 +49,10 @@ def validate(manifest: Path) -> Graph:
                     f"Content link {MANIFEST_ROOT_DIR / l_str} is invalid - not a file"
                 )
 
-    def shacl_validate_resource(data_graph, shacl_graph) -> (bool, str|None):
-        valid, v_graph, v_text = shacl_validate(data_graph, shacl_graph=shacl_graph, allow_warnings=True)
+    def shacl_validate_resource(data_graph, shacl_graph) -> (bool, str | None):
+        valid, v_graph, v_text = shacl_validate(
+            data_graph, shacl_graph=shacl_graph, allow_warnings=True
+        )
         if valid:
             return True, None
         else:
@@ -66,7 +64,9 @@ def validate(manifest: Path) -> Graph:
     # SHACL validation
     manifest_graph = load_graph(manifest)
     mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    valid, error_msg = shacl_validate_resource(manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl"))
+    valid, error_msg = shacl_validate_resource(
+        manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl")
+    )
     if not valid:
         raise ValueError(f"Manifest Shapes invalid:\n\n{error_msg}")
 
@@ -92,7 +92,9 @@ def validate(manifest: Path) -> Graph:
 
         for artifact in manifest_graph.objects(o, PROF.hasArtifact):
             if isinstance(artifact, BNode):
-                content_location = manifest_graph.value(subject=artifact, predicate=SDO.contentLocation)
+                content_location = manifest_graph.value(
+                    subject=artifact, predicate=SDO.contentLocation
+                )
                 # main_entity = manifest_graph.value(subject=artifact, predicate=SDO.mainEntity)
             else:
                 content_location = artifact
@@ -101,15 +103,20 @@ def validate(manifest: Path) -> Graph:
 
             # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
             if cc is None:
-                cc = manifest_graph.value(subject=artifact, predicate=DCTERMS.conformsTo)
+                cc = manifest_graph.value(
+                    subject=artifact, predicate=DCTERMS.conformsTo
+                )
 
             # if we now have a CC for the resource or the artifact, use it
             if cc is not None:
                 valid, error_msg = shacl_validate_resource(
-                    load_graph(MANIFEST_ROOT_DIR / content_location), get_validator(manifest, cc)
+                    load_graph(MANIFEST_ROOT_DIR / content_location),
+                    get_validator(manifest, cc),
                 )
                 if not valid:
-                    raise ValueError(f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}")
+                    raise ValueError(
+                        f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
+                    )
                 cc = None
 
     return manifest_graph

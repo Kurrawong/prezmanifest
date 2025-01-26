@@ -12,8 +12,8 @@ from urllib.parse import ParseResult, urlparse
 
 from kurra.utils import load_graph
 from labelify import find_missing_labels, extract_labels
-from rdflib import Graph, BNode, Literal, URIRef
-from rdflib.namespace import PROF, RDFS
+from rdflib import Graph, BNode, Literal
+from rdflib.namespace import PROF
 
 from prezmanifest.utils import get_files_from_artifact
 

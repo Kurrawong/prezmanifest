@@ -55,8 +55,7 @@ import sys
 from pathlib import Path
 from urllib.parse import ParseResult, urlparse
 
-from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, PROF, SDO
+from rdflib import PROF
 
 try:
     from prezmanifest import MRR, validate, __version__
@@ -89,11 +88,19 @@ def create_table(manifest: Path, t="markdown") -> str:
             if isinstance(artifact, Literal):
                 a = str(artifact)
             else:  # isinstance( a, BNode)
-                a = str(manifest_graph.value(subject=artifact, predicate=SDO.contentLocation))
+                a = str(
+                    manifest_graph.value(
+                        subject=artifact, predicate=SDO.contentLocation
+                    )
+                )
             if t == "asciidoc":
-                artifact_docs.append(f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]')
+                artifact_docs.append(
+                    f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]'
+                )
             else:
-                artifact_docs.append(f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})')
+                artifact_docs.append(
+                    f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})'
+                )
         role_iri = manifest_graph.value(o, PROF.hasRole)
         role_label = manifest_graph.value(role_iri, SKOS.prefLabel)
         if t == "asciidoc":
@@ -103,13 +110,22 @@ def create_table(manifest: Path, t="markdown") -> str:
         name = manifest_graph.value(o, SDO.name)
         description = manifest_graph.value(o, SDO.description)
         if t == "asciidoc":
-            n = f"""{name}: +
+            n = (
+                f"""{name}: +
  +
 * {''' +
-* '''.join(artifact_docs)}""" if name is not None else f"{''' +
 * '''.join(artifact_docs)}"""
+                if name is not None
+                else f"{''' +
+* '''.join(artifact_docs)}"
+                ""
+            )
         else:
-            n = f"{name}:<br />{'<br />'.join(artifact_docs)}" if name is not None else f"{'<br />'.join(artifact_docs)}"
+            n = (
+                f"{name}:<br />{'<br />'.join(artifact_docs)}"
+                if name is not None
+                else f"{'<br />'.join(artifact_docs)}"
+            )
         d = description if description is not None else ""
         if t == "asciidoc":
             body += f"| {n} | {role} | {d}\n"
@@ -139,21 +155,26 @@ def create_catalogue(manifest: Path):
                     catalogue = load_graph(MANIFEST_ROOT_DIR / artifact)
 
     # get the IRI of the catalogue
-    catalogue_iri = catalogue.value(predicate=RDF.type, object=DCAT.Catalog) or \
-                    catalogue.value(predicate=RDF.type, object=SDO.DataCatalog)
+    catalogue_iri = catalogue.value(
+        predicate=RDF.type, object=DCAT.Catalog
+    ) or catalogue.value(predicate=RDF.type, object=SDO.DataCatalog)
 
     # non-catalogue resources
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for role in manifest_graph.objects(o, PROF.hasRole):
             if role == MRR.ResourceData:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                    for f in get_files_from_artifact(manifest_graph, manifest, artifact):
+                    for f in get_files_from_artifact(
+                        manifest_graph, manifest, artifact
+                    ):
                         if isinstance(artifact, Literal):
                             for iri in sorted(get_identifier_from_file(f)):
                                 if iri != URIRef("urn:x-rdflib:default"):
                                     catalogue.add((catalogue_iri, SDO.hasPart, iri))
                         else:  # isinstance(artifact, BNode):
-                            iri = manifest_graph.value(subject=artifact, predicate=SDO.mainEntity)
+                            iri = manifest_graph.value(
+                                subject=artifact, predicate=SDO.mainEntity
+                            )
                             catalogue.add((catalogue_iri, SDO.hasPart, iri))
 
     return catalogue

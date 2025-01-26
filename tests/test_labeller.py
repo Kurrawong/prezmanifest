@@ -197,6 +197,8 @@ def test_label_iris_mainEntity():
     except ValueError as e:
         assert str(e) == "Parameter output is x but must be one of iris, rdf, manifest"
 
-    iris = label(Path(__file__).parent / "demo-vocabs/manifest-mainEntity.ttl", output="iris")
+    iris = label(
+        Path(__file__).parent / "demo-vocabs/manifest-mainEntity.ttl", output="iris"
+    )
 
     assert len(iris) == 3

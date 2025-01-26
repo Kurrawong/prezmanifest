@@ -114,7 +114,9 @@ def test_create_table_multi_asciidoc():
         """
     ).strip()
 
-    result = create_table(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl", t="asciidoc")
+    result = create_table(
+        Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl", t="asciidoc"
+    )
 
     print()
     print()
@@ -140,7 +142,9 @@ def test_create_table_main_entity():
         """
     ).strip()
 
-    result = create_table(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl")
+    result = create_table(
+        Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
+    )
 
     print()
     print()
