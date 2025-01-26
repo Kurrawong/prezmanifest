@@ -57,7 +57,6 @@ def label(
     # add labels for system IRIs
     context_graph.parse(Path(__file__).parent / "system-labels.ttl")
 
-
     if output == "iris":
         return find_missing_labels(
             manifest_content_graph + context_graph, additional_context
