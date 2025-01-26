@@ -84,11 +84,16 @@ def create_table(manifest: Path, t="markdown") -> str:
 
     body = ""
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
-        a = str(manifest_graph.value(o, PROF.hasArtifact))
-        if t == "asciidoc":
-            artifact = f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]'
-        else:
-            artifact = f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})'
+        artifact_docs = []
+        for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+            if isinstance(artifact, Literal):
+                a = str(artifact)
+            else:  # isinstance( a, BNode)
+                a = str(manifest_graph.value(subject=artifact, predicate=SDO.contentLocation))
+            if t == "asciidoc":
+                artifact_docs.append(f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]')
+            else:
+                artifact_docs.append(f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})')
         role_iri = manifest_graph.value(o, PROF.hasRole)
         role_label = manifest_graph.value(role_iri, SKOS.prefLabel)
         if t == "asciidoc":
@@ -97,7 +102,14 @@ def create_table(manifest: Path, t="markdown") -> str:
             role = f"[{role_label}]({role_iri})"
         name = manifest_graph.value(o, SDO.name)
         description = manifest_graph.value(o, SDO.description)
-        n = f"{name}, {artifact}" if name is not None else f"{artifact}"
+        if t == "asciidoc":
+            n = f"""{name}: +
+ +
+* {''' +
+* '''.join(artifact_docs)}""" if name is not None else f"{''' +
+* '''.join(artifact_docs)}"""
+        else:
+            n = f"{name}:<br />{'<br />'.join(artifact_docs)}" if name is not None else f"{'<br />'.join(artifact_docs)}"
         d = description if description is not None else ""
         if t == "asciidoc":
             body += f"| {n} | {role} | {d}\n"
@@ -135,10 +147,14 @@ def create_catalogue(manifest: Path):
         for role in manifest_graph.objects(o, PROF.hasRole):
             if role == MRR.ResourceData:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                    for f in get_files_from_artifact(manifest, artifact):
-                        for iri in sorted(get_identifier_from_file(f)):
-                            if iri != URIRef("urn:x-rdflib:default"):
-                                catalogue.add((catalogue_iri, SDO.hasPart, iri))
+                    for f in get_files_from_artifact(manifest_graph, manifest, artifact):
+                        if isinstance(artifact, Literal):
+                            for iri in sorted(get_identifier_from_file(f)):
+                                if iri != URIRef("urn:x-rdflib:default"):
+                                    catalogue.add((catalogue_iri, SDO.hasPart, iri))
+                        else:  # isinstance(artifact, BNode):
+                            iri = manifest_graph.value(subject=artifact, predicate=SDO.mainEntity)
+                            catalogue.add((catalogue_iri, SDO.hasPart, iri))
 
     return catalogue
 
