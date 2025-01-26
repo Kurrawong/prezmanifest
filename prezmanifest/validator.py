@@ -14,7 +14,7 @@ import httpx
 from kurra.utils import load_graph
 from pyparsing import Literal
 from pyshacl import validate as shacl_validate
-from rdflib import Graph, BNode
+from rdflib import Graph, BNode, Dataset
 from rdflib.namespace import DCTERMS, PROF, SDO
 
 try:
@@ -70,20 +70,24 @@ def validate(manifest: Path) -> Graph:
     if not valid:
         raise ValueError(f"Manifest Shapes invalid:\n\n{error_msg}")
 
-    # not yet used
-    # # get labels graph for SHACL validation
-    # context_graph = Graph()
-    # for s, o in manifest_graph.subject_objects(PROF.hasResource):
-    #     for role in manifest_graph.objects(o, PROF.hasRole):
-    #         # The data files & background - must be processed after Catalogue
-    #         if role in [
-    #             MRR.CompleteCatalogueAndResourceLabels,
-    #             MRR.IncompleteCatalogueAndResourceLabels,
-    #         ]:
-    #             for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-    #                 for f in get_files_from_artifact(manifest_graph, manifest, artifact):
-    #                     if str(f.name).endswith(".ttl"):
-    #                         context_graph += load_graph(f)
+    # get labels graph for SHACL validation
+    context_graph = Graph()
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
+            # The data files & background - must be processed after Catalogue
+            if role in [
+                MRR.CompleteCatalogueAndResourceLabels,
+                MRR.IncompleteCatalogueAndResourceLabels,
+            ]:
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+                    for f in get_files_from_artifact(manifest_graph, manifest, artifact):
+                        if str(f.name).endswith(".ttl"):
+                            context_graph += load_graph(f)
+                        elif str(f.name).endswith(".trig"):  # TODO: test this option
+                            d = Dataset()
+                            d.parse(f, format="trig")
+                            for g in d.graphs:
+                                context_graph += g
 
     # Content link validation
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
@@ -109,10 +113,10 @@ def validate(manifest: Path) -> Graph:
 
             # if we now have a CC for the resource or the artifact, use it
             if cc is not None:
-                valid, error_msg = shacl_validate_resource(
-                    load_graph(MANIFEST_ROOT_DIR / content_location),
-                    get_validator(manifest, cc),
-                )
+                data_graph = load_graph(MANIFEST_ROOT_DIR / content_location)
+                if context_graph is not None:
+                    data_graph += context_graph
+                valid, error_msg = shacl_validate_resource(data_graph, get_validator(manifest, cc))
                 if not valid:
                     raise ValueError(
                         f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"

@@ -143,9 +143,3 @@ cs:
     schema:dateModified "2024-11-21"^^xsd:date ;
     schema:publisher <https://kurrawong.ai> ;
 .
-
-<https://kurrawong.ai>
-    a schema:Organization ;
-    schema:name "KurrawongAI" ;
-    schema:url "https://kurrawong.ai"^^xsd:anyURI ;
-.
