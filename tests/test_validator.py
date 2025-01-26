@@ -17,7 +17,7 @@ def test_validator_invalid_01():
     try:
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
     except ValueError as e:
-        assert str(e).startswith("SHACL invalid")
+        assert "Manifest Shapes invalid:" in str(e)
 
 
 def test_validator_invalid_03():
@@ -72,3 +72,19 @@ def test_validator_invalid_conformance_local():
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local-invalid.ttl")
     except ValueError as e:
         assert "Message: Requirement 2.1.4, 2.2.1 or 2.3.1" in str(e)
+
+
+def test_validator_valid_conformance_all():
+    try:
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-all.ttl")
+    except ValueError as e:
+        assert "Results (6)" in str(e)
+
+    # language-test.ttl is known to have 6 errors according to VocPub 4.10, image-test.ttl none
+
+
+def test_validator_invalid_conformance_all():
+    try:
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-all-local-invalid.ttl")
+    except ValueError as e:
+        assert "Results (1)" in str(e)

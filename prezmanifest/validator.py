@@ -66,9 +66,9 @@ def validate(manifest: Path) -> Graph:
     # SHACL validation
     manifest_graph = load_graph(manifest)
     mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    valid, error = shacl_validate_resource(manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl"))
+    valid, error_msg = shacl_validate_resource(manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl"))
     if not valid:
-        raise ValueError(f"SHACL invalid:\n\n{error}")
+        raise ValueError(f"Manifest Shapes invalid:\n\n{error_msg}")
 
     # not yet used
     # # get labels graph for SHACL validation
@@ -87,6 +87,9 @@ def validate(manifest: Path) -> Graph:
 
     # Content link validation
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        # see if there's a conformance claim for the resource
+        cc = manifest_graph.value(subject=o, predicate=DCTERMS.conformsTo)
+
         for artifact in manifest_graph.objects(o, PROF.hasArtifact):
             if isinstance(artifact, BNode):
                 content_location = manifest_graph.value(subject=artifact, predicate=SDO.contentLocation)
@@ -96,14 +99,18 @@ def validate(manifest: Path) -> Graph:
 
             literal_resolves_as_file_folder_or_url(content_location)
 
-            # see if there's a conformance claim for the resource
-            cc = manifest_graph.value(subject=artifact, predicate=DCTERMS.conformsTo)
+            # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
+            if cc is None:
+                cc = manifest_graph.value(subject=artifact, predicate=DCTERMS.conformsTo)
+
+            # if we now have a CC for the resource or the artifact, use it
             if cc is not None:
-                # not yet used
-                # data_graph = load_graph(MANIFEST_ROOT_DIR / content_location) + context_graph
-                valid, error = shacl_validate_resource(load_graph(MANIFEST_ROOT_DIR / content_location), get_validator(manifest, cc))
+                valid, error_msg = shacl_validate_resource(
+                    load_graph(MANIFEST_ROOT_DIR / content_location), get_validator(manifest, cc)
+                )
                 if not valid:
-                    raise ValueError(f"Resource {content_location} invalid according to conformance claim:\n\n{error}")
+                    raise ValueError(f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}")
+                cc = None
 
     return manifest_graph
 
