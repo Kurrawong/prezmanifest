@@ -332,14 +332,14 @@ files = [
 
 [[package]]
 name = "kurra"
-version = "1.0.3"
+version = "1.1.0"
 description = "A Python package of RDF data manipulation functions that can be called from the command line or other software"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "kurra-1.0.3-py3-none-any.whl", hash = "sha256:6a73015edbceb02c8a0e2b3550c9a093ebbb823d4f761899c31f0fc300d77ea8"},
-    {file = "kurra-1.0.3.tar.gz", hash = "sha256:e0d69f01f0df84e3809faf5a0a3760364cb6ad43ea94ca5bbbc0b04e58347155"},
+    {file = "kurra-1.1.0-py3-none-any.whl", hash = "sha256:27552b967470aa4e16a874be582fbe683f66f26f929cff2cd267101d72af01ff"},
+    {file = "kurra-1.1.0.tar.gz", hash = "sha256:bb6642ffc41e1a6aad7a4bac16a67c0cb2feec13338e5171d052a613bcdff965"},
 ]
 
 [package.dependencies]
@@ -489,14 +489,14 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prettytable"
-version = "3.12.0"
+version = "3.13.0"
 description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "prettytable-3.12.0-py3-none-any.whl", hash = "sha256:77ca0ad1c435b6e363d7e8623d7cc4fcf2cf15513bf77a1c1b2e814930ac57cc"},
-    {file = "prettytable-3.12.0.tar.gz", hash = "sha256:f04b3e1ba35747ac86e96ec33e3bb9748ce08e254dc2a1c6253945901beec804"},
+    {file = "prettytable-3.13.0-py3-none-any.whl", hash = "sha256:d4f5817a248b77ddaa25b27007566c0a6a064308d991516b61b436ffdbb4f8e9"},
+    {file = "prettytable-3.13.0.tar.gz", hash = "sha256:30e1a097a7acb075b5c488ffe01195349b37009c2d43ca7fa8b5f6a61daace5b"},
 ]
 
 [package.dependencies]
