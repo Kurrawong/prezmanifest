@@ -176,3 +176,30 @@ def test_load_to_fuseki_basic_auth(fuseki_container):
     count = int(r[0]["count"]["value"])
 
     assert count == 5
+
+
+def test_load_with_artifact_bn():
+    warnings.filterwarnings(
+        "ignore", category=DeprecationWarning
+    )  # ignore RDFLib's ConjunctiveGraph warning
+    manifest = Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
+    results_file = Path(__file__).parent / "results.trig"
+
+    # extract all Manifest content into an n-quads file
+    load(manifest, sparql_endpoint=None, destination_file=results_file)
+
+    # load the resultant Dataset to test it
+    d = Dataset()
+    d.parse(results_file, format="trig")
+
+    # get a list of IDs of the Graphs in the Dataset
+    graph_ids = [x.identifier for x in d.graphs()]
+
+    # check that each Manifest part has a graph present
+    assert URIRef("https://example.com/demo-vocabs-catalogue") in graph_ids
+    assert URIRef("https://example.com/demo-vocabs/image-test") in graph_ids
+    assert URIRef("https://example.com/demo-vocabs/language-test") in graph_ids
+    assert URIRef("http://background") in graph_ids
+    assert URIRef("https://olis.dev/SystemGraph") in graph_ids
+
+    Path(results_file).unlink()

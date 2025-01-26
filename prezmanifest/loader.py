@@ -208,7 +208,7 @@ def load(
                     MRR.ResourceData,
                 ]:
                     for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                        for f in get_files_from_artifact(manifest, artifact):
+                        for f in get_files_from_artifact(manifest_graph, manifest, artifact):
                             if str(f.name).endswith(".ttl"):
                                 fg = Graph().parse(f)
                                 # fg.bind("rdf", RDF)
