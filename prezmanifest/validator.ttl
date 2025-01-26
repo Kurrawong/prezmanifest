@@ -46,10 +46,39 @@ val:ShapeP01
 
 val:ShapeP02
     a sh:PropertyShape ;
-    sh:message "ShapeP02: You must supply exactly one value for prof:hasArtifact for a prez:Manifest's Resource Descriptors and it must be a string that can be interpreted as a file path, either relative to the manifest file, or an absolute system path or a URL" ;
+    sh:message "ShapeP02: You must supply at least one value for prof:hasArtifact for a prez:Manifest's Resource Descriptors and each must be a string that can be interpreted as a file path, either relative to the manifest file, or an absolute system path or a URL or a Blank Node with a schema:contentLocation and schema:mainEntity predicates" ;
     sh:minCount 1 ;
-    sh:nodeKind sh:Literal ;
+    sh:or (
+        [ sh:nodeKind sh:Literal ]
+        [ sh:nodeKind sh:BlankNode ]
+    ) ;
     sh:path prof:hasArtifact ;
+.
+
+val:ShapeN04
+    a sh:NodeShape ;
+    sh:message "ShapeN04: If you supplied a prof:hasArtifact for a prez:Manifest's Resource Descriptors that indicated a Blank Node, the Blank Node must contain exactly one schema:contentLocation and exactly one schema:mainEntity predicates" ;
+    sh:targetObjectsOf prof:hasArtifact ;
+    sh:or (
+        [ sh:nodeKind sh:Literal ]
+        [
+            sh:nodeKind sh:BlankNode ;
+            sh:property [
+                sh:path schema:contentLocation ;
+                sh:nodeKind sh:Literal ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+                sh:message "ShapeN04 P01: You supplied a prof:hasArtifact value as Blank Node, the Blank Node so it must contain exactly exactly one schema:contentLocation predicate" ;
+            ] ,
+            [
+                sh:path schema:mainEntity ;
+                sh:nodeKind sh:IRI ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+                sh:message "ShapeN04 P02: You supplied a prof:hasArtifact value as Blank Node, the Blank Node so it must contain exactly exactly one schema:mainEntity predicate" ;
+            ] ;
+        ]
+    ) ;
 .
 
 val:ShapeP03

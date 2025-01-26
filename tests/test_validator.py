@@ -39,3 +39,21 @@ def test_validator_invalid_02():
 
 def test_validator_valid_multi():
     assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")
+
+
+def test_validator_valid_main_entity():
+    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl")
+
+
+def test_validator_invalid_main_entity():
+    try:
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid.ttl")
+    except ValueError as e:
+        assert "N04" in str(e)
+
+
+def test_validator_invalid_main_entity2():
+    try:
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid2.ttl")
+    except ValueError as e:
+        assert "N04" in str(e)

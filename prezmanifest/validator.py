@@ -12,9 +12,10 @@ from pathlib import Path
 
 import httpx
 from kurra.utils import load_graph
+from pyparsing import Literal
 from pyshacl import validate as shacl_validate
-from rdflib import Graph
-from rdflib.namespace import PROF
+from rdflib import Graph, BNode
+from rdflib.namespace import PROF, SDO
 
 try:
     from prezmanifest import __version__
@@ -26,6 +27,30 @@ except ImportError:
 
 
 def validate(manifest: Path) -> Graph:
+    def literal_resolves_as_file_folder_or_url(l: Literal):
+        l_str = str(l)
+        if "http" in l_str:
+            r = httpx.get(l_str)
+            if 200 <= r.status_code < 400:
+                pass
+            else:
+                raise ValueError(
+                    f"Remote content link non-resolving: {l_str}"
+                )
+        elif "*" in l_str:
+            glob_parts = l_str.split("*")
+            dir = Path(manifest.parent / Path(glob_parts[0]))
+            if not Path(dir).is_dir():
+                raise ValueError(
+                    f"The content link {l_str} is not a directory"
+                )
+        else:
+            # It must be a local
+            if not (MANIFEST_ROOT_DIR / l_str).is_file():
+                raise ValueError(
+                    f"Content link {MANIFEST_ROOT_DIR / l_str} is invalid - not a file"
+                )
+
     ME = Path(__file__)
     MANIFEST_ROOT_DIR = manifest.parent
 
@@ -42,29 +67,13 @@ def validate(manifest: Path) -> Graph:
     # Content link validation
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-            print(artifact)
-            artifact_str = str(artifact)
-            if "http" in artifact_str:
-                r = httpx.get(artifact_str)
-                if 200 <= r.status_code < 400:
-                    pass
-                else:
-                    raise ValueError(
-                        f"Remote content link non-resolving: {artifact_str}"
-                    )
-            elif "*" in artifact_str:
-                glob_parts = artifact_str.split("*")
-                dir = Path(manifest.parent / Path(glob_parts[0]))
-                if not Path(dir).is_dir():
-                    raise ValueError(
-                        f"The content link {artifact_str} is not a directory"
-                    )
+            if isinstance(artifact, BNode):
+                content_location = manifest_graph.value(subject=artifact, predicate=SDO.contentLocation)
+                # main_entity = manifest_graph.value(subject=artifact, predicate=SDO.mainEntity)
+                literal_resolves_as_file_folder_or_url(content_location)
             else:
-                # It must be a local
-                if not (MANIFEST_ROOT_DIR / artifact_str).is_file():
-                    raise ValueError(
-                        f"Content link {MANIFEST_ROOT_DIR / artifact_str} is invalid - not a file"
-                    )
+                literal_resolves_as_file_folder_or_url(artifact)
+
 
     return manifest_graph
 
