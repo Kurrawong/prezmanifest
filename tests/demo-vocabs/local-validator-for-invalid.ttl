@@ -1,0 +1,33 @@
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX reg: <http://purl.org/linked-data/registry#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sdo: <https://schema.org/>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+BASE <https://w3id.org/profile/vocpub/validator/>
+
+
+<Requirement-2.1.4>
+	a sh:NodeShape ;
+	sh:targetClass skos:ConceptScheme ;
+	sh:message "Requirement 2.1.4 Each vocabulary MUST have exactly one title and at least one definition indicated using the skos:prefLabel and the skos:definition predicates respectively that must give textual literal values. Only one definition per language is allowed" ;
+    sh:property
+        <prefLabel> ;
+.
+
+<prefLabel>
+    a sh:PropertyShape ;
+    sh:message "Requirement 2.1.4, 2.2.1 or 2.3.1 Each vocabulary, Collection or Concept MUST have exactly one title and at least one definition indicated using the skos:prefLabel and the skos:definition predicates respectively that must give textual literal values. Only one definition per language is allowed" ;
+    sh:path skos:prefLabel ;
+    sh:minCount 2 ;
+    sh:uniqueLang true ;
+    sh:or (
+        [ sh:datatype xsd:string ]
+        [ sh:datatype rdf:langString ]
+    ) ;
+.

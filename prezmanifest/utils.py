@@ -4,7 +4,13 @@ from typing import List
 
 from rdflib import Literal, URIRef, Graph, Dataset, Node, BNode
 from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS
+from kurra.file import load_graph
 
+KNOWN_PROFILES = {
+    URIRef("http://www.opengis.net/def/geosparql"): Path(__file__).parent / "validator-geosparql-1.1.ttl",
+    URIRef("https://data.idnau.org/pid/cp"): Path(__file__).parent / "validator-idn-cp.ttl",
+    URIRef("https://w3id.org/profile/vocpub"): Path(__file__).parent / "validator-vocpub-4.10.ttl",
+}
 
 def get_files_from_artifact(
     manifest_graph: Graph, manifest: Path, artifact: Node
@@ -53,3 +59,15 @@ def get_identifier_from_file(file: Path) -> List[URIRef]:
         return gs
     else:
         return []
+
+
+def get_validator(manifest: Path, iri_or_path: URIRef | Literal) -> Graph:
+    """Returns a graph from either the path of a SHACL file or a known IRI->profile validator file"""
+    if isinstance(iri_or_path, URIRef):
+        if not iri_or_path in KNOWN_PROFILES.keys():
+            raise ValueError(
+                f"You have specified conformance to an unknown profile. Known profiles are {', '.join(KNOWN_PROFILES.keys())}")
+        return load_graph(KNOWN_PROFILES[iri_or_path])
+
+    MANIFEST_ROOT_DIR = manifest.parent
+    return load_graph(MANIFEST_ROOT_DIR / iri_or_path)

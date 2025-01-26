@@ -57,3 +57,18 @@ def test_validator_invalid_main_entity2():
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity-invalid2.ttl")
     except ValueError as e:
         assert "N04" in str(e)
+
+
+def test_validator_valid_conformance():
+    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance.ttl")
+
+
+def test_validator_valid_conformance_local():
+    assert validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local.ttl")
+
+
+def test_validator_invalid_conformance_local():
+    try:
+        validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-local-invalid.ttl")
+    except ValueError as e:
+        assert "Message: Requirement 2.1.4, 2.2.1 or 2.3.1" in str(e)

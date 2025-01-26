@@ -15,15 +15,17 @@ from kurra.utils import load_graph
 from pyparsing import Literal
 from pyshacl import validate as shacl_validate
 from rdflib import Graph, BNode
-from rdflib.namespace import PROF, SDO
+from rdflib.namespace import DCTERMS, PROF, SDO
 
 try:
-    from prezmanifest import __version__
+    from prezmanifest import MRR, __version__
+    from prezmanifest.utils import get_files_from_artifact, get_validator
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import __version__
+    from prezmanifest import MRR, __version__
+    from prezmanifest.utils import get_files_from_artifact, get_validator
 
 
 def validate(manifest: Path) -> Graph:
@@ -51,18 +53,37 @@ def validate(manifest: Path) -> Graph:
                     f"Content link {MANIFEST_ROOT_DIR / l_str} is invalid - not a file"
                 )
 
+    def shacl_validate_resource(data_graph, shacl_graph) -> (bool, str|None):
+        valid, v_graph, v_text = shacl_validate(data_graph, shacl_graph=shacl_graph, allow_warnings=True)
+        if valid:
+            return True, None
+        else:
+            return False, v_text
+
     ME = Path(__file__)
     MANIFEST_ROOT_DIR = manifest.parent
 
     # SHACL validation
     manifest_graph = load_graph(manifest)
     mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    data_graph = manifest_graph + mrr_vocab_graph
-    shacl_graph = load_graph(ME.parent / "validator.ttl")
-    valid, v_graph, v_text = shacl_validate(data_graph, shacl_graph=shacl_graph)
-
+    valid, error = shacl_validate_resource(manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl"))
     if not valid:
-        raise ValueError(f"SHACL invalid:\n\n{v_text}")
+        raise ValueError(f"SHACL invalid:\n\n{error}")
+
+    # not yet used
+    # # get labels graph for SHACL validation
+    # context_graph = Graph()
+    # for s, o in manifest_graph.subject_objects(PROF.hasResource):
+    #     for role in manifest_graph.objects(o, PROF.hasRole):
+    #         # The data files & background - must be processed after Catalogue
+    #         if role in [
+    #             MRR.CompleteCatalogueAndResourceLabels,
+    #             MRR.IncompleteCatalogueAndResourceLabels,
+    #         ]:
+    #             for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+    #                 for f in get_files_from_artifact(manifest_graph, manifest, artifact):
+    #                     if str(f.name).endswith(".ttl"):
+    #                         context_graph += load_graph(f)
 
     # Content link validation
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
@@ -70,10 +91,19 @@ def validate(manifest: Path) -> Graph:
             if isinstance(artifact, BNode):
                 content_location = manifest_graph.value(subject=artifact, predicate=SDO.contentLocation)
                 # main_entity = manifest_graph.value(subject=artifact, predicate=SDO.mainEntity)
-                literal_resolves_as_file_folder_or_url(content_location)
             else:
-                literal_resolves_as_file_folder_or_url(artifact)
+                content_location = artifact
 
+            literal_resolves_as_file_folder_or_url(content_location)
+
+            # see if there's a conformance claim for the resource
+            cc = manifest_graph.value(subject=artifact, predicate=DCTERMS.conformsTo)
+            if cc is not None:
+                # not yet used
+                # data_graph = load_graph(MANIFEST_ROOT_DIR / content_location) + context_graph
+                valid, error = shacl_validate_resource(load_graph(MANIFEST_ROOT_DIR / content_location), get_validator(manifest, cc))
+                if not valid:
+                    raise ValueError(f"Resource {content_location} invalid according to conformance claim:\n\n{error}")
 
     return manifest_graph
 
