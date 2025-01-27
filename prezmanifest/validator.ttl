@@ -10,11 +10,13 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 <https://prez.dev/manifest-validator>
     a owl:Ontology ;
-    owl:versionIRI val:1.0.0 ;
-    owl:versionInfo "1.0.0: First public version" ;
+    owl:versionIRI val:0.5.0 ;
+    owl:versionInfo """0.5.0: Handles artifacts as objects with predicates, not just literals (file paths)
+
+0.4.0: First public version""" ;
     schema:creator <https://orcid.org/0000-0002-8742-7730> ;
     schema:dateCreated "2024-11-29"^^xsd:date ;
-    schema:dateModified "2024-11-29"^^xsd:date ;
+    schema:dateModified "2025-01-26"^^xsd:date ;
     schema:definition "The SHACL Shapes Validator for the Prez Ontology Manifest Model"@en ;
     schema:name "Prez Manifest Validator" ;
     schema:publisher <https://kurrawong.ai> ;
@@ -135,8 +137,8 @@ val:ShapeN03
     ] ;
 .
 
-val:1.0.0
-    schema:name "1.0.0" ;
+val:0.5.0
+    schema:name "0.5.0" ;
 .
 
 <https://orcid.org/0000-0002-8742-7730>
