@@ -25,3 +25,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
+
+[tool.poetry.scripts]
+pmdoc = "prezmanifest.documentor:cli"
+pmlabel = "prezmanifest.labeller:cli"
+pmload = "prezmanifest.loader:cli"
+pmval = "prezmanifest.validator:cli"
