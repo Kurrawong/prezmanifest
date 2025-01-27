@@ -17,6 +17,7 @@ import logging
 import sys
 from getpass import getpass
 from pathlib import Path
+from textwrap import dedent
 from typing import Literal as TLiteral
 
 import httpx
@@ -289,7 +290,15 @@ def load(
 
 
 def setup_cli_parser(args=None):
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+      prog='Prezmanifest Labeller',
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      epilog=dedent('''\
+         A data loading tool for Prez Manifests.
+         
+         This tool can extract all the content listed in a Prez Manifest and load it into either a single N-Quads file
+         or into a Fuseki RDF DB instance by using a series of Graph Store Protocol POST commands.
+         '''))
     group = parser.add_mutually_exclusive_group(required=True)
 
     parser.add_argument(

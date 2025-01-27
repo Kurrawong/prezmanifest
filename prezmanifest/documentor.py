@@ -53,6 +53,7 @@ Labels file, [`_background/labels.ttl`](_background/labels.ttl) | [Complete Cont
 import argparse
 import sys
 from pathlib import Path
+from textwrap import dedent
 from urllib.parse import ParseResult, urlparse
 
 from rdflib import PROF
@@ -194,7 +195,17 @@ def setup_cli_parser(args=None):
             f"{input} is not a valid input. Must be a file, folder or sparql endpoint"
         )
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+      prog='Prezmanifest Documentor',
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      epilog=dedent('''\
+         A documentation generating tool for Prez Manifests. 
+         
+         This tool can create a Markdown or ASCCIIDOC table of Resources from a Prez Manifest file for use in
+         README files in repositories.
+         
+         It can also add the IRIs of resources within a Manifest's 'Resource Data' object to a catalogue RDF file.
+         '''))
 
     parser.add_argument(
         "-v",

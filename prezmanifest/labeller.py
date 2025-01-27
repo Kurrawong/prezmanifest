@@ -7,6 +7,7 @@ repository.
 import argparse
 import sys
 from pathlib import Path
+from textwrap import dedent
 from typing import Literal as TLiteral
 from urllib.parse import ParseResult, urlparse
 
@@ -161,7 +162,16 @@ def setup_cli_parser(args=None):
             f"{input} is not a valid input. Must be a file, folder or sparql endpoint"
         )
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+      prog='Prezmanifest Labeller',
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      epilog=dedent('''\
+         A label checking tool for Prez Manifests. 
+         
+         This tool can list all the IRIs for subject, predicates & objects in all resources within a Manifest that
+         don't have labels. Given a source of additional labels, such as the KurrawongAI Semantic Background, it can try
+         to extract any missing labels and insert them into a Manifest as an additional labelling resource.  
+         '''))
     group = parser.add_mutually_exclusive_group(required=True)
 
     parser.add_argument(

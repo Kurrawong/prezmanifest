@@ -9,6 +9,7 @@ specification (see https://prez.dev/manifest/) and checks that all the resources
 import argparse
 import sys
 from pathlib import Path
+from textwrap import dedent
 
 import httpx
 from kurra.utils import load_graph
@@ -128,7 +129,18 @@ def validate(manifest: Path) -> Graph:
 
 def setup_cli_parser(args=None):
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+      prog='Prezmanifest Validator',
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      epilog=dedent('''\
+         A validator tool for Prez Manifests. 
+         
+         This tool performs SHACL validation on the Manifest, followed by existence checking for each resource - 
+         are they reachable by this script on the file system or over the Internet?
+         
+         It also validates any resource with role Resource Data against a conformance claim. 
+         See https://prez.dev/manifest/ for details.
+         '''))
 
     parser.add_argument(
         "-v",
