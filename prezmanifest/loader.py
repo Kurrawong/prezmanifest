@@ -29,13 +29,13 @@ from rdflib import Graph, URIRef, Dataset
 
 try:
     from prezmanifest import MRR, OLIS, validate, __version__
-    from prezmanifest.utils import get_files_from_artifact
+    from prezmanifest.utils import get_files_from_artifact, KNOWN_ENTITY_CLASSES
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
     from prezmanifest import MRR, OLIS, validate, __version__
-    from prezmanifest.utils import get_files_from_artifact
+    from prezmanifest.utils import get_files_from_artifact, KNOWN_ENTITY_CLASSES
 
 
 def load(
@@ -218,18 +218,12 @@ def load(
                                 # fg.bind("rdf", RDF)
 
                                 if role == MRR.ResourceData:
-                                    resource_iri = (
-                                        fg.value(
-                                            predicate=RDF.type,
-                                            object=SKOS.ConceptScheme,
-                                        )
-                                        or fg.value(
-                                            predicate=RDF.type, object=OWL.Ontology
-                                        )
-                                        or fg.value(
-                                            predicate=RDF.type, object=SDO.CreativeWork
-                                        )
-                                    )
+                                    resource_iri = fg.value(subject=artifact, predicate=SDO.mainEntity)
+                                    if resource_iri is None:
+                                        for entity_class in KNOWN_ENTITY_CLASSES:
+                                            v = fg.value(predicate=RDF.type, object=entity_class)
+                                            if v is not None:
+                                                resource_iri = v
 
                                 if role in [
                                     MRR.CompleteCatalogueAndResourceLabels,

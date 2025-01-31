@@ -106,23 +106,22 @@ def validate(manifest: Path) -> Graph:
 
             literal_resolves_as_file_folder_or_url(content_location)
 
-            # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
-            if cc is None:
-                cc = manifest_graph.value(
-                    subject=artifact, predicate=DCTERMS.conformsTo
-                )
-
             # if we now have a CC for the resource or the artifact, use it
-            if cc is not None:
-                data_graph = load_graph(MANIFEST_ROOT_DIR / content_location)
-                if context_graph is not None:
-                    data_graph += context_graph
-                valid, error_msg = shacl_validate_resource(data_graph, get_validator(manifest, cc))
-                if not valid:
-                    raise ValueError(
-                        f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
+            for file in get_files_from_artifact(manifest_graph, manifest, content_location):
+                # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
+                if cc is None:
+                    cc = manifest_graph.value(
+                        subject=artifact, predicate=DCTERMS.conformsTo
                     )
-                cc = None
+                if cc is not None:
+                    data_graph = load_graph(MANIFEST_ROOT_DIR / file)
+                    if context_graph is not None:
+                        data_graph += context_graph
+                    valid, error_msg = shacl_validate_resource(data_graph, get_validator(manifest, cc))
+                    if not valid:
+                        raise ValueError(
+                            f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
+                        )
 
     return manifest_graph
 

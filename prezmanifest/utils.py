@@ -15,6 +15,14 @@ KNOWN_PROFILES = {
     / "validator-vocpub-4.10.ttl",
 }
 
+KNOWN_ENTITY_CLASSES = [
+    SKOS.ConceptScheme,
+    OWL.Ontology,
+    DCAT.Resource,
+    SDO.CreativeWork,
+    SDO.Dataset,
+    SDO.DefinedTerm
+]
 
 def get_files_from_artifact(
     manifest_graph: Graph, manifest: Path, artifact: Node
@@ -49,13 +57,10 @@ def get_identifier_from_file(file: Path) -> List[URIRef]:
     for all owl:Ontology and skos:ConceptScheme objects"""
     if file.name.endswith(".ttl"):
         g = Graph().parse(file)
-        return [
-            g.value(predicate=RDF.type, object=SKOS.ConceptScheme)
-            or g.value(predicate=RDF.type, object=OWL.Ontology)
-            or g.value(predicate=RDF.type, object=DCAT.Resource)
-            or g.value(predicate=RDF.type, object=SDO.CreativeWork)
-            or g.value(predicate=RDF.type, object=SDO.Dataset)
-        ]
+        for entity_class in KNOWN_ENTITY_CLASSES:
+            v = g.value(predicate=RDF.type, object=entity_class)
+            if v is not None:
+                return [v]
     elif file.name.endswith(".trig"):
         gs = []
         d = Dataset()
