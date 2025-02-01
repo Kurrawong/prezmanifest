@@ -15,19 +15,19 @@ import httpx
 from kurra.utils import load_graph
 from pyparsing import Literal
 from pyshacl import validate as shacl_validate
-from rdflib import Graph, BNode, Dataset
+from rdflib import BNode, Dataset, Graph
 from rdflib.namespace import DCTERMS, PROF, SDO
 
 try:
-    from prezmanifest.definednamespaces import MRR
     from prezmanifest import __version__
+    from prezmanifest.definednamespaces import MRR
     from prezmanifest.utils import get_files_from_artifact, get_validator
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest.definednamespaces import MRR
     from prezmanifest import __version__
+    from prezmanifest.definednamespaces import MRR
     from prezmanifest.utils import get_files_from_artifact, get_validator
 
 
@@ -140,49 +140,3 @@ def validate(manifest: Path) -> Graph:
                     cc = None
 
     return manifest_graph
-
-
-def setup_cli_parser(args=None):
-    parser = argparse.ArgumentParser(
-        prog="Prezmanifest Validator",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=dedent("""\
-         A validator tool for Prez Manifests. 
-         
-         This tool performs SHACL validation on the Manifest, followed by existence checking for each resource - 
-         are they reachable by this script on the file system or over the Internet?
-         
-         It also validates any resource with role Resource Data against a conformance claim. 
-         See https://prez.dev/manifest/ for details.
-         """),
-    )
-
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="{version}".format(version=__version__),
-    )
-
-    parser.add_argument(
-        "manifest",
-        help="A Manifest file to process",
-        type=Path,
-    )
-
-    return parser.parse_args(args)
-
-
-def cli(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
-    args = setup_cli_parser(args)
-
-    validate(args.manifest)
-
-
-if __name__ == "__main__":
-    retval = cli(sys.argv[1:])
-    if retval is not None:
-        sys.exit(retval)

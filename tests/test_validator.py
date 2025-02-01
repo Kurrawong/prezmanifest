@@ -1,6 +1,11 @@
 from pathlib import Path
 
+from typer.testing import CliRunner
+
 from prezmanifest import validate
+from prezmanifest.cli import app
+
+runner = CliRunner(mix_stderr=False)
 
 
 def test_validator_valid():
@@ -96,3 +101,16 @@ def test_validator_invalid_conformance_all():
         )
     except ValueError as e:
         assert "Results (1)" in str(e)
+
+
+def test_validator_cli():
+    try:
+        result = runner.invoke(
+            app,
+            [
+                "validate",
+                str(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl"),
+            ],
+        )
+    except ValueError as e:
+        assert "MinCountConstraintComponent" in str(e)

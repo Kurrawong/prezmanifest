@@ -2,9 +2,8 @@ from pathlib import Path
 
 import typer
 
-from prezmanifest.cli.console import console
-
-app = typer.Typer(help="Prez Manifest validate commands")
+from prezmanifest.cli.app import app
+from prezmanifest.validator import validate
 
 
 @app.command(name="validate", help="Validate a Prez Manifest")
@@ -13,4 +12,4 @@ def validate_command(
         ..., help="The path of the Prez Manifest file to be validated"
     ),
 ) -> None:
-    console.print(f"Validated the Manifest at {manifest}")
+    validate(manifest)
