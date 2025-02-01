@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from kurra.db import sparql, upload
 from rdflib import Graph
 from rdflib.compare import isomorphic
@@ -13,13 +14,11 @@ runner = CliRunner()
 
 
 def test_label_iris():
-    try:
+    with pytest.raises(ValueError):
         label(
             Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
             output_type="x",
         )
-    except ValueError as e:
-        assert str(e).startswith("Invalid output_type value")
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",

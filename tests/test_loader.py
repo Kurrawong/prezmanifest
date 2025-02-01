@@ -5,8 +5,12 @@ import httpx
 import pytest
 from kurra.db import sparql, upload
 from rdflib import Dataset, URIRef
+from typer.testing import CliRunner
 
-from prezmanifest import load
+from prezmanifest.loader import ReturnDatatype, load
+from tests.fuseki.conftest import fuseki_container
+
+runner = CliRunner()
 
 
 def test_load_only_one_set():
@@ -14,36 +18,31 @@ def test_load_only_one_set():
         "ignore", category=DeprecationWarning
     )  # ignore RDFLib's ConjunctiveGraph warning
 
-    manifest_path = Path(Path(__file__).parent / "demo-vocabs/manifest.ttl")
+    manifest = Path(Path(__file__).parent / "demo-vocabs/manifest.ttl")
 
     with pytest.raises(ValueError):
-        load(manifest_path)
+        load(manifest)
 
     with pytest.raises(ValueError):
         load(
-            manifest_path,
+            manifest,
             sparql_endpoint="http://fake.com",
             destination_file=Path("some-fake-path"),
         )
 
     with pytest.raises(ValueError):
         load(
-            manifest_path,
+            manifest,
             destination_file=Path("some-fake-path"),
-            return_data_type="Graph",
+            return_data_type=ReturnDatatype.graph,
         )
 
-    load(manifest_path, destination_file=Path("temp.trig"))
+    with pytest.raises(ValueError):
+        load(manifest, return_data_type="hello")
+
+    load(manifest, destination_file=Path("temp.trig"))
 
     Path("temp.trig").unlink(missing_ok=True)
-
-    try:
-        load(manifest_path, return_data_type="hello")
-    except ValueError as e:
-        assert (
-            str(e)
-            == "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
-        )
 
 
 def test_fuseki_query(fuseki_container):
@@ -178,7 +177,7 @@ def test_load_with_artifact_bn():
     results_file = Path(__file__).parent / "results.trig"
 
     # extract all Manifest content into an n-quads file
-    load(manifest, sparql_endpoint=None, destination_file=results_file)
+    load(manifest, destination_file=results_file)
 
     # load the resultant Dataset to test it
     d = Dataset()
@@ -195,3 +194,79 @@ def test_load_with_artifact_bn():
     assert URIRef("https://olis.dev/SystemGraph") in graph_ids
 
     Path(results_file).unlink()
+
+
+# TODO: not working
+# def test_load_cli_file(fs):
+#     warnings.filterwarnings(
+#         "ignore", category=DeprecationWarning
+#     )  # ignore RDFLib's ConjunctiveGraph warning
+#
+#     fake_file = fs.create_file(Path(__file__).parent.resolve() / "temp.trig")
+#
+#     manifest = Path(__file__).parent / "demo-vocabs/manifest.ttl"
+#     tmp_output_file = Path(__file__).parent.resolve() / "temp.trig"
+#     runner.invoke(
+#         app,
+#         [
+#             "load",
+#             "file",
+#             manifest,
+#             fake_file.path
+#         ],
+#     )
+#
+#     output = fake_file.read_text()
+#
+#     assert output.count(" {") == 5
+#
+#     # Path("temp.trig").unlink(missing_ok=True)
+
+
+# TODO: not working
+# def test_load_cli_sparql(fuseki_container):
+#     warnings.filterwarnings(
+#         "ignore", category=DeprecationWarning
+#     )  # ignore RDFLib's ConjunctiveGraph warning
+#
+#     manifest = Path(__file__).parent / "demo-vocabs/manifest.ttl"
+#     SPARQL_ENDPOINT = (
+#         f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
+#     )
+#
+#     response = runner.invoke(
+#         app,
+#         [
+#             "load",
+#             "sparql",
+#             manifest,
+#             SPARQL_ENDPOINT,
+#             "-u",
+#             "admin",
+#             "-p",
+#             "admin"
+#         ],
+#     )
+#
+#     print(response.stdout)
+#
+#     q = """
+#         SELECT (COUNT(DISTINCT ?g) AS ?count)
+#         WHERE {
+#             GRAPH ?g {
+#                 ?s ?p ?o
+#             }
+#         }
+#         """
+#     client = httpx.Client(auth=("admin", "admin"))
+#     r = sparql(
+#         SPARQL_ENDPOINT,
+#         q,
+#         return_python=True,
+#         return_bindings_only=True,
+#         http_client=client,
+#     )
+#
+#     count = int(r[0]["count"]["value"])
+#
+#     assert count == 5

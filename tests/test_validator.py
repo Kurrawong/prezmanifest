@@ -105,11 +105,11 @@ def test_validator_invalid_conformance_all():
 
 def test_validator_cli():
     try:
-        result = runner.invoke(
+        runner.invoke(
             app,
             [
                 "validate",
-                str(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl"),
+                Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl",
             ],
         )
     except ValueError as e:

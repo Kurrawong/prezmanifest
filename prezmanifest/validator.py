@@ -15,17 +15,8 @@ from pyshacl import validate as shacl_validate
 from rdflib import BNode, Dataset, Graph
 from rdflib.namespace import DCTERMS, PROF, SDO
 
-try:
-    from prezmanifest import __version__
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.utils import get_files_from_artifact, get_validator
-except ImportError:
-    import sys
-
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import __version__
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.utils import get_files_from_artifact, get_validator
+from prezmanifest.definednamespaces import MRR
+from prezmanifest.utils import get_files_from_artifact, get_validator
 
 
 def validate(manifest: Path) -> Graph:

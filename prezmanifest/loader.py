@@ -12,13 +12,11 @@ It creates:
 Run this script with the -h flag for more help, i.e. ~$ python loader.py -h
 """
 
-import argparse
 import logging
 import sys
+from enum import Enum
 from getpass import getpass
 from pathlib import Path
-from textwrap import dedent
-from typing import Literal as TLiteral
 
 import httpx
 from kurra.db import upload
@@ -26,17 +24,15 @@ from kurra.file import export_quads, make_dataset
 from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
 
-try:
-    from prezmanifest import __version__
-    from prezmanifest.definednamespaces import MRR, OLIS
-    from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
-    from prezmanifest.validator import validate
-except ImportError:
-    import sys
+from prezmanifest.definednamespaces import MRR, OLIS
+from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
+from prezmanifest.validator import validate
 
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, OLIS, __version__, validate
-    from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
+
+class ReturnDatatype(str, Enum):
+    graph = "graph"
+    dataset = "dataset"
+    none = None
 
 
 def load(
@@ -45,22 +41,33 @@ def load(
     sparql_username: str = None,
     sparql_password: str = None,
     destination_file: Path = None,
-    return_data_type: TLiteral["Graph", "Dataset", None] = None,
+    return_data_type: ReturnDatatype = ReturnDatatype.none,
 ) -> None | Graph | Dataset:
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
     (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
     given SPARQL Endpoint."""
+    if not isinstance(return_data_type, ReturnDatatype):
+        raise ValueError(
+            f"Invalid return_data_type value. Must be one of {', '.join([x for x in ReturnDatatype])}"
+        )
 
-    if return_data_type == "Dataset":
+    if (
+        sparql_endpoint is None
+        and destination_file is None
+        and return_data_type == ReturnDatatype.none
+    ):
+        raise ValueError(
+            "Either a sparql_endpoint, destination_file or a return_data_type must be specified"
+        )
+
+    if return_data_type == ReturnDatatype.dataset:
         dataset_holder = Dataset()
 
-    if return_data_type == "Graph":
+    if return_data_type == ReturnDatatype.graph:
         graph_holder = Graph()
 
-    return_data_value_error_message = "return_data_type was set to an invalid value. Must be one of Dataset or Graph or None"
-
     # establish a reusable client for http requests
-    # also allows for basic authentication to be used.
+    # also allows for basic authentication to be used
     if sparql_endpoint:
         auth = None
         if sparql_username:
@@ -134,25 +141,28 @@ def load(
                     http_client=client,
                 )
             else:  # returning data
-                if return_data_type == "Dataset":
+                if return_data_type == ReturnDatatype.dataset:
                     msg += "to Dataset"
                     for s, p, o in data:
                         dataset_holder.add((s, p, o, iri))
-                elif return_data_type == "Graph":
+                elif return_data_type == ReturnDatatype.graph:
                     msg += "to Graph"
                     for s, p, o in data:
                         graph_holder.add((s, p, o))
-                else:
-                    raise ValueError(return_data_value_error_message)
 
             logging.info(msg)
 
-    if (
-        sum(
-            x is not None for x in [sparql_endpoint, destination_file, return_data_type]
-        )
-        != 1
-    ):
+    count = 0
+    if sparql_endpoint is not None:
+        count += 1
+
+    if destination_file is not None:
+        count += 1
+
+    if return_data_type != ReturnDatatype.none:
+        count += 1
+
+    if count != 1:
         raise ValueError(
             "You must specify exactly 1 of sparql_endpoint, destination_file or return_data_type",
         )
@@ -278,83 +288,9 @@ def load(
             append=True,
         )
 
-    if return_data_type == "Dataset":
+    if return_data_type == ReturnDatatype.dataset:
         return dataset_holder
-    elif return_data_type == "Graph":
+    elif return_data_type == ReturnDatatype.graph:
         return graph_holder
-    elif return_data_type is None:
+    else:  # return_data_type is None:
         pass  # return nothing
-    else:
-        raise ValueError(return_data_value_error_message)
-
-
-def setup_cli_parser(args=None):
-    parser = argparse.ArgumentParser(
-        prog="Prezmanifest Labeller",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=dedent("""\
-         A data loading tool for Prez Manifests.
-         
-         This tool can extract all the content listed in a Prez Manifest and load it into either a single N-Quads file
-         or into a Fuseki RDF DB instance by using a series of Graph Store Protocol POST commands.
-         """),
-    )
-    group = parser.add_mutually_exclusive_group(required=True)
-
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="{version}".format(version=__version__),
-    )
-
-    group.add_argument(
-        "-e",
-        "--endpoint",
-        help="The SPARQL endpoint you want to load the data into. Cannot be specified when destination is.",
-    )
-
-    parser.add_argument(
-        "-u", "--username", help="(optional) SPARQL endpoint username for Basic Auth"
-    )
-
-    parser.add_argument(
-        "-p", "--password", help="(optional) SPARQL endpoint password for Basic Auth"
-    )
-
-    group.add_argument(
-        "-d",
-        "--destination",
-        help="The n-quads file you want to export the data into. Cannot be specified when endpoint is.",
-    )
-
-    parser.add_argument(
-        "manifest",
-        help="A Manifest file to process",
-        type=Path,
-    )
-
-    return parser.parse_args(args)
-
-
-def cli(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
-    args = setup_cli_parser(args)
-
-    load(
-        manifest=Path(args.manifest),
-        sparql_endpoint=args.endpoint,
-        sparql_username=args.username,
-        sparql_password=args.password,
-        destination_file=(
-            Path(args.destination) if args.destination is not None else None
-        ),
-    )
-
-
-if __name__ == "__main__":
-    retval = cli(sys.argv[1:])
-    if retval is not None:
-        sys.exit(retval)

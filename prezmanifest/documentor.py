@@ -70,7 +70,12 @@ class TableFormats(str, Enum):
     markdown = "markdown"
 
 
-def table(manifest: Path, t="markdown") -> str:
+def table(manifest: Path, table_format: TableFormats = TableFormats.markdown) -> str:
+    if not isinstance(table_format, TableFormats):
+        raise ValueError(
+            f"Invalid table_format value, must be one of {', '.join([x for x in TableFormats])}"
+        )
+
     # load and validate manifest
     validate(manifest)
     manifest_graph = load_graph(manifest)
@@ -78,7 +83,7 @@ def table(manifest: Path, t="markdown") -> str:
     # add in MRR vocab
     manifest_graph += load_graph(Path(__file__).parent / "mrr.ttl")
 
-    if t == "asciidoc":
+    if table_format == TableFormats.asciidoc:
         header = "|===\n| Resource | Role | Description\n\n"
     else:
         header = "Resource | Role | Description\n--- | --- | ---\n"
@@ -95,7 +100,7 @@ def table(manifest: Path, t="markdown") -> str:
                         subject=artifact, predicate=SDO.contentLocation
                     )
                 )
-            if t == "asciidoc":
+            if table_format == TableFormats.asciidoc:
                 artifact_docs.append(
                     f"link:{a}[`{a.split('/')[-1] if a.startswith('http') else a}`]"
                 )
@@ -105,13 +110,13 @@ def table(manifest: Path, t="markdown") -> str:
                 )
         role_iri = manifest_graph.value(o, PROF.hasRole)
         role_label = manifest_graph.value(role_iri, SKOS.prefLabel)
-        if t == "asciidoc":
+        if table_format == TableFormats.asciidoc:
             role = f"{role_iri}[{role_label}]"
         else:
             role = f"[{role_label}]({role_iri})"
         name = manifest_graph.value(o, SDO.name)
         description = manifest_graph.value(o, SDO.description)
-        if t == "asciidoc":
+        if table_format == TableFormats.asciidoc:
             n = (
                 f"""{name}: +
  +
@@ -133,12 +138,12 @@ def table(manifest: Path, t="markdown") -> str:
                 else f"{'<br />'.join(artifact_docs)}"
             )
         d = description if description is not None else ""
-        if t == "asciidoc":
+        if table_format == TableFormats.asciidoc:
             body += f"| {n} | {role} | {d}\n"
         else:
             body += f"{n} | {role} | {d}\n"
 
-    if t == "asciidoc":
+    if table_format == TableFormats.asciidoc:
         footer = "|===\n"
     else:
         footer = ""

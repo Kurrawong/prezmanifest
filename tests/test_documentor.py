@@ -7,7 +7,7 @@ from rdflib.compare import isomorphic
 from typer.testing import CliRunner
 
 from prezmanifest.cli import app
-from prezmanifest.documentor import catalogue, table
+from prezmanifest.documentor import TableFormats, catalogue, table
 
 runner = CliRunner()
 
@@ -100,7 +100,8 @@ def test_create_table_multi_asciidoc():
     ).strip()
 
     result = table(
-        Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl", t="asciidoc"
+        Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl",
+        table_format=TableFormats.asciidoc,
     )
 
     print()

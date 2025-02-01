@@ -13,7 +13,7 @@ from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF
 
 from prezmanifest.definednamespaces import MRR
-from prezmanifest.loader import load
+from prezmanifest.loader import ReturnDatatype, load
 from prezmanifest.utils import get_files_from_artifact
 
 
@@ -30,7 +30,7 @@ def label(
 ) -> set | Graph | None:
     """ "Main function for labeller module"""
     # create the target from the Manifest
-    manifest_content_graph = load(manifest, return_data_type="Graph")
+    manifest_content_graph = load(manifest, return_data_type=ReturnDatatype.graph)
 
     # determine if any labelling context is given in Manifest
     context_graph = Graph()
