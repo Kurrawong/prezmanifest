@@ -1,8 +1,8 @@
-import typer
-from rich.progress import track
 from pathlib import Path
-from prezmanifest.cli.console import console
 
+import typer
+
+from prezmanifest.cli.console import console
 
 app = typer.Typer(help="Prez Manifest validate commands")
 

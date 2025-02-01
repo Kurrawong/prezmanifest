@@ -19,19 +19,21 @@ from rdflib import Graph, BNode, Dataset
 from rdflib.namespace import DCTERMS, PROF, SDO
 
 try:
-    from prezmanifest import MRR, __version__
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest import __version__
     from prezmanifest.utils import get_files_from_artifact, get_validator
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, __version__
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest import __version__
     from prezmanifest.utils import get_files_from_artifact, get_validator
 
 
 def validate(manifest: Path) -> Graph:
-    def literal_resolves_as_file_folder_or_url(l: Literal):
-        l_str = str(l)
+    def literal_resolves_as_file_folder_or_url(lit: Literal):
+        l_str = str(lit)
         if "http" in l_str:
             r = httpx.get(l_str)
             if 200 <= r.status_code < 400:
@@ -81,7 +83,9 @@ def validate(manifest: Path) -> Graph:
                 MRR.IncompleteCatalogueAndResourceLabels,
             ]:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                    for f in get_files_from_artifact(manifest_graph, manifest, artifact):
+                    for f in get_files_from_artifact(
+                        manifest_graph, manifest, artifact
+                    ):
                         if str(f.name).endswith(".ttl"):
                             context_graph += load_graph(f)
                         elif str(f.name).endswith(".trig"):  # TODO: test this option
@@ -104,34 +108,45 @@ def validate(manifest: Path) -> Graph:
             else:
                 content_location = artifact
 
+            # ensure the artifact resolves
             literal_resolves_as_file_folder_or_url(content_location)
 
             # if we now have a CC for the resource or the artifact, use it
-            for file in get_files_from_artifact(manifest_graph, manifest, content_location):
+            for file in get_files_from_artifact(
+                manifest_graph, manifest, content_location
+            ):
                 # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
                 if cc is None:
                     cc = manifest_graph.value(
                         subject=artifact, predicate=DCTERMS.conformsTo
                     )
+                    artifact_cc = True
+                else:
+                    artifact_cc = False
+
                 if cc is not None:
                     data_graph = load_graph(MANIFEST_ROOT_DIR / file)
                     if context_graph is not None:
                         data_graph += context_graph
-                    valid, error_msg = shacl_validate_resource(data_graph, get_validator(manifest, cc))
+                    valid, error_msg = shacl_validate_resource(
+                        data_graph, get_validator(manifest, cc)
+                    )
                     if not valid:
                         raise ValueError(
                             f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
                         )
 
+                if artifact_cc:
+                    cc = None
+
     return manifest_graph
 
 
 def setup_cli_parser(args=None):
-
     parser = argparse.ArgumentParser(
-      prog='Prezmanifest Validator',
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      epilog=dedent('''\
+        prog="Prezmanifest Validator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=dedent("""\
          A validator tool for Prez Manifests. 
          
          This tool performs SHACL validation on the Manifest, followed by existence checking for each resource - 
@@ -139,7 +154,8 @@ def setup_cli_parser(args=None):
          
          It also validates any resource with role Resource Data against a conformance claim. 
          See https://prez.dev/manifest/ for details.
-         '''))
+         """),
+    )
 
     parser.add_argument(
         "-v",

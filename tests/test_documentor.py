@@ -41,17 +41,6 @@ def test_create_table_01():
 
 
 def test_create_table_02():
-    expected = dedent(
-        """
-        Resource | Role | Description
-        --- | --- | ---
-        Catalogue Definition, [`catalogue.ttl`](catalogue.ttl) | [Catalogue Data](https://prez.dev/ManifestResourceRoles/CatalogueData) | The definition of, and medata for, the container which here is a dcat:Catalog object
-        Resource, [`vocabs/*.ttl`](vocabs/*.ttl) | [Resource Data](https://prez.dev/ManifestResourceRoles/ResourceData) | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
-        Profile Definition, [`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
-        Labels file, [`_background/labels.ttl`](_background/labels.ttl) | [Complete Catalogue and Resource Labels](https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels) | An RDF file containing all the labels for the container content                
-        """
-    ).strip()
-
     with pytest.raises(ValueError):
         create_table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
 

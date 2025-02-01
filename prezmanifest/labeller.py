@@ -19,12 +19,16 @@ from rdflib.namespace import PROF
 from prezmanifest.utils import get_files_from_artifact
 
 try:
-    from prezmanifest import MRR, OLIS, validate, load, __version__
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest import __version__
+    from prezmanifest.loader import load
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, OLIS, validate, __version__
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest import __version__
+    from prezmanifest.loader import load
 
 
 def label(
@@ -163,15 +167,16 @@ def setup_cli_parser(args=None):
         )
 
     parser = argparse.ArgumentParser(
-      prog='Prezmanifest Labeller',
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      epilog=dedent('''\
+        prog="Prezmanifest Labeller",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=dedent("""\
          A label checking tool for Prez Manifests. 
          
          This tool can list all the IRIs for subject, predicates & objects in all resources within a Manifest that
          don't have labels. Given a source of additional labels, such as the KurrawongAI Semantic Background, it can try
          to extract any missing labels and insert them into a Manifest as an additional labelling resource.  
-         '''))
+         """),
+    )
     group = parser.add_mutually_exclusive_group(required=True)
 
     parser.add_argument(

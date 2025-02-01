@@ -24,11 +24,13 @@ import httpx
 from kurra.db import upload
 from kurra.file import make_dataset, export_quads
 from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, OWL, PROF, RDF, SDO, SKOS
+from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
 from rdflib import Graph, URIRef, Dataset
 
 try:
-    from prezmanifest import MRR, OLIS, validate, __version__
+    from prezmanifest.definednamespaces import MRR, OLIS
+    from prezmanifest.validator import validate
+    from prezmanifest import __version__
     from prezmanifest.utils import get_files_from_artifact, KNOWN_ENTITY_CLASSES
 except ImportError:
     import sys
@@ -177,7 +179,7 @@ def load(
                     ) or c.value(predicate=RDF.type, object=SDO.DataCatalog)
                     if vg_iri is None:
                         raise ValueError(
-                            f"ERROR: Could not create a Virtual Graph as no Catalog found in the Catalogue data"
+                            "ERROR: Could not create a Virtual Graph as no Catalog found in the Catalogue data"
                         )
                     catalogue_iri = URIRef(str(vg_iri) + "-catalogue")
 
@@ -218,10 +220,14 @@ def load(
                                 # fg.bind("rdf", RDF)
 
                                 if role == MRR.ResourceData:
-                                    resource_iri = fg.value(subject=artifact, predicate=SDO.mainEntity)
+                                    resource_iri = fg.value(
+                                        subject=artifact, predicate=SDO.mainEntity
+                                    )
                                     if resource_iri is None:
                                         for entity_class in KNOWN_ENTITY_CLASSES:
-                                            v = fg.value(predicate=RDF.type, object=entity_class)
+                                            v = fg.value(
+                                                predicate=RDF.type, object=entity_class
+                                            )
                                             if v is not None:
                                                 resource_iri = v
 
@@ -285,14 +291,15 @@ def load(
 
 def setup_cli_parser(args=None):
     parser = argparse.ArgumentParser(
-      prog='Prezmanifest Labeller',
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      epilog=dedent('''\
+        prog="Prezmanifest Labeller",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=dedent("""\
          A data loading tool for Prez Manifests.
          
          This tool can extract all the content listed in a Prez Manifest and load it into either a single N-Quads file
          or into a Fuseki RDF DB instance by using a series of Graph Store Protocol POST commands.
-         '''))
+         """),
+    )
     group = parser.add_mutually_exclusive_group(required=True)
 
     parser.add_argument(

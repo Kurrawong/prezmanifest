@@ -10,7 +10,6 @@ except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import load
 
 
 def test_label_iris():

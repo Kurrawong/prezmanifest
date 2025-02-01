@@ -55,18 +55,30 @@ import sys
 from pathlib import Path
 from textwrap import dedent
 from urllib.parse import ParseResult, urlparse
-
-from rdflib import PROF
+from rdflib import URIRef, Literal, Graph
+from rdflib.namespace import DCAT, PROF, RDF, SDO, SKOS
 
 try:
-    from prezmanifest import MRR, validate, __version__
-    from prezmanifest.utils import *
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest.validator import validate
+    from prezmanifest import __version__
+    from prezmanifest.utils import (
+        get_identifier_from_file,
+        get_files_from_artifact,
+        load_graph,
+    )
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, validate, __version__
-    from prezmanifest.utils import *
+    from prezmanifest.definednamespaces import MRR
+    from prezmanifest.validator import validate
+    from prezmanifest import __version__
+    from prezmanifest.utils import (
+        get_identifier_from_file,
+        get_files_from_artifact,
+        load_graph,
+    )
 
 
 def create_table(manifest: Path, t="markdown") -> str:
@@ -96,11 +108,11 @@ def create_table(manifest: Path, t="markdown") -> str:
                 )
             if t == "asciidoc":
                 artifact_docs.append(
-                    f'link:{a}[`{a.split("/")[-1] if a.startswith("http") else a}`]'
+                    f"link:{a}[`{a.split('/')[-1] if a.startswith('http') else a}`]"
                 )
             else:
                 artifact_docs.append(
-                    f'[`{a.split("/")[-1] if a.startswith("http") else a}`]({a})'
+                    f"[`{a.split('/')[-1] if a.startswith('http') else a}`]({a})"
                 )
         role_iri = manifest_graph.value(o, PROF.hasRole)
         role_label = manifest_graph.value(role_iri, SKOS.prefLabel)
@@ -114,11 +126,15 @@ def create_table(manifest: Path, t="markdown") -> str:
             n = (
                 f"""{name}: +
  +
-* {''' +
-* '''.join(artifact_docs)}"""
+* {
+                    ''' +
+* '''.join(artifact_docs)
+                }"""
                 if name is not None
-                else f"{''' +
-* '''.join(artifact_docs)}"
+                else f"{
+                    ''' +
+* '''.join(artifact_docs)
+                }"
                 ""
             )
         else:
@@ -196,16 +212,17 @@ def setup_cli_parser(args=None):
         )
 
     parser = argparse.ArgumentParser(
-      prog='Prezmanifest Documentor',
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      epilog=dedent('''\
+        prog="Prezmanifest Documentor",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=dedent("""\
          A documentation generating tool for Prez Manifests. 
          
          This tool can create a Markdown or ASCCIIDOC table of Resources from a Prez Manifest file for use in
          README files in repositories.
          
          It can also add the IRIs of resources within a Manifest's 'Resource Data' object to a catalogue RDF file.
-         '''))
+         """),
+    )
 
     parser.add_argument(
         "-v",

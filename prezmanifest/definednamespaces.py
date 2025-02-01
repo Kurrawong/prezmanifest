@@ -3,7 +3,6 @@ from rdflib.term import URIRef
 
 
 class MRR(DefinedNamespace):
-
     _NS = Namespace("https://prez.dev/ManifestResourceRoles/")
     _fail = True
 
@@ -17,7 +16,6 @@ class MRR(DefinedNamespace):
 
 
 class OLIS(DefinedNamespace):
-
     _NS = Namespace("https://olis.dev/")
     _fail = True
 
@@ -30,7 +28,6 @@ class OLIS(DefinedNamespace):
 
 
 class PREZ(DefinedNamespace):
-
     _NS = Namespace("https://prez.dev/")
     _fail = True
 

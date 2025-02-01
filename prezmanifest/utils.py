@@ -21,8 +21,9 @@ KNOWN_ENTITY_CLASSES = [
     DCAT.Resource,
     SDO.CreativeWork,
     SDO.Dataset,
-    SDO.DefinedTerm
+    SDO.DefinedTerm,
 ]
+
 
 def get_files_from_artifact(
     manifest_graph: Graph, manifest: Path, artifact: Node
@@ -32,7 +33,7 @@ def get_files_from_artifact(
     This function will correctly interpret artifacts such as 'file.ttl', '*.ttl', '**/*.trig' etc.
     """
     if isinstance(artifact, Literal):
-        if not "*" in str(artifact):
+        if "*" not in str(artifact):
             return [manifest.parent / Path(str(artifact))]
         else:
             artifact_str = str(artifact)
@@ -75,7 +76,7 @@ def get_identifier_from_file(file: Path) -> List[URIRef]:
 def get_validator(manifest: Path, iri_or_path: URIRef | Literal) -> Graph:
     """Returns a graph from either the path of a SHACL file or a known IRI->profile validator file"""
     if isinstance(iri_or_path, URIRef):
-        if not iri_or_path in KNOWN_PROFILES.keys():
+        if iri_or_path not in KNOWN_PROFILES.keys():
             raise ValueError(
                 f"You have specified conformance to an unknown profile. Known profiles are {', '.join(KNOWN_PROFILES.keys())}"
             )
