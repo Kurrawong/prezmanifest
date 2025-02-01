@@ -5,7 +5,7 @@ from typer.testing import CliRunner
 from prezmanifest import validate
 from prezmanifest.cli import app
 
-runner = CliRunner(mix_stderr=False)
+runner = CliRunner()
 
 
 def test_validator_valid():

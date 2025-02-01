@@ -6,10 +6,7 @@ specification (see https://prez.dev/manifest/) and checks that all the resources
 
 ~$ python validate.py {MANIFEST_FILE_PATH}"""
 
-import argparse
-import sys
 from pathlib import Path
-from textwrap import dedent
 
 import httpx
 from kurra.utils import load_graph

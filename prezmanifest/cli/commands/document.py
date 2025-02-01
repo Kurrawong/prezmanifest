@@ -2,7 +2,6 @@ from pathlib import Path
 
 import typer
 
-from prezmanifest.cli.console import console
 from prezmanifest.documentor import TableFormats, catalogue, table
 
 app = typer.Typer(help="Prez Manifest document commands")

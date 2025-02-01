@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 
-from prezmanifest.cli.console import console
+from prezmanifest.labeller import LabellerOutputTypes, label
 
 app = typer.Typer(help="Prez Manifest label commands")
 
@@ -16,7 +16,8 @@ def iris_command(
         ..., help="The path of the Prez Manifest file to be labelled"
     ),
 ) -> None:
-    console.print(f"Labelled the Manifest at {manifest}")
+    for iri in label(manifest, LabellerOutputTypes.iris):
+        print(str(iri))
 
 
 @app.command(
@@ -27,12 +28,14 @@ def rdf_command(
     manifest: Path = typer.Argument(
         ..., help="The path of the Prez Manifest file to be labelled"
     ),
-    context: Path = typer.Argument(
-        ...,
+    context: str = typer.Argument(
+        None,
         help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which t obtain labels",
     ),
 ) -> None:
-    console.print(f"Labels obtained for {manifest} from {context}")
+    print(
+        label(manifest, LabellerOutputTypes.rdf, context).serialize(format="longturtle")
+    )
 
 
 @app.command(
@@ -48,6 +51,4 @@ def manifest_command(
         help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which t obtain labels",
     ),
 ) -> None:
-    console.print(
-        f"Labels obtained for {manifest} from {context} have been added back into the Manifest"
-    )
+    label(manifest, additional_context=context)

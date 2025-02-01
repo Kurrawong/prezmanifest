@@ -4,47 +4,33 @@ a given source of labels, such as KurrawongAI's Semantic Background (https://git
 repository.
 """
 
-import argparse
-import sys
+from enum import Enum
 from pathlib import Path
-from textwrap import dedent
-from typing import Literal as TLiteral
-from urllib.parse import ParseResult, urlparse
 
 from kurra.utils import load_graph
 from labelify import extract_labels, find_missing_labels
 from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF
 
+from prezmanifest.definednamespaces import MRR
+from prezmanifest.loader import load
 from prezmanifest.utils import get_files_from_artifact
 
-try:
-    from prezmanifest import __version__
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.loader import load
-except ImportError:
-    import sys
 
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import __version__
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.loader import load
+class LabellerOutputTypes(str, Enum):
+    iris = "iris"
+    rdf = "rdf"
+    manifest = "manifest"
 
 
 def label(
     manifest: Path,
-    output: TLiteral["iris", "rdf", "manifest"] = "manifest",
+    output_type: LabellerOutputTypes = LabellerOutputTypes.manifest,
     additional_context: Path | str | Graph = None,
 ) -> set | Graph | None:
     """ "Main function for labeller module"""
     # create the target from the Manifest
     manifest_content_graph = load(manifest, return_data_type="Graph")
-
-    output_types = ["iris", "rdf", "manifest"]
-    if output not in output_types:
-        raise ValueError(
-            f"Parameter output is {output} but must be one of {', '.join(output_types)}"
-        )
 
     # determine if any labelling context is given in Manifest
     context_graph = Graph()
@@ -62,12 +48,17 @@ def label(
     # add labels for system IRIs
     context_graph.parse(Path(__file__).parent / "system-labels.ttl")
 
-    if output == "iris":
+    if not isinstance(output_type, LabellerOutputTypes):
+        raise ValueError(
+            f"Invalid output_type value, must be one of {', '.join([x for x in LabellerOutputTypes])}"
+        )
+
+    if output_type == LabellerOutputTypes.iris:
         return find_missing_labels(
             manifest_content_graph + context_graph, additional_context
         )
 
-    elif output == "rdf":
+    elif output_type == LabellerOutputTypes.rdf:
         iris = find_missing_labels(manifest_content_graph, context_graph)
 
         if additional_context is not None:
@@ -75,15 +66,16 @@ def label(
         else:
             return None
 
-    else:  # output == manifest
+    else:  # output_type == LabellerOutputTypes.manifest
         # If this is selected, generate the "rdf" output and create a resource for it in the Manifest
-        # If there are no more missing labels then we have an mrr:CompleteCatalogueAndResourceLabels
+        # If there are no more missing labels then we have a mrr:CompleteCatalogueAndResourceLabels
         # else add mrr:IncompleteCatalogueAndResourceLabels
 
         # Generate labels for any IRIs missing them, using context given in the Manifest and any
         # Additional Context supplied
+
         manifest_only_graph = load_graph(manifest)
-        rdf_addition = label(manifest, "rdf", additional_context)
+        rdf_addition = label(manifest, LabellerOutputTypes.rdf, additional_context)
 
         if len(rdf_addition) > 0:
             new_artifact = manifest.parent / "labels-additional.ttl"
@@ -143,92 +135,9 @@ def label(
                 )
 
             manifest_only_graph.serialize(destination=manifest, format="longturtle")
-
         else:
             raise Warning(
                 "No new labels have been generated for content in this Manifest. "
                 "This could be because none were missing or because no new labels can be found in any "
                 "supplied additional context."
             )
-
-
-def setup_cli_parser(args=None):
-    def url_file_or_folder(input: str) -> ParseResult | Path:
-        parsed = urlparse(input)
-        if all([parsed.scheme, parsed.netloc]):
-            return parsed
-        path = Path(input)
-        if path.is_file():
-            return path
-        if path.is_dir():
-            return path
-        raise argparse.ArgumentTypeError(
-            f"{input} is not a valid input. Must be a file, folder or sparql endpoint"
-        )
-
-    parser = argparse.ArgumentParser(
-        prog="Prezmanifest Labeller",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=dedent("""\
-         A label checking tool for Prez Manifests. 
-         
-         This tool can list all the IRIs for subject, predicates & objects in all resources within a Manifest that
-         don't have labels. Given a source of additional labels, such as the KurrawongAI Semantic Background, it can try
-         to extract any missing labels and insert them into a Manifest as an additional labelling resource.  
-         """),
-    )
-    group = parser.add_mutually_exclusive_group(required=True)
-
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="{version}".format(version=__version__),
-    )
-
-    group.add_argument(
-        "-o",
-        "--output",
-        help="The form of output you want",
-        choices=["iris", "rdf", "manifest"],
-        default="manifest",
-    )
-
-    parser.add_argument(
-        "-a",
-        "--additional-context",
-        help="File, Folder or Sparql Endpoint to read additional context RDF from",
-        type=url_file_or_folder,
-    )
-
-    parser.add_argument(
-        "manifest",
-        help="A Manifest file to process",
-        type=Path,
-    )
-
-    return parser.parse_args(args)
-
-
-def cli(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
-    args = setup_cli_parser(args)
-
-    x = label(args.manifest, args.output, args.additional_context)
-
-    if args.output == "iris":
-        print("\n".join([str(iri) for iri in x]))
-    elif args.output == "rdf":
-        if x is not None:
-            print(x.serialize(format="longturtle"))
-
-    else:  # manifest
-        pass
-
-
-if __name__ == "__main__":
-    retval = cli(sys.argv[1:])
-    if retval is not None:
-        sys.exit(retval)

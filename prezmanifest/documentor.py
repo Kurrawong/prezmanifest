@@ -50,17 +50,12 @@ Profile Definition, [`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/b
 Labels file, [`_background/labels.ttl`](_background/labels.ttl) | [Complete Content and Container Labels](https://prez.dev/ManifestResourceRoles/CompleteContainerAndContentLabels) | An RDF file containing all the labels for the container content
 """
 
-import argparse
-import sys
 from enum import Enum
 from pathlib import Path
-from textwrap import dedent
-from urllib.parse import ParseResult, urlparse
 
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCAT, PROF, RDF, SDO, SKOS
 
-from prezmanifest import __version__
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import (
     get_files_from_artifact,
