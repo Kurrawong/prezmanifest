@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 
 from kurra.file import load_graph
-from rdflib import Literal, URIRef, Graph, Dataset, Node, BNode
+from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
 from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS
 
 KNOWN_PROFILES = {

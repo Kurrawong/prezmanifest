@@ -3,11 +3,10 @@ from pathlib import Path
 
 import httpx
 import pytest
-from kurra.db import upload, sparql
+from kurra.db import sparql, upload
 from rdflib import Dataset, URIRef
 
 from prezmanifest import load
-from tests.fuseki.conftest import fuseki_container
 
 
 def test_load_only_one_set():

@@ -1,11 +1,10 @@
 from pathlib import Path
 
-from kurra.db import upload, sparql
+from kurra.db import sparql, upload
 from rdflib import Graph
 from rdflib.compare import isomorphic
 
 from prezmanifest import label
-from tests.fuseki.conftest import fuseki_container
 
 
 def test_label_iris():

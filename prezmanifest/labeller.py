@@ -12,22 +12,22 @@ from typing import Literal as TLiteral
 from urllib.parse import ParseResult, urlparse
 
 from kurra.utils import load_graph
-from labelify import find_missing_labels, extract_labels
-from rdflib import Graph, BNode, Literal
+from labelify import extract_labels, find_missing_labels
+from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF
 
 from prezmanifest.utils import get_files_from_artifact
 
 try:
-    from prezmanifest.definednamespaces import MRR
     from prezmanifest import __version__
+    from prezmanifest.definednamespaces import MRR
     from prezmanifest.loader import load
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest.definednamespaces import MRR
     from prezmanifest import __version__
+    from prezmanifest.definednamespaces import MRR
     from prezmanifest.loader import load
 
 

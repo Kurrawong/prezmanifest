@@ -22,22 +22,21 @@ from typing import Literal as TLiteral
 
 import httpx
 from kurra.db import upload
-from kurra.file import make_dataset, export_quads
+from kurra.file import export_quads, make_dataset
 from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS
-from rdflib import Graph, URIRef, Dataset
+from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
 
 try:
-    from prezmanifest.definednamespaces import MRR, OLIS
-    from prezmanifest.validator import validate
     from prezmanifest import __version__
-    from prezmanifest.utils import get_files_from_artifact, KNOWN_ENTITY_CLASSES
+    from prezmanifest.definednamespaces import MRR, OLIS
+    from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
+    from prezmanifest.validator import validate
 except ImportError:
     import sys
 
     sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import MRR, OLIS, validate, __version__
-    from prezmanifest.utils import get_files_from_artifact, KNOWN_ENTITY_CLASSES
+    from prezmanifest import MRR, OLIS, __version__, validate
+    from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
 
 
 def load(

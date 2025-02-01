@@ -15,9 +15,9 @@ tasks:
     desc: Format Python code.
     cmds:
       - uv run ruff format $PYTHON_SRC
-      - uv run ruff check --fix $PYTHON_SRC
+      - uv run ruff check --select I --fix $PYTHON_SRC
       - uv run ruff format $TESTS_DIR
-      - uv run ruff check --fix $TESTS_DIR
+      - uv run ruff check --select I --fix $TESTS_DIR
 
   test:
     desc: Run tests

@@ -4,9 +4,12 @@ from textwrap import dedent
 import pytest
 from rdflib import Graph
 from rdflib.compare import isomorphic
-
-from prezmanifest.documentor import table, catalogue
 from typer.testing import CliRunner
+
+from prezmanifest.cli import app
+from prezmanifest.documentor import catalogue, table
+
+runner = CliRunner()
 
 
 def test_create_table_01():
@@ -42,9 +45,7 @@ def test_create_table_02():
 
 def test_create_catalogue():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = catalogue(
-        Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl"
-    )
+    actual = catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl")
 
     assert isomorphic(actual, expected)
 
@@ -126,9 +127,7 @@ def test_create_table_main_entity():
         """
     ).strip()
 
-    result = table(
-        Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
-    )
+    result = table(Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl")
 
     print()
     print()
@@ -144,9 +143,7 @@ def test_create_table_main_entity():
 
 def test_create_catalogue_multi():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = catalogue(
-        Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl"
-    )
+    actual = catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")
 
     assert isomorphic(actual, expected)
 
@@ -160,12 +157,15 @@ def test_create_catalogue_main_entity():
     assert isomorphic(actual, expected)
 
 
-from prezmanifest.cli import app
-runner = CliRunner()
-
-
 def test_table_cli():
-    result = runner.invoke(app, ["document", "table", str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")])
+    result = runner.invoke(
+        app,
+        [
+            "document",
+            "table",
+            str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl"),
+        ],
+    )
     actual = result.stdout
 
     assert "Catalogue Definition" in actual
@@ -194,7 +194,14 @@ def test_catalogue_cli():
         .        
         """
     )
-    result = runner.invoke(app, ["document", "catalogue", str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")])
+    result = runner.invoke(
+        app,
+        [
+            "document",
+            "catalogue",
+            str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl"),
+        ],
+    )
     actual = Graph().parse(data=result.stdout, format="turtle")
 
     assert isomorphic(expected, actual)
