@@ -1,0 +1,25 @@
+# https://taskfile.dev
+
+version: "3"
+
+env:
+  PYTHON_SRC: prezmanifest
+  TESTS_DIR: tests
+
+tasks:
+  install:
+    cmds:
+      - uv sync
+
+  format:
+    desc: Format Python code.
+    cmds:
+      - uv run ruff format $PYTHON_SRC
+      - uv run ruff check --fix $PYTHON_SRC
+      - uv run ruff format $TESTS_DIR
+      - uv run ruff check --fix $TESTS_DIR
+
+  test:
+    desc: Run tests
+    cmds:
+      - uv run pytest $TESTS_DIR -rP
