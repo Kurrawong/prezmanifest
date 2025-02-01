@@ -1,15 +1,9 @@
-from enum import Enum
 from pathlib import Path
 
 import typer
 
 from prezmanifest.cli.console import console
-
-
-class TableFormats(str, Enum):
-    asciidoc = "asciidoc"
-    markdown = "markdown"
-
+from prezmanifest.documentor import TableFormats, table, catalogue
 
 app = typer.Typer(help="Prez Manifest document commands")
 
@@ -29,9 +23,7 @@ def table_command(
         help="The format of the table to be created",
     ),
 ) -> None:
-    console.print(
-        f"Created a table for the Manifest at {manifest} in the {format} format"
-    )
+    print(table(manifest, table_format))
 
 
 @app.command(
@@ -43,4 +35,4 @@ def catalogue_command(
         ..., help="The path of the Prez Manifest file to be documented"
     ),
 ) -> None:
-    console.print(f"Created a table for the Manifest at {manifest}")
+    print(catalogue(manifest).serialize(format="longturtle"))

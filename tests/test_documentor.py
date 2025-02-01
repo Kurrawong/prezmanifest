@@ -5,7 +5,8 @@ import pytest
 from rdflib import Graph
 from rdflib.compare import isomorphic
 
-from prezmanifest import create_table, create_catalogue
+from prezmanifest.documentor import table, catalogue
+from typer.testing import CliRunner
 
 
 def test_create_table_01():
@@ -20,7 +21,7 @@ def test_create_table_01():
         """
     ).strip()
 
-    result = create_table(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
+    result = table(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")
 
     print()
     print()
@@ -36,12 +37,12 @@ def test_create_table_01():
 
 def test_create_table_02():
     with pytest.raises(ValueError):
-        create_table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
+        table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
 
 
 def test_create_catalogue():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = create_catalogue(
+    actual = catalogue(
         Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl"
     )
 
@@ -60,7 +61,7 @@ def test_create_table_multi():
         """
     ).strip()
 
-    result = create_table(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")
+    result = table(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")
 
     print()
     print()
@@ -97,7 +98,7 @@ def test_create_table_multi_asciidoc():
         """
     ).strip()
 
-    result = create_table(
+    result = table(
         Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl", t="asciidoc"
     )
 
@@ -125,7 +126,7 @@ def test_create_table_main_entity():
         """
     ).strip()
 
-    result = create_table(
+    result = table(
         Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
     )
 
@@ -143,7 +144,7 @@ def test_create_table_main_entity():
 
 def test_create_catalogue_multi():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = create_catalogue(
+    actual = catalogue(
         Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl"
     )
 
@@ -152,8 +153,48 @@ def test_create_catalogue_multi():
 
 def test_create_catalogue_main_entity():
     expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
-    actual = create_catalogue(
+    actual = catalogue(
         Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
     )
 
     assert isomorphic(actual, expected)
+
+
+from prezmanifest.cli import app
+runner = CliRunner()
+
+
+def test_table_cli():
+    result = runner.invoke(app, ["document", "table", str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")])
+    actual = result.stdout
+
+    assert "Catalogue Definition" in actual
+
+
+def test_catalogue_cli():
+    expected = Graph().parse(
+        data="""
+        PREFIX ns1: <http://purl.org/linked-data/registry#>
+        PREFIX schema: <https://schema.org/>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        
+        <https://example.com/demo-vocabs>
+            a schema:DataCatalog ;
+            ns1:status <https://linked.data.gov.au/def/reg-statuses/experimental> ;
+            schema:codeRepository "https://github.com/kurrawong/demo-vocabs" ;
+            schema:creator <https://kurrawong.ai> ;
+            schema:dateCreated "2023"^^xsd:gYear ;
+            schema:dateModified "2024-10-16"^^xsd:date ;
+            schema:description "A testing catalogue for the Prez Manifest Loader tool" ;
+            schema:hasPart
+                <https://example.com/demo-vocabs/image-test> ,
+                <https://example.com/demo-vocabs/language-test> ;
+            schema:name "Demo Vocabularies" ;
+            schema:publisher <https://kurrawong.ai> ;
+        .        
+        """
+    )
+    result = runner.invoke(app, ["document", "catalogue", str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl")])
+    actual = Graph().parse(data=result.stdout, format="turtle")
+
+    assert isomorphic(expected, actual)

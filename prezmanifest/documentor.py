@@ -52,36 +52,30 @@ Labels file, [`_background/labels.ttl`](_background/labels.ttl) | [Complete Cont
 
 import argparse
 import sys
+from enum import Enum
 from pathlib import Path
 from textwrap import dedent
 from urllib.parse import ParseResult, urlparse
-from rdflib import URIRef, Literal, Graph
+
+from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCAT, PROF, RDF, SDO, SKOS
 
-try:
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.validator import validate
-    from prezmanifest import __version__
-    from prezmanifest.utils import (
-        get_identifier_from_file,
-        get_files_from_artifact,
-        load_graph,
-    )
-except ImportError:
-    import sys
-
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest.definednamespaces import MRR
-    from prezmanifest.validator import validate
-    from prezmanifest import __version__
-    from prezmanifest.utils import (
-        get_identifier_from_file,
-        get_files_from_artifact,
-        load_graph,
-    )
+from prezmanifest import __version__
+from prezmanifest.definednamespaces import MRR
+from prezmanifest.utils import (
+    get_files_from_artifact,
+    get_identifier_from_file,
+    load_graph,
+)
+from prezmanifest.validator import validate
 
 
-def create_table(manifest: Path, t="markdown") -> str:
+class TableFormats(str, Enum):
+    asciidoc = "asciidoc"
+    markdown = "markdown"
+
+
+def table(manifest: Path, t="markdown") -> str:
     # load and validate manifest
     validate(manifest)
     manifest_graph = load_graph(manifest)
@@ -157,7 +151,7 @@ def create_table(manifest: Path, t="markdown") -> str:
     return (header + body + footer).strip()
 
 
-def create_catalogue(manifest: Path):
+def catalogue(manifest: Path) -> Graph:
     MANIFEST_ROOT_DIR = manifest.parent
     # load and validate manifest
     validate(manifest)
@@ -195,78 +189,3 @@ def create_catalogue(manifest: Path):
                             catalogue.add((catalogue_iri, SDO.hasPart, iri))
 
     return catalogue
-
-
-def setup_cli_parser(args=None):
-    def url_file_or_folder(input: str) -> ParseResult | Path:
-        parsed = urlparse(input)
-        if all([parsed.scheme, parsed.netloc]):
-            return parsed
-        path = Path(input)
-        if path.is_file():
-            return path
-        if path.is_dir():
-            return path
-        raise argparse.ArgumentTypeError(
-            f"{input} is not a valid input. Must be a file, folder or sparql endpoint"
-        )
-
-    parser = argparse.ArgumentParser(
-        prog="Prezmanifest Documentor",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=dedent("""\
-         A documentation generating tool for Prez Manifests. 
-         
-         This tool can create a Markdown or ASCCIIDOC table of Resources from a Prez Manifest file for use in
-         README files in repositories.
-         
-         It can also add the IRIs of resources within a Manifest's 'Resource Data' object to a catalogue RDF file.
-         """),
-    )
-
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="{version}".format(version=__version__),
-    )
-
-    parser.add_argument(
-        "function",
-        help="The documentation function you wish to perform",
-        choices=["table", "catalogue"],
-    )
-
-    parser.add_argument(
-        "-t",
-        "--type",
-        help="The type of markup you want to export: Markdown or ASCCIDOC. Only relevant for the 'table' function",
-        choices=["markdown", "asciidoc"],
-        default="markdown",
-    )
-
-    parser.add_argument(
-        "input",
-        help="A Prez Manifest file",
-        type=url_file_or_folder,
-    )
-
-    return parser.parse_args(args)
-
-
-def cli(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
-    args = setup_cli_parser(args)
-
-    if args.function == "table":
-        print(create_table(args.input, t=args.type))
-    else:
-        print(create_catalogue(args.input).serialize(format="longturtle"))
-
-
-if __name__ == "__main__":
-    retval = cli(sys.argv[1:])
-    if retval is not None:
-        sys.exit(retval)
