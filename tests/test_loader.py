@@ -6,13 +6,8 @@ import pytest
 from kurra.db import upload, sparql
 from rdflib import Dataset, URIRef
 
-try:
-    from prezmanifest import load
-except ImportError:
-    import sys
-
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import load
+from prezmanifest import load
+from tests.fuseki.conftest import fuseki_container
 
 
 def test_load_only_one_set():

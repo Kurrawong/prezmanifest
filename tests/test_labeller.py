@@ -4,12 +4,8 @@ from kurra.db import upload, sparql
 from rdflib import Graph
 from rdflib.compare import isomorphic
 
-try:
-    from prezmanifest import label
-except ImportError:
-    import sys
-
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
+from prezmanifest import label
+from tests.fuseki.conftest import fuseki_container
 
 
 def test_label_iris():

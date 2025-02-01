@@ -5,13 +5,7 @@ import pytest
 from rdflib import Graph
 from rdflib.compare import isomorphic
 
-try:
-    from prezmanifest import create_table, create_catalogue
-except ImportError:
-    import sys
-
-    sys.path.append(str(Path(__file__).parent.parent.resolve()))
-    from prezmanifest import create_table, create_catalogue
+from prezmanifest import create_table, create_catalogue
 
 
 def test_create_table_01():
