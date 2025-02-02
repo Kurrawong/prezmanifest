@@ -4,7 +4,7 @@ import typer
 
 from prezmanifest.labeller import LabellerOutputTypes, label
 
-app = typer.Typer(help="Prez Manifest label commands")
+app = typer.Typer(help="Discover labels missing from data in a in a Prez Manifest and patch them")
 
 
 @app.command(

@@ -14,10 +14,6 @@ dependencies = [
 ]
 
 [project.scripts]
-pmdoc = "prezmanifest.documentor:cli"
-pmlabel = "prezmanifest.labeller:cli"
-pmload = "prezmanifest.loader:cli"
-pmval = "prezmanifest.validator:cli"
 pm = "prezmanifest.cli:app"
 
 [dependency-groups]

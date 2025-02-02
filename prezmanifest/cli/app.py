@@ -18,7 +18,7 @@ app = typer.Typer(
 def main(
     version: Annotated[bool, typer.Option("--version", "-v", is_eager=True)] = False,
 ):
-    """Main callback for the CLI app"""
+    """PrezManifest top-level Command Line Interface. Ask for help (-h) for each Command"""
     if version:
         console.print(__version__)
         raise typer.Exit()

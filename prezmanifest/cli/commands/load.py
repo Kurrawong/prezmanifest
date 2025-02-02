@@ -5,7 +5,7 @@ import typer
 
 from prezmanifest.loader import load
 
-app = typer.Typer(help="Prez Manifest load commands")
+app = typer.Typer(help="Load a Prez Manifest's content into a file or DB")
 
 
 @app.command(

@@ -4,7 +4,7 @@ import typer
 
 from prezmanifest.documentor import TableFormats, catalogue, table
 
-app = typer.Typer(help="Prez Manifest document commands")
+app = typer.Typer(help="Create documentation from a Prez Manifest")
 
 
 @app.command(
