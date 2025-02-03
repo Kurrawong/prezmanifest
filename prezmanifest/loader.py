@@ -22,7 +22,7 @@ import httpx
 from kurra.db import upload
 from kurra.file import export_quads, make_dataset
 from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
+from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef, Literal
 
 from prezmanifest.definednamespaces import MRR, OLIS
 from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
@@ -199,7 +199,7 @@ def load(
                         subject=vg_iri,
                         predicate=SDO.name | DCTERMS.title | SKOS.prefLabel,
                     ) or str(vg_iri)
-                    vg.add((vg_iri, SDO.name, vg_name))
+                    vg.add((vg_iri, SDO.name, Literal(vg_name)))
 
                     # export the Catalogue data
                     _export(
