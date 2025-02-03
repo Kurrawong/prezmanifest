@@ -107,6 +107,7 @@ def load(
                             data=g,
                             iri=g.identifier,
                             client=client,
+                            sparql_endpoint=sparql_endpoint,
                             destination_file=None,
                             return_data_type=None,
                         )
