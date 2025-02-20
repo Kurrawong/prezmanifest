@@ -1,10 +1,11 @@
 from collections.abc import Generator
 from pathlib import Path
-from typing import List
 
 from kurra.file import load_graph
-from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
-from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS
+from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef, Namespace
+from rdflib.namespace import DCAT, OWL, RDF, SDO, SKOS, PROF
+
+from prezmanifest.definednamespaces import PREZ, MRR
 
 KNOWN_PROFILES = {
     URIRef("http://www.opengis.net/def/geosparql"): Path(__file__).parent
@@ -27,7 +28,7 @@ KNOWN_ENTITY_CLASSES = [
 
 def get_files_from_artifact(
     manifest_graph: Graph, manifest: Path, artifact: Node
-) -> List[Path] | Generator[Path]:
+) -> list[Path] | Generator[Path]:
     """Returns an iterable (list or generator) of Path objects for files within an artifact literal.
 
     This function will correctly interpret artifacts such as 'file.ttl', '*.ttl', '**/*.trig' etc.
@@ -53,7 +54,7 @@ def get_files_from_artifact(
         raise TypeError(f"Unsupported artifact type: {type(artifact)}")
 
 
-def get_identifier_from_file(file: Path) -> List[URIRef]:
+def get_identifier_from_file(file: Path) -> list[URIRef]:
     """Returns a list if RDFLib graph identifier (URIRefs) from a triples or quads file
     for all owl:Ontology and skos:ConceptScheme objects"""
     if file.name.endswith(".ttl"):
@@ -84,3 +85,49 @@ def get_validator(manifest: Path, iri_or_path: URIRef | Literal) -> Graph:
 
     MANIFEST_ROOT_DIR = manifest.parent
     return load_graph(MANIFEST_ROOT_DIR / iri_or_path)
+
+
+def get_manifest_path_and_graph(manifest: Path | tuple[Graph, Path]) -> (Path, Graph):
+    if isinstance(manifest, Path):
+        MANIFEST_ROOT_DIR = Path(manifest).parent.resolve()
+        manifest_graph = load_graph(manifest)
+    else:
+        manifest_graph = manifest[0]
+        MANIFEST_ROOT_DIR = manifest[1]
+
+    return MANIFEST_ROOT_DIR, manifest_graph
+
+
+def get_catalogue_iri_from_manifest(manifest: Path | tuple[Graph, Path]) -> URIRef:
+    MANIFEST_ROOT_DIR, manifest_graph = get_manifest_path_and_graph(manifest)
+
+    for m in manifest_graph.subjects(RDF.type, PREZ.Manifest):
+        for r in manifest_graph.objects(m, PROF.hasResource):
+            for role in manifest_graph.objects(r, PROF.hasRole):
+                if role == MRR.CatalogueData:
+                    a = manifest_graph.value(subject=r, predcate=PROF.hasArtifact)
+                    if isinstance(a, Literal):
+                        a_graph = load_graph(MANIFEST_ROOT_DIR / str(a))
+                        return (a_graph.value( predicate=RDF.type, object=DCAT.Catalog)
+                                or a_graph.value(predicate=RDF.type, object=SDO.DataCatalog))
+
+    raise ValueError(f"No catalogue object IRI found in Manifest {MANIFEST_ROOT_DIR}")
+
+
+
+def does_target_contain_this_catalogue(
+    manifest: Path | Graph,
+    sparql_endpoint: str = None,
+    sparql_username: str = None,
+    sparql_password: str = None,
+    destination_file: Path = None,
+) -> bool:
+    MANIFEST_ROOT_DIR, manifest_graph = get_manifest_path_and_graph(manifest)
+
+    # get the IRI of the catalogue from the manifest
+    cat_iri = get_catalogue_iri_from_manifest(manifest)
+
+
+
+    # check if the IRI is in the target
+    pass
