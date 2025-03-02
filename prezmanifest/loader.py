@@ -25,7 +25,10 @@ from kurra.utils import load_graph
 from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
 
 from prezmanifest.definednamespaces import MRR, OLIS
-from prezmanifest.utils import KNOWN_ENTITY_CLASSES, get_files_from_artifact
+from prezmanifest.utils import (
+    KNOWN_ENTITY_CLASSES,
+    get_files_from_artifact,
+)
 from prezmanifest.validator import validate
 
 
@@ -296,29 +299,3 @@ def load(
         pass  # return nothing
 
 
-def sync(
-    manifest: Path,
-    sparql_endpoint: str = None,
-    sparql_username: str = None,
-    sparql_password: str = None,
-) -> None:
-    # does the target have a VG for this manifest?
-    # if no
-    #   raise error
-
-
-    # inspect the source to see if it's Git
-    # if yes
-    #   inspect the target to see if it contains Git info
-    #   get Git info per resource
-    # if no
-    #   try file system info
-    #   if yes
-    #       inspect target for file system info
-    #   if no
-    #       inspect resources for content versioning info
-
-
-
-
-    return None

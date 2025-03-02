@@ -32,7 +32,7 @@ def test_validator_invalid_02():
     except ValueError as e:
         assert (
             str(e)
-            == "Remote content link non-resolving: https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttlx"
+            == "Remote content link non-resolving: https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttlx"
         )
 
 

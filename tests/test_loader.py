@@ -82,7 +82,20 @@ def test_fuseki_query(fuseki_container):
 
     r = sparql(SPARQL_ENDPOINT, q)
 
-    print(r)
+    q = """
+        SELECT (COUNT(*) AS ?count) 
+        WHERE {
+          GRAPH <XXX> {
+            ?s ?p ?o
+          }
+        }        
+        """.replace("XXX", TESTING_GRAPH)
+
+    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+
+    count = int(r[0]["count"]["value"])
+
+    assert count == 0
 
 
 def test_load_to_quads_file():

@@ -16,7 +16,7 @@ from rdflib import BNode, Dataset, Graph
 from rdflib.namespace import DCTERMS, PROF, SDO
 
 from prezmanifest.definednamespaces import MRR
-from prezmanifest.utils import get_files_from_artifact, get_validator
+from prezmanifest.utils import get_files_from_artifact, get_validator_graph
 
 
 def validate(manifest: Path) -> Graph:
@@ -117,7 +117,7 @@ def validate(manifest: Path) -> Graph:
                     if context_graph is not None:
                         data_graph += context_graph
                     valid, error_msg = shacl_validate_resource(
-                        data_graph, get_validator(manifest, cc)
+                        data_graph, get_validator_graph(manifest, cc)
                     )
                     if not valid:
                         raise ValueError(

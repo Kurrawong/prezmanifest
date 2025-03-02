@@ -179,7 +179,7 @@ def test_label_manifest(fuseki_container):
                     schema:name "Resource Data" ;
                 ] ,
                 [
-                    prof:hasArtifact "https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl" ;
+                    prof:hasArtifact "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" ;
                     prof:hasRole mrr:CatalogueAndResourceModel ;
                     schema:description "The default Prez profile for Records API" ;
                     schema:name "Profile Definition" ;
@@ -303,7 +303,7 @@ def test_label_cli_rdf(fuseki_container):
 #                     schema:name "Resource Data" ;
 #                 ] ,
 #                 [
-#                     prof:hasArtifact "https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl" ;
+#                     prof:hasArtifact "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" ;
 #                     prof:hasRole mrr:CatalogueAndResourceModel ;
 #                     schema:description "The default Prez profile for Records API" ;
 #                     schema:name "Profile Definition" ;

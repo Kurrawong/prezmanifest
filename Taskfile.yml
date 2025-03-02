@@ -23,3 +23,9 @@ tasks:
     desc: Run tests
     cmds:
       - uv run pytest $TESTS_DIR -rP
+
+  fusekiup:
+    cmd: docker compose up -d
+
+  fusekidown:
+    cmd: docker compose down

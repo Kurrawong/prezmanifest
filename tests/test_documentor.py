@@ -19,7 +19,7 @@ def test_create_table_01():
         --- | --- | ---
         Catalogue Definition:<br />[`catalogue.ttl`](catalogue.ttl) | [Catalogue Data](https://prez.dev/ManifestResourceRoles/CatalogueData) | The definition of, and medata for, the container which here is a dcat:Catalog object
         Resource Data:<br />[`vocabs/*.ttl`](vocabs/*.ttl) | [Resource Data](https://prez.dev/ManifestResourceRoles/ResourceData) | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
-        Profile Definition:<br />[`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
+        Profile Definition:<br />[`ogc_records_profile.ttl`](https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
         Labels:<br />[`_background/labels.ttl`](_background/labels.ttl) | [Complete Catalogue and Resource Labels](https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels) | An RDF file containing all the labels for the container content                
         """
     ).strip()
@@ -57,7 +57,7 @@ def test_create_table_multi():
         --- | --- | ---
         Catalogue Definition:<br />[`catalogue-metadata.ttl`](catalogue-metadata.ttl) | [Catalogue Data](https://prez.dev/ManifestResourceRoles/CatalogueData) | The definition of, and medata for, the container which here is a dcat:Catalog object
         Resource Data:<br />[`vocabs/image-test.ttl`](vocabs/image-test.ttl)<br />[`vocabs/language-test.ttl`](vocabs/language-test.ttl) | [Resource Data](https://prez.dev/ManifestResourceRoles/ResourceData) | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
-        Profile Definition:<br />[`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
+        Profile Definition:<br />[`ogc_records_profile.ttl`](https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
         Labels:<br />[`_background/labels.ttl`](_background/labels.ttl) | [Complete Catalogue and Resource Labels](https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels) | An RDF file containing all the labels for the container content                
         """
     ).strip()
@@ -91,7 +91,7 @@ def test_create_table_multi_asciidoc():
         * link:vocabs/language-test.ttl[`vocabs/language-test.ttl`] | https://prez.dev/ManifestResourceRoles/ResourceData[Resource Data] | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
         | Profile Definition: +
          +
-        * link:https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl[`ogc_records_profile.ttl`] | https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel[Catalogue & Resource Model] | The default Prez profile for Records API
+        * link:https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl[`ogc_records_profile.ttl`] | https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel[Catalogue & Resource Model] | The default Prez profile for Records API
         | Labels: +
          +
         * link:_background/labels.ttl[`_background/labels.ttl`] | https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels[Complete Catalogue and Resource Labels] | An RDF file containing all the labels for the container content
@@ -123,7 +123,7 @@ def test_create_table_main_entity():
         --- | --- | ---
         Catalogue Definition:<br />[`catalogue.ttl`](catalogue.ttl) | [Catalogue Data](https://prez.dev/ManifestResourceRoles/CatalogueData) | The definition of, and medata for, the container which here is a dcat:Catalog object
         Resource Data:<br />[`vocabs/image-test.ttl`](vocabs/image-test.ttl)<br />[`vocabs/language-test.ttl`](vocabs/language-test.ttl) | [Resource Data](https://prez.dev/ManifestResourceRoles/ResourceData) | skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder
-        Profile Definition:<br />[`ogc_records_profile.ttl`](https://github.com/RDFLib/prez/blob/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
+        Profile Definition:<br />[`ogc_records_profile.ttl`](https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl) | [Catalogue & Resource Model](https://prez.dev/ManifestResourceRoles/CatalogueAndResourceModel) | The default Prez profile for Records API
         Labels:<br />[`_background/labels.ttl`](_background/labels.ttl) | [Complete Catalogue and Resource Labels](https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels) | An RDF file containing all the labels for the container content                
         """
     ).strip()

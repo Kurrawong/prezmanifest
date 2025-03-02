@@ -154,3 +154,22 @@ val:0.5.0
     schema:name "KurrawongAI" ;
     schema:url "https://kurrawong.ai"^^xsd:anyURI ;
 .
+
+# val:ShapeN0X
+#    a sh:NodeShape ;
+#    sh:targetClass prez:Manifest ;
+#    sh:validator val:hasOneCatalogueData ;
+#    sh:sparql [
+#        a sh:SPARQLConstraint ;
+#        sh:prefixes mrr: ;
+#	    sh:select """
+#            ASK
+#            WHERE {
+#                ?r
+#                    prof:hasRole mrr:CatalogueData ;
+#                    prof:hasArtifact ?a ;
+#                .
+#            }
+#		    """ ;
+#    ] ;
+# .
