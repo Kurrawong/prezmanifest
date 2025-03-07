@@ -160,7 +160,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "1.4.5"
+version = "1.4.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -169,9 +169,9 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/52/5592b36f9228bf1d2f67e0961d4888c133ef1d0e0b3da5f320800444f4cb/kurra-1.4.5.tar.gz", hash = "sha256:35cb1d49a8800dbc27ae8ec96e7f916848bcf83a889b554c30ff91fa1ec7dd3f", size = 95666 }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/a9/602a2a600b71c61999d6c740891d8e0c07108a31f228e37320dd43e49425/kurra-1.4.7.tar.gz", hash = "sha256:ab41bb20c6f1bdcecd3ea9db2738581c51e9b63813a0e753adb0c812924f18d8", size = 95986 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/eb/85/58686d7c4a6c44ee45063144cb2a058e9a742153ed004149aaa46816b468/kurra-1.4.5-py3-none-any.whl", hash = "sha256:89fc51ca863e87045f25906cfb90b28c4e2643cb64a70eff9fd1a70a16612632", size = 18173 },
+    { url = "https://files.pythonhosted.org/packages/18/19/10fcd0596eceb85814cb450a13f432ab758b7bd1161747c39270bd0f2215/kurra-1.4.7-py3-none-any.whl", hash = "sha256:34ad239889536d13808f8c3522a4e108244dd86023708a3279ee8583a60c6f0a", size = 18207 },
 ]
 
 [[package]]
@@ -320,7 +320,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -328,9 +328,9 @@ dependencies = [
     { name = "packaging" },
     { name = "pluggy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/35/30e0d83068951d90a01852cb1cef56e5d8a09d20c7f511634cc2f7e0372a/pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761", size = 1445919 }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/92/76a1c94d3afee238333bc0a42b82935dd8f9cf8ce9e336ff87ee14d9e1cf/pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6", size = 343083 },
+    { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634 },
 ]
 
 [[package]]
@@ -457,7 +457,7 @@ wheels = [
 
 [[package]]
 name = "testcontainers"
-version = "4.9.1"
+version = "4.9.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docker" },
@@ -466,9 +466,9 @@ dependencies = [
     { name = "urllib3" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/be/32bcd4143bca261b70e02109d75c2dbb5eb3e47e72e99efac9ca6ae88f76/testcontainers-4.9.1.tar.gz", hash = "sha256:37fe9a222549ddb788463935965b16f91809e9a8d654f437d6a59eac9b77f76f", size = 62463 }
+sdist = { url = "https://files.pythonhosted.org/packages/83/15/68cee852bcafc18827db4deb6aa0dd3b2621eb21130a522184523ef2d379/testcontainers-4.9.2.tar.gz", hash = "sha256:348c72d369d0bd52b57ab4f07a965ae9562837098c28f0522b969b064b779f10", size = 62595 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/d1/bba4ad5dca32d48c0e9c4845e84fa44933308c595d22c9e4b977a5007c4b/testcontainers-4.9.1-py3-none-any.whl", hash = "sha256:315fb94b42a383872df530aa45319745278ef0cc18b9cfcdc231a75d14afa5a0", size = 105478 },
+    { url = "https://files.pythonhosted.org/packages/a2/71/5d4656efa6cf4a8b3bc361170b7df97fdd734aba1c7bfe592058bbab21e4/testcontainers-4.9.2-py3-none-any.whl", hash = "sha256:36bd2b58d91f2fc7ac4f4a73c6ec00e5e60c259c10f208dbfe3161029889be92", size = 105644 },
 ]
 
 [[package]]

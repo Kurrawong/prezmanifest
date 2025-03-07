@@ -7,6 +7,8 @@ from kurra.file import export_quads
 from kurra.utils import load_graph
 from typer.testing import CliRunner
 from datetime import datetime
+
+import prezmanifest.loader
 from prezmanifest.utils import *
 from tests.fuseki.conftest import fuseki_container
 
@@ -100,18 +102,37 @@ def test_get_validator_graph():
     assert len(g2) == 29
 
 
-# TODO
 def test_get_manifest_paths_and_graph():
-    pass
+    MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
+
+    extracted_file_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(MANIFEST)
+
+    assert extracted_file_path == MANIFEST
+    assert manifest_root == MANIFEST.parent
+    assert len(manifest_graph) == 21
 
 
 def test_get_catalogue_iri_from_manifest():
-    pass
+    MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
+
+    assert get_catalogue_iri_from_manifest(MANIFEST) == URIRef("https://example.com/demo-vocabs")
 
 
-# TODO
-def test_does_target_contain_this_catalogue():
-    pass
+def test_target_contains_this_manifests_catalogue(fuseki_container):
+    MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
+    port = fuseki_container.get_exposed_port(3030)
+
+    with httpx.Client() as client:
+        SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
+
+        # positive test
+        sparql(SPARQL_ENDPOINT, "DROP ALL", client)
+        prezmanifest.loader.load(MANIFEST, SPARQL_ENDPOINT)
+        assert target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
+
+        # negative test
+        sparql(SPARQL_ENDPOINT, "DROP ALL", client)
+        assert not target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
 
 
 # TODO
@@ -119,9 +140,12 @@ def test_make_httpx_client():
     pass
 
 
-# TODO
-def test_get_main_entity_iri_via_conformance_claims():
-    pass
+def test_get_main_entity_iri_of_artifact():
+    MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest-conformance.ttl"
+
+    assert get_main_entity_iri_of_artifact(MANIFEST.parent / "vocabs/image-test.ttl", MANIFEST) == URIRef("https://example.com/demo-vocabs/image-test")
+
+    assert get_main_entity_iri_of_artifact(MANIFEST.parent / "vocabs/language-test.ttl", MANIFEST) == URIRef("https://example.com/demo-vocabs/language-test")
 
 
 def test_get_version_indicators_for_artifact():

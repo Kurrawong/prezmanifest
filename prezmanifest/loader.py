@@ -30,6 +30,7 @@ from prezmanifest.utils import (
     get_files_from_artifact,
 )
 from prezmanifest.validator import validate
+from prezmanifest.utils import get_manifest_paths_and_graph
 
 
 class ReturnDatatype(str, Enum):
@@ -46,6 +47,8 @@ def load(
     destination_file: Path = None,
     return_data_type: ReturnDatatype = ReturnDatatype.none,
 ) -> None | Graph | Dataset:
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
     (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
     given SPARQL Endpoint."""
@@ -82,14 +85,14 @@ def load(
                     )
                 sparql_password = getpass()
             auth = httpx.BasicAuth(sparql_username, sparql_password)
-        client = httpx.Client(base_url=sparql_endpoint, auth=auth)
+        http_client = httpx.Client(base_url=sparql_endpoint, auth=auth)
     else:
-        client = None
+        http_client = None
 
     def _export(
         data: Graph | Dataset,
         iri,
-        client: httpx.Client | None,
+        http_client: httpx.Client | None,
         sparql_endpoint,
         destination_file,
         return_data_type,
@@ -109,7 +112,7 @@ def load(
                         _export(
                             data=g,
                             iri=g.identifier,
-                            client=client,
+                            http_client=http_client,
                             destination_file=None,
                             return_data_type=None,
                         )
@@ -141,7 +144,7 @@ def load(
                     file_or_str_or_graph=data,
                     graph_name=iri,
                     append=append,
-                    http_client=client,
+                    http_client=http_client,
                 )
             else:  # returning data
                 if return_data_type == ReturnDatatype.dataset:
@@ -198,7 +201,7 @@ def load(
                     # add to the System Graph
                     vg.add((vg_iri, RDF.type, OLIS.VirtualGraph))
                     vg.add((vg_iri, OLIS.isAliasFor, catalogue_iri))
-                    vg_name = c.value(
+                    vg_name = c.value(  # type: ignore
                         subject=vg_iri,
                         predicate=SDO.name | DCTERMS.title | SKOS.prefLabel,
                     ) or str(vg_iri)
@@ -208,7 +211,7 @@ def load(
                     _export(
                         data=c,
                         iri=catalogue_iri,
-                        client=client,
+                        http_client=http_client,
                         sparql_endpoint=sparql_endpoint,
                         destination_file=destination_file,
                         return_data_type=return_data_type,
@@ -225,7 +228,7 @@ def load(
                 ]:
                     for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                         for f in get_files_from_artifact(
-                            manifest_graph, manifest, artifact
+                                (manifest_path, manifest_root, manifest_graph), artifact
                         ):
                             if str(f.name).endswith(".ttl"):
                                 fg = Graph().parse(f)
@@ -260,7 +263,7 @@ def load(
                                 _export(
                                     data=fg,
                                     iri=resource_iri,
-                                    client=client,
+                                    http_client=http_client,
                                     sparql_endpoint=sparql_endpoint,
                                     destination_file=destination_file,
                                     return_data_type=return_data_type,
@@ -274,7 +277,7 @@ def load(
                                 _export(
                                     data=d,
                                     iri=None,
-                                    client=client,
+                                    http_client=http_client,
                                     sparql_endpoint=sparql_endpoint,
                                     destination_file=destination_file,
                                     return_data_type=return_data_type,
@@ -284,7 +287,7 @@ def load(
         _export(
             data=vg,
             iri=OLIS.SystemGraph,
-            client=client,
+            http_client=http_client,
             sparql_endpoint=sparql_endpoint,
             destination_file=destination_file,
             return_data_type=return_data_type,

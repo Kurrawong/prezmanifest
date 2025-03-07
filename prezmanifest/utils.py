@@ -75,7 +75,7 @@ def get_files_from_artifact(
 
     if isinstance(artifact, Literal):
         if "*" not in str(artifact):
-            return [manifest.parent / path_or_url(str(artifact))]
+            return [manifest_root / path_or_url(str(artifact))]
         else:
             artifact_str = str(artifact)
             glob_marker_location = artifact_str.find("*")
@@ -84,7 +84,7 @@ def get_files_from_artifact(
                 artifact_str[glob_marker_location:],
             ]
 
-            return Path(manifest.parent / path_or_url(glob_parts[0])).glob(glob_parts[1])
+            return Path(manifest_root / path_or_url(glob_parts[0])).glob(glob_parts[1])
     elif isinstance(artifact, BNode):
         contentLocation = manifest_graph.value(
             subject=artifact, predicate=SDO.contentLocation
@@ -92,7 +92,7 @@ def get_files_from_artifact(
         if str(contentLocation).startswith("http"):
             return [str(contentLocation)]
         else:
-            return [manifest.parent / str(contentLocation)]
+            return [manifest_root / str(contentLocation)]
     else:
         raise TypeError(f"Unsupported artifact type: {type(artifact)}")
 
@@ -143,7 +143,7 @@ def get_manifest_paths_and_graph(manifest: Path | tuple[Path, Path, Graph]) -> (
         manifest_path = manifest
         manifest_root = Path(manifest).parent.resolve()
         manifest_graph = load_graph(manifest)
-    else:
+    else:  # (Path, Path, Graph)
         manifest_path = manifest[0]
         manifest_root = manifest[1]
         manifest_graph = manifest[2]
@@ -151,7 +151,7 @@ def get_manifest_paths_and_graph(manifest: Path | tuple[Path, Path, Graph]) -> (
     return manifest_path, manifest_root, manifest_graph
 
 
-def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Graph]) -> URIRef:
+def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Path, Graph]) -> URIRef:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     for m in manifest_graph.subjects(RDF.type, PREZ.Manifest):
@@ -171,20 +171,31 @@ def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Graph]) -> URIR
 
 
 # TODO
-def does_target_contain_this_catalogue(
+def target_contains_this_manifests_catalogue(
     manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
     sparql_username: str = None,
     sparql_password: str = None,
-    destination_file: Path = None,
 ) -> bool:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
-
     # get the IRI of the catalogue from the manifest
     cat_iri = get_catalogue_iri_from_manifest(manifest)
 
-    # check if the IRI is in the target
-    pass
+    q = """
+        PREFIX olis: <https://olis.dev/>
+        
+        ASK
+        WHERE {
+          GRAPH olis:SystemGraph {
+            VALUES ?graph_type {
+              olis:RealGraph 
+              olis:VirtualGraph
+            }
+            <xxx> a ?graph_type
+          }
+        }
+        """.replace("xxx", cat_iri)
+
+    return query(sparql_endpoint, q, sparql_username, sparql_password, return_python=True, return_bindings_only=True)
 
 
 def make_httpx_client(
@@ -198,20 +209,21 @@ def make_httpx_client(
     return httpx.Client(auth=auth)
 
 
-def get_main_entity_iri_via_conformance_claims(
+def get_main_entity_iri_of_artifact(
         artifact: Path,
-        manifest: Path,
+        manifest: Path | tuple[Path, Path, Graph],
         artifact_graph: Graph = None,
         ccs: list[URIRef] = None
 ) -> URIRef:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
     artifact_path = absolutise_path(artifact, manifest_root)
     known_entity_classes = []
-    if len(ccs) > 0:
-        if ccs[0] is not None:
-            for cc in ccs:
-                for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
-                    known_entity_classes.append(str(m_e_c))
+    if ccs is not None:
+        if len(ccs) > 0:
+            if ccs[0] is not None:
+                for cc in ccs:
+                    for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
+                        known_entity_classes.append(str(m_e_c))
 
     if len(known_entity_classes) < 1:
         known_entity_classes = [str(x) for x in KNOWN_ENTITY_CLASSES]
@@ -251,7 +263,7 @@ def get_main_entity_iri_via_conformance_claims(
                 f"based on the classes {', '.join(ccs)}. There must only be one."
             )
 
-    return mes[0]
+    return URIRef(mes[0])
 
 
 def get_version_indicators_for_artifact(
@@ -533,7 +545,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> l
     cat_entries_expanded = []
     for cat_entry in cat_entries:
         if "*" in str(cat_entry[0]):
-            files = get_files_from_artifact(manifest_graph, manifest, Literal(cat_entry[0]))
+            files = get_files_from_artifact((manifest_path, manifest_root, manifest_graph), Literal(cat_entry[0]))
             for file in files:
                 cat_entries_expanded.append((localise_path(file, manifest_root), *cat_entry[1:]))
         else:
@@ -543,13 +555,13 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> l
     cat_entries_main_entities_present = []
     for cat_entry in cat_entries_expanded:
         if not cat_entry[1] and cat_entry[6] in [MRR.ResourceData, MRR.CatalogueData]:
-            me = get_main_entity_iri_via_conformance_claims(
+            me = get_main_entity_iri_of_artifact(
                 absolutise_path(cat_entry[0], manifest_root),
                 manifest,
                 None,
                 [URIRef(cat_entry[2]) if cat_entry[2] is not None else None],
             )
-            cat_entries_main_entities_present.append((cat_entry[0], me, *cat_entry[2:]))
+            cat_entries_main_entities_present.append((cat_entry[0], str(me), *cat_entry[2:]))
         else:
             cat_entries_main_entities_present.append(cat_entry)
 
