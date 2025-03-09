@@ -9,7 +9,7 @@ license = "BSD-3-Clause"
 dependencies = [
     "pyshacl>=0.29.0",
     "kurra>=1.0.0,<2",
-    "labelify>=0.4,<0.5",
+    "labelify>0.5",
     "typer>=0.15.1,<0.16",
 ]
 

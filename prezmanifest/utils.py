@@ -1,15 +1,16 @@
-from collections.abc import Generator
-from pathlib import Path
 import datetime
-import httpx
+from collections.abc import Generator
 from datetime import datetime
+from pathlib import Path
 
+import httpx
+from kurra.db import sparql
 from kurra.file import load_graph
 from kurra.sparql import query
-from kurra.db import sparql
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
 from rdflib.namespace import DCAT, OWL, PROF, RDF, SDO, SKOS
 
+import prezmanifest
 from prezmanifest.definednamespaces import MRR, PREZ
 
 KNOWN_PROFILES = {
@@ -142,7 +143,7 @@ def get_manifest_paths_and_graph(manifest: Path | tuple[Path, Path, Graph]) -> (
     if isinstance(manifest, Path):
         manifest_path = manifest
         manifest_root = Path(manifest).parent.resolve()
-        manifest_graph = load_graph(manifest)
+        manifest_graph = prezmanifest.validate(manifest)
     else:  # (Path, Path, Graph)
         manifest_path = manifest[0]
         manifest_root = manifest[1]
@@ -449,6 +450,17 @@ def local_artifact_is_more_recent_then_stored_data(
     http_client: httpx.Client | None = None,
 ):
     """Tests to see if the given artifact is more recent than a previously stored copy of its content"""
+
+    def version_indicators_are_all_none(vi):
+        if (vi["modified_date"] is None
+            and vi["version_iri"] is None
+            and vi["version"] is None
+            and vi["file_size"] is None
+        ):
+            return True
+        else:
+            return False
+
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
     local = get_version_indicators_for_artifact(manifest_path, artifact)
     me = local["main_entity_iri"]
@@ -459,10 +471,14 @@ def local_artifact_is_more_recent_then_stored_data(
         http_client
     )
 
+    # there seems to be nothing at the remote endpoint
+    if version_indicators_are_all_none(remote):
+        return None
+
     return first_is_more_recent_than_second_using_version_indicators(local, remote)
 
 
-def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> list[tuple[Path, str, URIRef, dict]]:
+def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> list[tuple[Path|str, str, str, str, str, str, URIRef, dict]]:
     """Returns a list of tuples of each asset's path, main entity IRI, manifest role and version indicators"""
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 

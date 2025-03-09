@@ -1,12 +1,6 @@
-from pathlib import Path
-
-import kurra.db
 import pytest
-from kurra.db import sparql, upload
-from kurra.file import export_quads
-from kurra.utils import load_graph
+from kurra.db import upload
 from typer.testing import CliRunner
-from datetime import datetime
 
 import prezmanifest.loader
 from prezmanifest.utils import *

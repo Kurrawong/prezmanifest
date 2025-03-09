@@ -39,10 +39,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         "Made for system testing in 2024"@en  ,
         "Wykonano do testów systemowych w 2024 r."@pl  ;
     skos:inScheme cs: ;
-    skos:prefLabel
-        "English prefLabel" ,
-        "English prefLabel"@en ,
-        "Polski prefLabel"@pl ;
+    skos:prefLabel "English prefLabel"@en ;
 .
 
 
@@ -57,10 +54,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         "Made for system testing in 2024 eng"@eng  ,
         "Made for system testing in 2024 en-au"@en-au  ;
     skos:inScheme cs: ;
-    skos:prefLabel
-        "English prefLabel en"@en ,
-        "English prefLabel eng"@eng ,
-        "English prefLabel en-au"@en-au ;
+    skos:prefLabel "English prefLabel en"@en ;
 .
 
 :altlabels
@@ -83,13 +77,10 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 :en-id-labels
     a skos:Concept ;
     skos:altLabel
-        "Bioinvasion"@en ,
-        "Bioinvasi"@id ;
-
+        "Bioinvasion"@en ;
+    skos:definition "English definition"@en  ;
     skos:inScheme cs: ;
-    skos:prefLabel
-        "Biological invasions"@en ,
-        "Invasi hayati"@id ;
+    skos:prefLabel "Biological invasions"@en ;
 .
 
 :three-lang
@@ -115,10 +106,7 @@ Tak, to rzeczywiście trzeci akapit bezsensownego tekstu, aby pokazać podziały
         "Wykonano do testów systemowych w 2024 r."@pl  ,
         "مُصمم لاختبار النظام في عام 2024"@ar  ;
     skos:inScheme cs: ;
-    skos:prefLabel
-        "English prefLabel"@en ,
-        "Polski prefLabel"@en ,
-        "العربيةالعلامة المفضلة"@ar ;
+    skos:prefLabel "Polski prefLabel"@en ;
 .
 
 

@@ -1,0 +1,14 @@
+# version greater/alphabetically later
+
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<http://example.com/dataset/4>
+    a schema:Dataset ;
+    schema:dateCreated "2025-03-01"^^xsd:date ;
+    schema:dateModified "2025-03-01"^^xsd:date ;
+    schema:description "The dataset No. 4" ;
+    schema:name "Dataset Four" ;
+    schema:version "1.1" ;
+.

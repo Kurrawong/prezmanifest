@@ -1,0 +1,12 @@
+# modified data later
+
+PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<http://example.com/dataset/2>
+    a schema:Dataset ;
+    schema:dateCreated "2025-03-01"^^xsd:date ;
+    schema:dateModified "2025-03-01"^^xsd:date ;
+    schema:description "The dataset No. 2" ;
+    schema:name "Dataset Two" ;
+.

@@ -1,21 +1,47 @@
 from pathlib import Path
 
+import httpx
 from rdflib import Graph
 
-from prezmanifest.utils import get_manifest_paths_and_graph, get_catalogue_iri_from_manifest, denormalise_artifacts
+from prezmanifest.definednamespaces import MRR
+from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, \
+    local_artifact_is_more_recent_then_stored_data
 
 
 def sync(
     manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
-    sparql_username: str = None,
-    sparql_password: str = None,
+    http_client: httpx.Client | None = None,
 ) -> None:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     # List each artifact in the local Manifest
     #   with all their details filled in - Main Entities & Version Indicators
-    artifacts = denormalise_artifacts()
+    artifacts = denormalise_artifacts((manifest_path, manifest_root, manifest_graph))
+
+    for x in artifacts:
+        print()
+        print(x)
+    exit()
+
+    print()
+    for artifact in artifacts:
+        role = artifact[6]
+        if role in [MRR.ResourceData, MRR.CatalogueData]:
+            local_newer = local_artifact_is_more_recent_then_stored_data(
+                (manifest_path, manifest_root, manifest_graph),
+                artifact[0],
+                sparql_endpoint,
+                http_client,
+            )
+        else:
+            local_newer = False
+
+        print(artifact[0], local_newer)
+        # print(artifact)
+        print()
+
+    return None
 
     # Try and find each artifact in the remote location
     #   look for the catalogue and list its parts
@@ -26,12 +52,10 @@ def sync(
     # get the IRI of the catalogue
 
 
-    cat_iri = get_catalogue_iri_from_manifest((manifest_graph, manifest_root))
-
     # check and update
     # ask the destination if it knows about that IRI - must be a Virtual Graph or a Real Graph
 
-    return cat_iri
+
 
     # does the target have a VG for this manifest?
     # if no

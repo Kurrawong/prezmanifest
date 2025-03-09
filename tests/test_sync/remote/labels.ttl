@@ -1,0 +1,77 @@
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <https://schema.org/>
+
+<http://purl.org/linked-data/registry#status>
+    schema:description "The status of this register entry"@en ;
+    schema:name "status"@en ;
+.
+
+owl:versionIRI
+    schema:description "The property that identifies the version IRI of an ontology." ;
+    schema:name "versionIRI" ;
+.
+
+<https://kurrawong.ai>
+    schema:name "KurrawongAI" ;
+.
+
+<https://linked.data.gov.au/def/reg-statuses/experimental>
+    schema:description "An entry that has been accepted into the register temporarily and may be subject to change or withdrawal."@en ;
+    schema:name "experimental"@en ;
+.
+
+schema:DataCatalog
+    schema:description "A collection of datasets." ;
+    schema:name "DataCatalog" ;
+.
+
+schema:Dataset
+    schema:description "A body of structured information describing some topic(s) of interest." ;
+    schema:name "Dataset" ;
+.
+
+schema:codeRepository
+    schema:description "Link to the repository where the un-compiled, human readable code and related code is located (SVN, GitHub, CodePlex)." ;
+    schema:name "codeRepository" ;
+.
+
+schema:creator
+    schema:description "The creator/author of this CreativeWork. This is the same as the Author property for CreativeWork." ;
+    schema:name "creator" ;
+.
+
+schema:dateCreated
+    schema:description "The date on which the CreativeWork was created or the item was added to a DataFeed." ;
+    schema:name "dateCreated" ;
+.
+
+schema:dateModified
+    schema:description "The date on which the CreativeWork was most recently modified or when the item's entry was modified within a DataFeed." ;
+    schema:name "dateModified" ;
+.
+
+schema:description
+    schema:description "A description of the item" ;
+    schema:name "description" ;
+.
+
+schema:hasPart
+    schema:description "Indicates an item or CreativeWork that is part of this item, or CreativeWork (in some sense)." ;
+    schema:name "hasPart" ;
+.
+
+schema:name
+    schema:description "The name of the item" ;
+    schema:name "name" ;
+.
+
+schema:publisher
+    schema:description "The publisher of the creative work." ;
+    schema:name "publisher" ;
+.
+
+schema:version
+    schema:description "The version of the CreativeWork embodied by a specified resource." ;
+    schema:name "version" ;
+.
+

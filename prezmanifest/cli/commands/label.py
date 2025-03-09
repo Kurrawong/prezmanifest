@@ -1,8 +1,10 @@
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
 from prezmanifest.labeller import LabellerOutputTypes, label
+from prezmanifest.utils import make_httpx_client
 
 app = typer.Typer(
     help="Discover labels missing from data in a in a Prez Manifest and patch them"
@@ -32,11 +34,17 @@ def rdf_command(
     ),
     context: str = typer.Argument(
         None,
-        help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which t obtain labels",
+        help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which to obtain labels",
     ),
+    username: Annotated[
+        str, typer.Option("--username", "-u", help="SPARQL Endpoint username")
+    ] = None,
+    password: Annotated[
+        str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
+    ] = None,
 ) -> None:
     print(
-        label(manifest, LabellerOutputTypes.rdf, context).serialize(format="longturtle")
+        label(manifest, LabellerOutputTypes.rdf, context, make_httpx_client(username, password)).serialize(format="longturtle")
     )
 
 
@@ -50,7 +58,13 @@ def manifest_command(
     ),
     context: Path = typer.Argument(
         ...,
-        help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which t obtain labels",
+        help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which to obtain labels",
     ),
+    username: Annotated[
+        str, typer.Option("--username", "-u", help="SPARQL Endpoint username")
+    ] = None,
+    password: Annotated[
+        str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
+    ] = None,
 ) -> None:
-    label(manifest, additional_context=context)
+    label(manifest, LabellerOutputTypes.manifest, context, make_httpx_client(username, password))

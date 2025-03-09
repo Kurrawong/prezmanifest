@@ -7,6 +7,7 @@ repository.
 from enum import Enum
 from pathlib import Path
 
+import httpx
 from kurra.utils import load_graph
 from labelify import extract_labels, find_missing_labels
 from rdflib import BNode, Graph, Literal
@@ -27,6 +28,7 @@ def label(
     manifest: Path,
     output_type: LabellerOutputTypes = LabellerOutputTypes.manifest,
     additional_context: Path | str | Graph = None,
+    http_client: httpx.Client = None,
 ) -> set | Graph | None:
     """ "Main function for labeller module"""
     # create the target from the Manifest
@@ -55,14 +57,20 @@ def label(
 
     if output_type == LabellerOutputTypes.iris:
         return find_missing_labels(
-            manifest_content_graph + context_graph, additional_context
+            manifest_content_graph + context_graph,
+            additional_context,
+            http_client=http_client
         )
 
     elif output_type == LabellerOutputTypes.rdf:
-        iris = find_missing_labels(manifest_content_graph, context_graph)
+        iris = find_missing_labels(
+            manifest_content_graph,
+            context_graph,
+            http_client=http_client
+        )
 
         if additional_context is not None:
-            return extract_labels(iris, additional_context)
+            return extract_labels(iris, additional_context, http_client)
         else:
             return None
 

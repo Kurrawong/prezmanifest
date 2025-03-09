@@ -1,0 +1,20 @@
+# modified data but on Main Entity only
+
+PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<http://example.com/dataset/7>
+    a schema:Dataset ;
+    schema:dateCreated "2025-03-01"^^xsd:date ;
+    schema:dateModified "2025-03-01"^^xsd:date ;
+    schema:description "The dataset No. 7" ;
+    schema:name "Dataset Seven" ;
+.
+
+<http://example.com/dataset/X>
+    a schema:Thing ;
+    schema:dateCreated "2025-03-01"^^xsd:date ;
+    schema:dateModified "2025-03-01"^^xsd:date ;
+    schema:description "The dataset X" ;
+    schema:name "Dataset XX" ;
+.

@@ -17,11 +17,16 @@ from rdflib.namespace import DCTERMS, PROF, SDO
 
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import get_files_from_artifact, get_validator_graph
-from prezmanifest.utils import get_manifest_paths_and_graph
 
+
+class ManifestValidationError(Exception):
+    pass
 
 def validate(manifest: Path) -> Graph:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    # can't use get_manifest_paths_and_graph() here as that function uses validate()
+    manifest_path = manifest
+    manifest_root = Path(manifest).parent.resolve()
+    manifest_graph = load_graph(manifest)
 
     def literal_resolves_as_file_folder_or_url(lit: Literal):
         l_str = str(lit)
@@ -30,16 +35,16 @@ def validate(manifest: Path) -> Graph:
             if 200 <= r.status_code < 400:
                 pass
             else:
-                raise ValueError(f"Remote content link non-resolving: {l_str}")
+                raise ManifestValidationError(f"Remote content link non-resolving: {l_str}")
         elif "*" in l_str:
             glob_parts = l_str.split("*")
             dir = Path(manifest_root / Path(glob_parts[0]))
             if not Path(dir).is_dir():
-                raise ValueError(f"The content link {l_str} is not a directory")
+                raise ManifestValidationError(f"The content link {l_str} is not a directory")
         else:
             # It must be a local
             if not (manifest_root / l_str).is_file():
-                raise ValueError(
+                raise ManifestValidationError(
                     f"Content link {manifest_root / l_str} is invalid - not a file"
                 )
 
@@ -55,13 +60,12 @@ def validate(manifest: Path) -> Graph:
     ME = Path(__file__)
 
     # SHACL validation
-    manifest_graph = load_graph(manifest)
+
     mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    valid, error_msg = shacl_validate_resource(
-        manifest_graph + mrr_vocab_graph, load_graph(ME.parent / "validator.ttl")
-    )
+    shacl_graph = load_graph(ME.parent / "validator.ttl")
+    valid, error_msg = shacl_validate_resource(manifest_graph + mrr_vocab_graph, shacl_graph)
     if not valid:
-        raise ValueError(f"Manifest Shapes invalid:\n\n{error_msg}")
+        raise ManifestValidationError(f"Manifest Shapes invalid:\n\n{error_msg}")
 
     # get labels graph for SHACL validation
     context_graph = Graph()
@@ -76,6 +80,9 @@ def validate(manifest: Path) -> Graph:
                     for f in get_files_from_artifact(
                             (manifest_path, manifest_root, manifest_graph), artifact
                     ):
+                        if not f.is_file():
+                            raise ManifestValidationError(f"Artifact {f} is not a file")
+
                         if str(f.name).endswith(".ttl"):
                             context_graph += load_graph(f)
                         elif str(f.name).endswith(".trig"):  # TODO: test this option
@@ -119,10 +126,10 @@ def validate(manifest: Path) -> Graph:
                     if context_graph is not None:
                         data_graph += context_graph
                     valid, error_msg = shacl_validate_resource(
-                        data_graph, get_validator_graph(manifest, cc)
+                        data_graph, get_validator_graph((manifest_path, manifest_root, manifest_graph), cc)
                     )
                     if not valid:
-                        raise ValueError(
+                        raise ManifestValidationError(
                             f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
                         )
 

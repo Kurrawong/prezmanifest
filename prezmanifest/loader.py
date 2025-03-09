@@ -29,8 +29,8 @@ from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
     get_files_from_artifact,
 )
-from prezmanifest.validator import validate
 from prezmanifest.utils import get_manifest_paths_and_graph
+from prezmanifest.validator import validate
 
 
 class ReturnDatatype(str, Enum):
@@ -40,18 +40,20 @@ class ReturnDatatype(str, Enum):
 
 
 def load(
-    manifest: Path,
+    manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
     sparql_username: str = None,
     sparql_password: str = None,
     destination_file: Path = None,
     return_data_type: ReturnDatatype = ReturnDatatype.none,
 ) -> None | Graph | Dataset:
+    """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
+        (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
+        given SPARQL Endpoint."""
+
+    # valitate and load
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
-    """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
-    (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
-    given SPARQL Endpoint."""
     if not isinstance(return_data_type, ReturnDatatype):
         raise ValueError(
             f"Invalid return_data_type value. Must be one of {', '.join([x for x in ReturnDatatype])}"
@@ -140,9 +142,9 @@ def load(
             elif sparql_endpoint is not None:
                 msg += f"to SPARQL Endpoint {sparql_endpoint}"
                 upload(
-                    url=sparql_endpoint,
+                    sparql_endpoint=sparql_endpoint,
                     file_or_str_or_graph=data,
-                    graph_name=iri,
+                    graph_id=iri,
                     append=append,
                     http_client=http_client,
                 )
@@ -173,11 +175,6 @@ def load(
             "You must specify exactly 1 of sparql_endpoint, destination_file or return_data_type",
         )
 
-    MANIFEST_ROOT_DIR = manifest.parent
-    # load and validate manifest
-    validate(manifest)
-    manifest_graph = load_graph(manifest)
-
     vg = Graph()
     vg_iri = None
 
@@ -188,7 +185,7 @@ def load(
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     # load the Catalogue, determine the Virtual Graph & Catalogue IRIs
                     # and fail if we can't see a Catalogue object
-                    c = load_graph(MANIFEST_ROOT_DIR / str(artifact))
+                    c = load_graph(manifest_root / str(artifact))
                     vg_iri = c.value(
                         predicate=RDF.type, object=DCAT.Catalog
                     ) or c.value(predicate=RDF.type, object=SDO.DataCatalog)

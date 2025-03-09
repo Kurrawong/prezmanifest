@@ -1,0 +1,27 @@
+PREFIX astatus: <https://linked.data.gov.au/def/reg-statuses/>
+PREFIX catns: <https://example.com/demo-vocabs/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX reg: <http://purl.org/linked-data/registry#>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<https://example.com/sync-test>
+    a schema:DataCatalog ;
+    schema:hasPart
+        <http://example.com/dataset/1> ,
+        <http://example.com/dataset/2> ,
+        <http://example.com/dataset/3> ,
+        <http://example.com/dataset/4> ,
+        <http://example.com/dataset/6> ,
+        <http://example.com/dataset/7> ,
+        <http://example.com/dataset/8> ;
+    schema:creator <https://kurrawong.ai> ;
+    schema:dateCreated "2023"^^xsd:gYear ;
+    schema:dateModified "2024-10-16"^^xsd:date ;
+    schema:description "A testing catalogue for the Prez Manifest Loader tool" ;
+    schema:name "Demo Vocabularies" ;
+    schema:publisher <https://kurrawong.ai> ;
+    reg:status astatus:experimental ;
+    schema:version "1.0.1"
+.
