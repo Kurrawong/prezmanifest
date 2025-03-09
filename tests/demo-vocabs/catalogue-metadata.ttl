@@ -16,4 +16,5 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     schema:name "Demo Vocabularies" ;
     schema:publisher <https://kurrawong.ai> ;
     reg:status astatus:experimental ;
+    schema:version "1.0.1" ;
 .

@@ -175,8 +175,7 @@ def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Path, Graph]) -
 def target_contains_this_manifests_catalogue(
     manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
-    sparql_username: str = None,
-    sparql_password: str = None,
+    http_client: httpx.Client | None = None,
 ) -> bool:
     # get the IRI of the catalogue from the manifest
     cat_iri = get_catalogue_iri_from_manifest(manifest)
@@ -196,7 +195,7 @@ def target_contains_this_manifests_catalogue(
         }
         """.replace("xxx", cat_iri)
 
-    return query(sparql_endpoint, q, sparql_username, sparql_password, return_python=True, return_bindings_only=True)
+    return query(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True)
 
 
 def make_httpx_client(
@@ -261,7 +260,7 @@ def get_main_entity_iri_of_artifact(
         else:
             raise ValueError(
                 f"The artifact at {artifact_path} has no recognizable Main Entity, "
-                f"based on the classes {', '.join(ccs)}. There must only be one."
+                f"based on the classes {', '.join(ccs) if ccs is not None else '(non given)'}. There must be one."
             )
 
     return URIRef(mes[0])
@@ -275,7 +274,8 @@ def get_version_indicators_for_artifact(
 ) -> dict:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
     artifact_path = absolutise_path(artifact, manifest_root)
-    
+    artifact_graph = load_graph(artifact_path)
+
     indicators = {
         "modified_date": None,
         "version": None,
@@ -284,56 +284,14 @@ def get_version_indicators_for_artifact(
         "main_entity_iri": None,
     }
 
-    g = load_graph(artifact_path)
-
     # if we aren't given a Main Entity, let's look for one using the Main Entity Classes
     if main_entity is None:
-        main_entity_classes = None
-        # if the Manifest indicates this artifact conforms to something, work out the main entity classes from that
-        # else, just try common types
-        if conformance_claims is not None:
-            for cc in conformance_claims:
-                if cc in KNOWN_PROFILES.keys():
-                    main_entity_classes = KNOWN_PROFILES[cc]["main_entity_classes"]
-
-        # if no Conformance Classes are give, try all known Entity classes
-        if main_entity_classes is None:
-            main_entity_classes = KNOWN_ENTITY_CLASSES
-
-        if main_entity is None:
-            main_entities = []
-            main_entities_classes_str = f"<{'>\n                <'.join(main_entity_classes)}>"
-            q = f"""
-                PREFIX dcterms: <http://purl.org/dc/terms/>
-                PREFIX schema: <https://schema.org/>
-        
-                SELECT ?me
-                WHERE {{
-                    VALUES ?t {{
-                        {main_entities_classes_str.strip()}
-                    }}
-                    ?me a ?t .
-                }}
-                """
-            for r in query(g, q, return_python=True, return_bindings_only=True):
-                main_entities.append(r["me"]["value"])
-            # for c in main_entity_classes:
-            #     for s in g.subjects(RDF.type, c):
-            #         main_entities.append(s)
-
-            if len(main_entities) != 1:
-                if len(main_entities) > 1:
-                    raise ValueError(
-                        f"The artifact at {artifact_path} has more than one Main Entity: {', '.join(main_entities)} "
-                        f"based on the classes {', '.join(main_entity_classes)}. There must only be one."
-                    )
-                else:
-                    raise ValueError(
-                        f"The artifact at {artifact_path} has no recognizable Main Entity, "
-                        f"based on the classes {', '.join(main_entity_classes)}. There must only be one."
-                    )
-
-            main_entity = str(main_entities[0])
+        main_entity = get_main_entity_iri_of_artifact(
+            artifact,
+            (manifest_path, manifest_root, manifest_graph),
+            artifact_graph,
+            conformance_claims,
+        )
 
     indicators["main_entity_iri"] = main_entity
 
@@ -359,7 +317,7 @@ def get_version_indicators_for_artifact(
              }}
             }}
             """
-        for r in query(g, q, return_python=True, return_bindings_only=True):
+        for r in query(artifact_graph, q, return_python=True, return_bindings_only=True):
             if r.get("md") is not None:
                 indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
             if r.get("vi") is not None:

@@ -9,6 +9,7 @@ from typer.testing import CliRunner
 from prezmanifest.cli import app
 from prezmanifest.labeller import LabellerOutputTypes, label
 from tests.fuseki.conftest import fuseki_container
+from prezmanifest.validator import ManifestValidationError
 
 runner = CliRunner()
 
@@ -25,14 +26,14 @@ def test_label_iris():
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 24
+    assert len(iris) == 25
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest.ttl",
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 3
+    assert len(iris) == 4
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
@@ -41,7 +42,7 @@ def test_label_iris():
     )
 
     # static context file has 2 relevant IRIs, so should be 27 - 2 = 25
-    assert len(iris) == 22
+    assert len(iris) == 23
 
 
 def test_label_iris_sparql(fuseki_container):
@@ -49,7 +50,7 @@ def test_label_iris_sparql(fuseki_container):
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
     )
 
     iris = label(
@@ -58,7 +59,7 @@ def test_label_iris_sparql(fuseki_container):
         additional_context=SPARQL_ENDPOINT,
     )
 
-    assert len(iris) == 3
+    assert len(iris) == 4
 
 
 def test_label_rdf():
@@ -103,7 +104,7 @@ def test_label_rdf_sparql(fuseki_container):
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/labels-2.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
     )
 
     rdf = label(
@@ -119,7 +120,7 @@ def test_label_rdf_sparql(fuseki_container):
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
     )
 
     rdf = label(
@@ -139,7 +140,7 @@ def test_label_manifest(fuseki_container):
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
     )
 
     original_manifest_path = (
@@ -205,7 +206,7 @@ def test_label_iris_mainEntity():
     )
 
     print(iris)
-    assert len(iris) == 3
+    assert len(iris) == 4
 
 
 def test_label_cli_iris():
@@ -217,7 +218,7 @@ def test_label_cli_iris():
             str(Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"),
         ],
     )
-    assert len(result.stdout.splitlines()) == 24
+    assert len(result.stdout.splitlines()) == 25
 
 
 def test_label_cli_rdf(fuseki_container):
@@ -228,13 +229,13 @@ def test_label_cli_rdf(fuseki_container):
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
     )
 
     upload(
         SPARQL_ENDPOINT,
         Path(__file__).parent / "demo-vocabs/labels-2.ttl",
-        graph_name="http://test",
+        graph_id="http://test",
         append=True,
     )
 
@@ -259,7 +260,7 @@ def test_label_cli_rdf(fuseki_container):
 #     upload(
 #         SPARQL_ENDPOINT,
 #         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
-#         graph_name="http://test",
+#         graph_id="http://test",
 #     )
 #
 #     original_manifest_path = (

@@ -56,6 +56,7 @@ from pathlib import Path
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCAT, PROF, RDF, SDO, SKOS
 
+from prezmanifest.utils import get_manifest_paths_and_graph
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import (
     get_files_from_artifact,
@@ -152,10 +153,7 @@ def table(manifest: Path, table_format: TableFormats = TableFormats.markdown) ->
 
 
 def catalogue(manifest: Path) -> Graph:
-    MANIFEST_ROOT_DIR = manifest.parent
-    # load and validate manifest
-    validate(manifest)
-    manifest_graph = load_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     catalogue = Graph()
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
@@ -163,7 +161,7 @@ def catalogue(manifest: Path) -> Graph:
             if role == MRR.CatalogueData:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     # the artifact can only be a triples file (not a quads file)
-                    catalogue = load_graph(MANIFEST_ROOT_DIR / artifact)
+                    catalogue = load_graph(manifest_root / artifact)
 
     # get the IRI of the catalogue
     catalogue_iri = catalogue.value(
@@ -176,7 +174,7 @@ def catalogue(manifest: Path) -> Graph:
             if role == MRR.ResourceData:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     for f in get_files_from_artifact(
-                        manifest_graph, manifest, artifact
+                        (manifest_path, manifest_root, manifest_graph), artifact
                     ):
                         if isinstance(artifact, Literal):
                             for iri in sorted(get_identifier_from_file(f)):

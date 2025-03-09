@@ -51,7 +51,7 @@ def load(
         (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
         given SPARQL Endpoint."""
 
-    # valitate and load
+    # validate and load
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     if not isinstance(return_data_type, ReturnDatatype):

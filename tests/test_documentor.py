@@ -5,9 +5,11 @@ import pytest
 from rdflib import Graph
 from rdflib.compare import isomorphic
 from typer.testing import CliRunner
+from kurra.utils import load_graph
 
 from prezmanifest.cli import app
 from prezmanifest.documentor import TableFormats, catalogue, table
+from prezmanifest.validator import ManifestValidationError
 
 runner = CliRunner()
 
@@ -39,12 +41,12 @@ def test_create_table_01():
 
 
 def test_create_table_02():
-    with pytest.raises(ValueError):
+    with pytest.raises(ManifestValidationError):
         table(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
 
 
 def test_create_catalogue():
-    expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
+    expected = load_graph(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
     actual = catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-cat.ttl")
 
     assert isomorphic(actual, expected)
@@ -143,14 +145,14 @@ def test_create_table_main_entity():
 
 
 def test_create_catalogue_multi():
-    expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
+    expected = load_graph(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
     actual = catalogue(Path(__file__).parent / "demo-vocabs" / "manifest-multi.ttl")
 
     assert isomorphic(actual, expected)
 
 
 def test_create_catalogue_main_entity():
-    expected = Graph().parse(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
+    expected = load_graph(Path(__file__).parent / "demo-vocabs" / "catalogue.ttl")
     actual = catalogue(
         Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
     )
@@ -173,8 +175,8 @@ def test_table_cli():
 
 
 def test_catalogue_cli():
-    expected = Graph().parse(
-        data="""
+    expected = load_graph(
+        """
         PREFIX ns1: <http://purl.org/linked-data/registry#>
         PREFIX schema: <https://schema.org/>
         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -192,6 +194,7 @@ def test_catalogue_cli():
                 <https://example.com/demo-vocabs/language-test> ;
             schema:name "Demo Vocabularies" ;
             schema:publisher <https://kurrawong.ai> ;
+            schema:version "1.0.1" ;
         .        
         """
     )
@@ -203,6 +206,6 @@ def test_catalogue_cli():
             str(Path(__file__).parent / "demo-vocabs" / "manifest.ttl"),
         ],
     )
-    actual = Graph().parse(data=result.stdout, format="turtle")
+    actual = load_graph(result.stdout)
 
     assert isomorphic(expected, actual)

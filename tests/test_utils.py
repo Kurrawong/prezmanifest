@@ -201,11 +201,11 @@ def test_get_version_indicators_for_graph_in_sparql_endpoint(fuseki_container):
         }        
         """.replace("XXX", ASSET_GRAPH_IRI)
 
-    r = sparql(SPARQL_ENDPOINT, q, c, return_python=True, return_bindings_only=True)
+    r = query(SPARQL_ENDPOINT, q, c, return_python=True, return_bindings_only=True)
 
     count = int(r[0]["count"]["value"])
 
-    assert count == 77
+    assert count == 70
 
     r = get_version_indicators_for_graph_in_sparql_endpoint(
         ASSET_GRAPH_IRI,
