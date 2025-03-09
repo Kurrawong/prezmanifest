@@ -9,7 +9,6 @@ from typer.testing import CliRunner
 from prezmanifest.cli import app
 from prezmanifest.labeller import LabellerOutputTypes, label
 from tests.fuseki.conftest import fuseki_container
-from prezmanifest.validator import ManifestValidationError
 
 runner = CliRunner()
 

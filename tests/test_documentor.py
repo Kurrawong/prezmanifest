@@ -2,10 +2,9 @@ from pathlib import Path
 from textwrap import dedent
 
 import pytest
-from rdflib import Graph
+from kurra.utils import load_graph
 from rdflib.compare import isomorphic
 from typer.testing import CliRunner
-from kurra.utils import load_graph
 
 from prezmanifest.cli import app
 from prezmanifest.documentor import TableFormats, catalogue, table

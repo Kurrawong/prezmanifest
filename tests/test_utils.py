@@ -145,34 +145,43 @@ def test_get_main_entity_iri_of_artifact():
 def test_get_version_indicators_for_artifact():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
 
-    orig = get_version_indicators_for_artifact(
+    vi = {}
+    get_version_indicators_for_artifact(
         MANIFEST,
-        TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
+        TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl",
+        vi
     )
 
-    assert orig["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
+    assert vi["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
 
-    v1 = get_version_indicators_for_artifact(
+    vi = {
+            "main_entity": URIRef("https://example.com/demo-vocabs/language-test")
+        }
+    get_version_indicators_for_artifact(
         MANIFEST,
         TESTS_DIR / "demo-vocabs-updated1" / "vocabs" / "language-test.ttl",
-        URIRef("https://example.com/demo-vocabs/language-test")
+        vi
     )
 
-    assert v1["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
+    assert vi["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
 
-    v5 = get_version_indicators_for_artifact(
+    vi = {}
+    get_version_indicators_for_artifact(
         MANIFEST,
-        TESTS_DIR / "demo-vocabs-updated5" / "vocabs" / "language-test.ttl"
+        TESTS_DIR / "demo-vocabs-updated5" / "vocabs" / "language-test.ttl",
+        vi
     )
 
-    assert v5["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
+    assert vi["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
 
-    assert v5["version_iri"] == "https://example.com/demo-vocabs/language-test/1.1"
+    assert vi["version_iri"] == "https://example.com/demo-vocabs/language-test/1.1"
 
     with pytest.raises(ValueError):
-        v6 = get_version_indicators_for_artifact(
+        vi = {}
+        get_version_indicators_for_artifact(
             MANIFEST,
-            TESTS_DIR / "demo-vocabs-updated6" / "vocabs" / "language-test.ttl"
+            TESTS_DIR / "demo-vocabs-updated6" / "vocabs" / "language-test.ttl",
+            vi
         )
 
 
@@ -322,38 +331,20 @@ def test_local_artifact_is_more_recent_then_stored_data(fuseki_container):
 def test_denormalise_artifacts():
     m = TESTS_DIR / "demo-vocabs" / "manifest-conformance.ttl"
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(m)
-
     x = denormalise_artifacts((manifest_path, manifest_root, manifest_graph))
-    assert len(x) == 5
-    artifacts = []
-    for xx in x:
-        artifacts.append(xx[0])
-    assert Path("catalogue.ttl") in artifacts
-    assert Path("vocabs/image-test.ttl") in artifacts
-    assert Path("vocabs/language-test.ttl") in artifacts
-    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in artifacts
-    assert Path("_background/labels.ttl") in artifacts
+    assert manifest_root / "catalogue.ttl" in x.keys()
+    assert manifest_root / "vocabs/image-test.ttl" in x.keys()
+    assert manifest_root / "vocabs/language-test.ttl" in x.keys()
+    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in x.keys()
+    assert manifest_root / "_background/labels.ttl" in x.keys()
 
-    m = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
-    x = denormalise_artifacts(m)
-    assert len(x) == 5
-    artifacts = []
-    for xx in x:
-        artifacts.append(xx[0])
-    assert Path("catalogue.ttl") in artifacts
-    assert Path("vocabs/image-test.ttl") in artifacts
-    assert Path("vocabs/language-test.ttl") in artifacts
-    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in artifacts
-    assert Path("_background/labels.ttl") in artifacts
+    assert x[manifest_root / "vocabs/image-test.ttl"]["file_size"] == 20324
 
     m = TESTS_DIR / "demo-vocabs" / "manifest-conformance-all.ttl"
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(m)
     x = denormalise_artifacts(m)
-    artifacts = []
-    for xx in x:
-        artifacts.append(xx[0])
-    assert len(x) == 5
-    assert Path("catalogue.ttl") in artifacts
-    assert Path("vocabs/image-test.ttl") in artifacts
-    assert Path("vocabs/language-test.ttl") in artifacts
-    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in artifacts
-    assert Path("_background/labels.ttl") in artifacts
+    assert manifest_root / "catalogue.ttl" in x.keys()
+    assert manifest_root / "vocabs/image-test.ttl" in x.keys()
+    assert manifest_root / "vocabs/language-test.ttl" in x.keys()
+    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in x.keys()
+    assert manifest_root / "_background/labels.ttl" in x.keys()

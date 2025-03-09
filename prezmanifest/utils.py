@@ -47,7 +47,10 @@ ENTITY_CLASSES_PER_PROFILE = {
 
 def path_or_url(s: str) -> Path|str:
     """Converts a string into a Path, preserving http(s)://..."""
-    return s if s.startswith("http") else Path(s)
+    if s.startswith("http"):
+        return s
+    else:
+        return Path(s)
 
 
 def localise_path(p: Path|str, root: Path) -> Path:
@@ -57,9 +60,12 @@ def localise_path(p: Path|str, root: Path) -> Path:
         return Path(str(p).replace(str(root) + "/", ""))
 
 
-def absolutise_path(p: Path|str, root: Path) -> Path:
+def absolutise_path(p: Path|str, root: Path) -> Path|str:
     if str(p).startswith("http"):
-        return p
+        if "://" not in str(p):
+            return str(p).replace(":/", "://")
+        else:
+            return str(p)
     else:
         return root / p
 
@@ -74,7 +80,9 @@ def get_files_from_artifact(
     """
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
-    if isinstance(artifact, Literal):
+    if str(artifact).startswith("http"):
+        return [str(artifact)]
+    elif isinstance(artifact, Literal):
         if "*" not in str(artifact):
             return [manifest_root / path_or_url(str(artifact))]
         else:
@@ -171,7 +179,6 @@ def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Path, Graph]) -
     raise ValueError(f"No catalogue object IRI found in Manifest {manifest_root}")
 
 
-# TODO
 def target_contains_this_manifests_catalogue(
     manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
@@ -213,17 +220,14 @@ def get_main_entity_iri_of_artifact(
         artifact: Path,
         manifest: Path | tuple[Path, Path, Graph],
         artifact_graph: Graph = None,
-        ccs: list[URIRef] = None
+        cc: URIRef = None
 ) -> URIRef:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
     artifact_path = absolutise_path(artifact, manifest_root)
     known_entity_classes = []
-    if ccs is not None:
-        if len(ccs) > 0:
-            if ccs[0] is not None:
-                for cc in ccs:
-                    for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
-                        known_entity_classes.append(str(m_e_c))
+    if cc is not None:
+        for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
+            known_entity_classes.append(str(m_e_c))
 
     if len(known_entity_classes) < 1:
         known_entity_classes = [str(x) for x in KNOWN_ENTITY_CLASSES]
@@ -255,12 +259,12 @@ def get_main_entity_iri_of_artifact(
         if len(mes) > 1:
             raise ValueError(
                 f"The artifact at {artifact_path} has more than one Main Entity: {', '.join(mes)} "
-                f"based on the classes {', '.join(ccs)}. There must only be one."
+                f"based on the class {cc if cc is not None else '(none given)'}. There must only be one."
             )
         else:
             raise ValueError(
                 f"The artifact at {artifact_path} has no recognizable Main Entity, "
-                f"based on the classes {', '.join(ccs) if ccs is not None else '(non given)'}. There must be one."
+                f"based on the classes {cc if cc is not None else '(none given)'}. There must be one."
             )
 
     return URIRef(mes[0])
@@ -269,34 +273,23 @@ def get_main_entity_iri_of_artifact(
 def get_version_indicators_for_artifact(
         manifest: Path | tuple[Path, Path, Graph],
         artifact: Path,
-        main_entity: str = None,
-        conformance_claims: list[URIRef] = None
-) -> dict:
+        version_indicators: dict
+):
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
     artifact_path = absolutise_path(artifact, manifest_root)
     artifact_graph = load_graph(artifact_path)
 
-    indicators = {
-        "modified_date": None,
-        "version": None,
-        "version_iri": None,
-        "file_size": None,
-        "main_entity_iri": None,
-    }
-
     # if we aren't given a Main Entity, let's look for one using the Main Entity Classes
-    if main_entity is None:
-        main_entity = get_main_entity_iri_of_artifact(
+    if version_indicators.get("main_entity") is None:
+        version_indicators["main_entity"] = get_main_entity_iri_of_artifact(
             artifact,
             (manifest_path, manifest_root, manifest_graph),
             artifact_graph,
-            conformance_claims,
+            version_indicators.get("conformance_claim"),
         )
 
-    indicators["main_entity_iri"] = main_entity
-
     # if we have a Main Entity at this point, we can get the content-based Indicators
-    if main_entity is not None:
+    if version_indicators["main_entity"] is not None:
         q = f"""
             PREFIX dcterms: <http://purl.org/dc/terms/>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -305,31 +298,31 @@ def get_version_indicators_for_artifact(
             SELECT ?md ?vi ?v
             WHERE {{
                 OPTIONAL {{
-                    <{main_entity}> dcterms:modified|schema:dateModified ?md .
+                    <{version_indicators["main_entity"]}> dcterms:modified|schema:dateModified ?md .
                 }}
                 
                 OPTIONAL {{
-                    <{main_entity}> owl:versionIRI ?vi .
+                    <{version_indicators["main_entity"]}> owl:versionIRI ?vi .
                 }}
                 
                 OPTIONAL {{
-                 <{main_entity}> owl:versionInfo|schema:version|dcterms:hasVersion ?v .
+                 <{version_indicators["main_entity"]}> owl:versionInfo|schema:version|dcterms:hasVersion ?v .
              }}
             }}
             """
         for r in query(artifact_graph, q, return_python=True, return_bindings_only=True):
             if r.get("md") is not None:
-                indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
+                version_indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
             if r.get("vi") is not None:
-                indicators["version_iri"] = r["vi"]["value"]
+                version_indicators["version_iri"] = r["vi"]["value"]
             if r.get("v") is not None:
-                indicators["version"] = r["v"]["value"]
+                version_indicators["version"] = r["v"]["value"]
 
     # if not, we may still get file-based indicators
     if artifact_path.is_file():
-        indicators["file_size"] = artifact_path.stat().st_size
+        version_indicators["file_size"] = artifact_path.stat().st_size
 
-    return indicators
+    return
 
 
 def get_version_indicators_for_graph_in_sparql_endpoint(
@@ -420,11 +413,11 @@ def local_artifact_is_more_recent_then_stored_data(
             return False
 
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
-    local = get_version_indicators_for_artifact(manifest_path, artifact)
-    me = local["main_entity_iri"]
+    local = {}
+    get_version_indicators_for_artifact(manifest_path, artifact, local)
 
     remote = get_version_indicators_for_graph_in_sparql_endpoint(
-        me,
+        local["main_entity"],
         sparql_endpoint,
         http_client
     )
@@ -436,10 +429,25 @@ def local_artifact_is_more_recent_then_stored_data(
     return first_is_more_recent_than_second_using_version_indicators(local, remote)
 
 
-def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> list[tuple[Path|str, str, str, str, str, str, URIRef, dict]]:
-    """Returns a list of tuples of each asset's path, main entity IRI, manifest role and version indicators"""
+def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
+    """For each Artifiact in the Manifest, return a dict:
+
+     Artifact path,
+     Main Entity,
+     Conformance Claims
+     Date Modified
+     Version IRI
+     Version Info
+     Role
+     Version Indicators
+
+     of each asset's path, main entity IRI, manifest role and version indicators"""
+
+    artifacts_info = {}
+
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
+    # for each artifact, get what we can directly from the Manifest
     q = """
         PREFIX dcterms: <http://purl.org/dc/terms/>
         PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
@@ -502,55 +510,31 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> l
         }
         """
 
-    cat_entries = []
     for r in query(manifest_graph, q, return_python=True, return_bindings_only=True):
-        cat_entries.append((
-            path_or_url(r["a"]["value"]),
-            r["me"]["value"] if r.get("me") is not None else None,
-            r["cc"]["value"] if r.get("cc") is not None else None,
-            r["dm"]["value"] if r.get("dm") is not None else None,
-            r["vi"]["value"] if r.get("vi") is not None else None,
-            r["v"]["value"] if r.get("v") is not None else None,
-            URIRef(r["r"]["value"]),
-            dict())
-        )
+        artifact = path_or_url(r["a"]["value"])
+        files = get_files_from_artifact((manifest_path, manifest_root, manifest_graph), Literal(artifact))
 
-    # separate out all individual artifacts
-    cat_entries_expanded = []
-    for cat_entry in cat_entries:
-        if "*" in str(cat_entry[0]):
-            files = get_files_from_artifact((manifest_path, manifest_root, manifest_graph), Literal(cat_entry[0]))
-            for file in files:
-                cat_entries_expanded.append((localise_path(file, manifest_root), *cat_entry[1:]))
-        else:
-            cat_entries_expanded.append(cat_entry)
+        for file in files:
+            me = r["me"]["value"] if r.get("me") is not None else None
+            role = URIRef(r["r"]["value"])
+            dm = r["dm"]["value"] if r.get("dm") is not None else None
+            vi = r["vi"]["value"] if r.get("vi") is not None else None
+            v = r["v"]["value"] if r.get("v") is not None else None
+            cc = URIRef(r["cc"]["value"]) if r.get("cc") is not None else None
 
-    # fill in missing Main Entities, but only for Resources with certain Roles
-    cat_entries_main_entities_present = []
-    for cat_entry in cat_entries_expanded:
-        if not cat_entry[1] and cat_entry[6] in [MRR.ResourceData, MRR.CatalogueData]:
-            me = get_main_entity_iri_of_artifact(
-                absolutise_path(cat_entry[0], manifest_root),
-                manifest,
-                None,
-                [URIRef(cat_entry[2]) if cat_entry[2] is not None else None],
-            )
-            cat_entries_main_entities_present.append((cat_entry[0], str(me), *cat_entry[2:]))
-        else:
-            cat_entries_main_entities_present.append(cat_entry)
+            artifacts_info[file] = {
+                "main_entity": me,
+                "role": role,
+                "date_modified": dm,
+                "version_iri": vi,
+                "version_info": v,
+                "file_size": None,
+                "conformance_claim": cc,
+            }
 
-    # get the Version Indicators for each artifact that we have a Main Entity for
-    cat_entries_with_vis = []
-    for ce in cat_entries_main_entities_present:
-        if ce[1] is not None:
-            vi = get_version_indicators_for_artifact(
-                (manifest_path, manifest_root, manifest_graph),
-                ce[0],
-                ce[1],
-                ce[2]
-            )
-            cat_entries_with_vis.append((*ce[:-1], vi))
-        else:
-            cat_entries_with_vis.append(ce)
+    # get Version Indicators info only for Resources with certain Roles
+    for k, v in artifacts_info.items():
+        if v["role"] in [MRR.CatalogueData, MRR.ResourceData]:
+            get_version_indicators_for_artifact((manifest_path, manifest_root, manifest_graph), k, v)
 
-    return cat_entries_with_vis
+    return artifacts_info
