@@ -1,13 +1,14 @@
 from pathlib import Path
-
+import json
 import httpx
+from kurra.utils import load_graph
 from rdflib import Graph
-
+from rdflib.namespace import SDO
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, local_artifact_more_recent
 from kurra.sparql import query
 from kurra.db import upload
-from prezmanifest.utils import ArtifactComparison, store_remote_artifact_locally, update_local_artifact
+from prezmanifest.utils import ArtifactComparison, store_remote_artifact_locally, update_local_artifact, absolutise_path
 from rdflib import URIRef
 
 def sync(
@@ -18,21 +19,22 @@ def sync(
     update_local: bool = True,
     add_remote: bool = True,
     add_local: bool = True,
-) -> None:
+) -> str:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     sync_status = {}
-
     # For each Artifact in the Manifest
     artifacts = denormalise_artifacts((manifest_path, manifest_root, manifest_graph))
     local_entities = [v["main_entity"] for k, v in artifacts.items()]
 
     cat_iri = None
+    cat_artifact_path = None
     for k, v in artifacts.items():
         if v["role"] in [MRR.ResourceData, MRR.CatalogueData]:
             # save cat_iri for later
             if v["role"] in MRR.CatalogueData:
                 cat_iri = v["main_entity"]
+                cat_artifact_path = absolutise_path(k, manifest_root)
 
             # See if each is known remotely (via Main Entity Graph IRI)
             known = query(
@@ -70,7 +72,7 @@ def sync(
             else:  # not known at remote location so forward sync - upload
                 direction = "missing-remotely"
 
-            sync_status[k] = {
+            sync_status[str(k)] = {
                 "main_entity": v["main_entity"],
                 "direction": direction
             }
@@ -90,41 +92,50 @@ def sync(
     for x in query(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True):
         remote_entity = URIRef(x["p"]["value"])
         if remote_entity not in local_entities:
-            sync_status[URIRef(remote_entity)] = {
+            sync_status[remote_entity] = {
                 "main_entity": URIRef(remote_entity),
                 "direction": "missing-locally"
             }
 
-    for k, v in sync_status.items():
-        print(k, v)
-
+    update_remote_catalogue = False
     for k, v in sync_status.items():
         if update_remote and v["direction"] == "forward":
-            upload(sparql_endpoint, k, v["main_entity"], False, http_client)
-            print(f"updated {k} to remote")
+            upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
 
         if add_remote and v["direction"] == "missing-remotely":
-            upload(sparql_endpoint, k, v["main_entity"], False, http_client)
-            print(f"added {k} to remote")
-            # TODO: ensure remote catalogue is updated
+            upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
+            update_remote_catalogue = True
 
         if add_local and v["direction"] == "missing-locally":
-            x = store_remote_artifact_locally(
+            updated_local_manifest = store_remote_artifact_locally(
                 (manifest_path, manifest_root, manifest_graph),
                 sparql_endpoint,
                 v["main_entity"],
                 http_client,
             )
-            print(f"addedd {k} locally")
+
+            updated_local_manifest.bind("mrr", "https://prez.dev/ManifestResourceRoles")
+            updated_local_manifest.serialize(destination=manifest_path, format="longturtle")
+            cat = load_graph(cat_artifact_path)
+            cat.add((cat_iri, SDO.hasPart, URIRef(v["main_entity"])))
+            cat.serialize(destination=cat_artifact_path, format="longturtle")
 
         if update_local and v["direction"] == "reverse":
             update_local_artifact(
                 (manifest_path, manifest_root, manifest_graph),
-                k,
+                Path(k),
                 sparql_endpoint,
                 v["main_entity"],
                 http_client,
             )
-            print(f"updated {k} locally")
 
-    print("sync complete")
+    if update_remote_catalogue:
+        upload(
+            sparql_endpoint,
+            cat_artifact_path,
+            cat_iri,
+            False,
+            http_client,
+        )
+
+    return json.dumps(sync_status, indent=4)

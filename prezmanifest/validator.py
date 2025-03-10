@@ -30,7 +30,7 @@ def validate(manifest: Path) -> Graph:
 
     def literal_resolves_as_file_folder_or_url(lit: Literal):
         l_str = str(lit)
-        if "http" in l_str:
+        if l_str.startswith("http") and "://" in l_str:
             r = httpx.get(l_str)
             if 200 <= r.status_code < 400:
                 pass

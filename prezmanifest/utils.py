@@ -47,21 +47,21 @@ ENTITY_CLASSES_PER_PROFILE = {
 
 def path_or_url(s: str) -> Path|str:
     """Converts a string into a Path, preserving http(s)://..."""
-    if s.startswith("http"):
+    if s.startswith("http") and "://" in str(s):
         return s
     else:
         return Path(s)
 
 
 def localise_path(p: Path|str, root: Path) -> Path:
-    if str(p).startswith("http"):
+    if str(p).startswith("http") and "://" in str(p):
         return p
     else:
         return Path(str(p).replace(str(root) + "/", ""))
 
 
 def absolutise_path(p: Path|str, root: Path) -> Path|str:
-    if str(p).startswith("http"):
+    if str(p).startswith("http") and "://" in str(p):
         if "://" not in str(p):
             return str(p).replace(":/", "://")
         else:
@@ -80,7 +80,7 @@ def get_files_from_artifact(
     """
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
-    if str(artifact).startswith("http"):
+    if str(artifact).startswith("http") and "://" in str(artifact):
         return [str(artifact)]
     elif isinstance(artifact, Literal):
         if "*" not in str(artifact):
@@ -98,7 +98,7 @@ def get_files_from_artifact(
         contentLocation = manifest_graph.value(
             subject=artifact, predicate=SDO.contentLocation
         )
-        if str(contentLocation).startswith("http"):
+        if str(contentLocation).startswith("http") and "://" in str(contentLocation):
             return [str(contentLocation)]
         else:
             return [manifest_root / str(contentLocation)]
@@ -234,9 +234,6 @@ def get_main_entity_iri_of_artifact(
 
     known_entity_classes_str = f"<{'>\n                <'.join(known_entity_classes)}>"
     q = f"""
-        PREFIX dcterms: <http://purl.org/dc/terms/>
-        PREFIX schema: <https://schema.org/>
-
         SELECT ?me
         WHERE {{
             VALUES ?t {{
@@ -248,6 +245,7 @@ def get_main_entity_iri_of_artifact(
     mes = []
 
     g = artifact_graph if artifact_graph is not None else load_graph(artifact_path)
+
     if not isinstance(g, Graph):
         raise ValueError(f"Could not load a graph of the artifact at {artifact_path}")
 
@@ -333,7 +331,7 @@ def get_version_indicators_for_graph_in_sparql_endpoint(
     sparql_endpoint: str,
     http_client: httpx.Client | None = None,
 ) -> dict:
-    if not sparql_endpoint.startswith("http"):
+    if not sparql_endpoint.startswith("http") and "://" in str(sparql_endpoint):
         raise ValueError(
             f"The sparql_endpoint you have supplied does not look valid: {sparql_endpoint}"
         )
@@ -582,7 +580,7 @@ def store_remote_artifact_locally(
     sparql_endpoint: str,
     graph_id: str,
     http_client: httpx.Client | None = None,
-):
+) -> Graph:
     """Writes a remote graph to a local file and registers that file as a Resource in the given Manifest.
 
     Only the Resource Role ResourceData is supported."""
