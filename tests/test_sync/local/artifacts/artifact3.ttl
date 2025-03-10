@@ -10,5 +10,5 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     schema:dateModified "2025-03-01"^^xsd:date ;
     schema:description "The dataset No. 3" ;
     schema:name "Dataset Three" ;
-    owl:versionIRI "1.1" ;
+    owl:versionIRI <http://example.com/dataset/3/1.1> ;
 .

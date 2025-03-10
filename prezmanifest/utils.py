@@ -2,7 +2,7 @@ import datetime
 from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
-
+from enum import Enum
 import httpx
 from kurra.db import sparql
 from kurra.file import load_graph
@@ -289,7 +289,7 @@ def get_version_indicators_for_artifact(
         )
 
     # if we have a Main Entity at this point, we can get the content-based Indicators
-    if version_indicators["main_entity"] is not None:
+    if version_indicators.get("main_entity") is not None:
         q = f"""
             PREFIX dcterms: <http://purl.org/dc/terms/>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -310,14 +310,17 @@ def get_version_indicators_for_artifact(
              }}
             }}
             """
+        # only use values for Version Indicators if not already present - i.e. from the manifest
         for r in query(artifact_graph, q, return_python=True, return_bindings_only=True):
-            if r.get("md") is not None:
-                version_indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
-            if r.get("vi") is not None:
-                version_indicators["version_iri"] = r["vi"]["value"]
-            if r.get("v") is not None:
-                version_indicators["version"] = r["v"]["value"]
-
+            if version_indicators.get("modified_date") is None:
+                if r.get("md") is not None:
+                    version_indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
+            if version_indicators.get("version_iri") is None:
+                if r.get("vi") is not None:
+                    version_indicators["version_iri"] = r["vi"]["value"]
+            if version_indicators.get("version_info") is None:
+                if r.get("v") is not None:
+                    version_indicators["version_info"] = r["v"]["value"]
     # if not, we may still get file-based indicators
     if artifact_path.is_file():
         version_indicators["file_size"] = artifact_path.stat().st_size
@@ -337,10 +340,10 @@ def get_version_indicators_for_graph_in_sparql_endpoint(
 
     indicators = {
         "modified_date": None,
-        "version": None,
+        "version_info": None,
         "version_iri": None,
         "file_size": None,
-        "main_entity_iri": main_entity,
+        "main_entity": main_entity,
     }
 
     q = f"""
@@ -351,16 +354,20 @@ def get_version_indicators_for_graph_in_sparql_endpoint(
         SELECT ?md ?vi ?v
         WHERE {{
             GRAPH ?g {{
+                VALUES ?me {{
+                    <{main_entity}>
+                    <{main_entity + "-catalogue"}>
+                }}
                 OPTIONAL {{
-                    <{main_entity}> dcterms:modified|schema:dateModified ?md .
+                    ?me dcterms:modified|schema:dateModified ?md .
                 }}
     
                 OPTIONAL {{
-                    <{main_entity}> owl:versionIRI ?vi .
+                    ?me owl:versionIRI ?vi .
                 }}
     
                 OPTIONAL {{
-                    <{main_entity}> owl:versionInfo|schema:version|dcterms:hasVersion ?v .
+                    ?me owl:versionInfo|schema:version|dcterms:hasVersion ?v .
                 }}
             }}
         }}
@@ -377,56 +384,79 @@ def get_version_indicators_for_graph_in_sparql_endpoint(
         if r.get("vi") is not None:
             indicators["version_iri"] = r["vi"]["value"]
         if r.get("v") is not None:
-            indicators["version"] = r["v"]["value"]
+            indicators["version_info"] = r["v"]["value"]
 
     return indicators
 
 
-def first_is_more_recent_than_second_using_version_indicators(first: dict, second: dict) -> bool:
-    """Tries modified date first - only if both indicators have it - then version IRI then version"""
-    if first.get("modified_date") and second.get("modified_date"):
-        return first["modified_date"] > second["modified_date"]
-
-    if first.get("version_iri") and second.get("version_iri"):
-        return first["version_iri"] > second["version_iri"]
-
-    if first.get("version") and second.get("version"):
-        return first["version"] > second["version"]
+class ArtifactComparison(Enum):
+    First = "first"
+    Second = "second"
+    Neither = "neither"
+    CantCalculate = "cant_calculate"
 
 
-def local_artifact_is_more_recent_then_stored_data(
-    manifest: Path | tuple[Path, Path, Graph],
-    artifact: Path,
+def compare_artifacts(first: dict, second: dict) -> ArtifactComparison:
+    """Compares Modified Date, Version IRI & Version info for each and returns latest"""
+
+    """Even weighted aggregate score for each version indicator"""
+    first_score = 0
+    second_score = 0
+    has_modified_date_comparison = first.get("modified_date") and second.get("modified_date")
+    has_version_iri_comparison = first.get("version_iri") and second.get("version_iri")
+    has_version_info_comparison = first.get("version_info") and second.get("version_info")
+
+    if not has_modified_date_comparison and not has_version_iri_comparison and not has_version_info_comparison:
+        return ArtifactComparison.CantCalculate
+
+    if has_modified_date_comparison:
+        if first["modified_date"] > second["modified_date"]:
+            first_score += 1
+        elif first["modified_date"] == second["modified_date"]:
+            pass
+        else:
+            second_score += 1
+
+    if has_version_iri_comparison:
+        if first["version_iri"] > second["version_iri"]:
+            first_score += 1
+        elif first["version_iri"] == second["version_iri"]:
+            pass
+        else:
+            second_score += 1
+
+    if has_version_info_comparison:
+        if first["version_info"] > second["version_info"]:
+            first_score += 1
+        elif first["version_info"] == second["version_info"]:
+            pass
+        else:
+            second_score += 1
+
+    # TODO: add test for file_size, Git version etc.
+
+    if first_score > second_score:
+        return ArtifactComparison.First
+    elif second_score == first_score:
+        return ArtifactComparison.Neither
+    else:
+        return ArtifactComparison.Second
+
+
+def local_artifact_more_recent(
+    version_indicators: dict,
     sparql_endpoint: str = None,
     http_client: httpx.Client | None = None,
-):
+) -> ArtifactComparison:
     """Tests to see if the given artifact is more recent than a previously stored copy of its content"""
 
-    def version_indicators_are_all_none(vi):
-        if (vi["modified_date"] is None
-            and vi["version_iri"] is None
-            and vi["version"] is None
-            and vi["file_size"] is None
-        ):
-            return True
-        else:
-            return False
-
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
-    local = {}
-    get_version_indicators_for_artifact(manifest_path, artifact, local)
-
     remote = get_version_indicators_for_graph_in_sparql_endpoint(
-        local["main_entity"],
+        version_indicators["main_entity"],
         sparql_endpoint,
         http_client
     )
 
-    # there seems to be nothing at the remote endpoint
-    if version_indicators_are_all_none(remote):
-        return None
-
-    return first_is_more_recent_than_second_using_version_indicators(local, remote)
+    return compare_artifacts(version_indicators, remote)
 
 
 def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
@@ -515,7 +545,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
         files = get_files_from_artifact((manifest_path, manifest_root, manifest_graph), Literal(artifact))
 
         for file in files:
-            me = r["me"]["value"] if r.get("me") is not None else None
+            me = URIRef(r["me"]["value"]) if r.get("me") is not None else None
             role = URIRef(r["r"]["value"])
             dm = r["dm"]["value"] if r.get("dm") is not None else None
             vi = r["vi"]["value"] if r.get("vi") is not None else None
@@ -538,3 +568,85 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
             get_version_indicators_for_artifact((manifest_path, manifest_root, manifest_graph), k, v)
 
     return artifacts_info
+
+
+def artifact_file_name_from_graph_id(graph_id: str) -> str:
+    s = graph_id.replace("://", "--")
+    s = s.replace("/", "-")
+    s = s.replace("#", "--")
+    return s + ".ttl"
+
+
+def store_remote_artifact_locally(
+    manifest: Path | tuple[Path, Path, Graph],
+    sparql_endpoint: str,
+    graph_id: str,
+    http_client: httpx.Client | None = None,
+):
+    """Writes a remote graph to a local file and registers that file as a Resource in the given Manifest.
+
+    Only the Resource Role ResourceData is supported."""
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    q = """
+        CONSTRUCT {
+            ?s ?p ?o
+        }
+        WHERE {
+            GRAPH <xxx> {
+                ?s ?p ?o
+            }
+        }
+        """.replace("xxx", graph_id)
+    r = query(sparql_endpoint, q, http_client)
+    artifact_path = str(artifact_file_name_from_graph_id(graph_id))
+    r.serialize(destination=manifest_root / artifact_path, format="longturtle")
+
+    new_manifest_graph = Graph()
+    new_manifest_graph += manifest_graph
+
+    for m in new_manifest_graph.subjects(RDF.type, PREZ.Manifest):
+        new_r = BNode()
+        for r in new_manifest_graph.objects(m, PROF.hasResource):
+            if (r, PROF.hasRole, MRR.ResourceData) in new_manifest_graph:
+                new_r = r
+
+        a = BNode()
+        new_manifest_graph.add((
+            a, SDO.contentLocation, Literal(artifact_path)  # relative to manifest_root
+        ))
+        new_manifest_graph.add((
+            a, SDO.mainEntity, URIRef(graph_id)
+        ))
+        new_manifest_graph.add((
+            new_r, PROF.hasArtifact, a
+        ))
+        new_manifest_graph.add((
+            new_r, PROF.hasRole, MRR.ResourceData  # only one supported for now
+        ))
+        new_manifest_graph.add((
+            m, PROF.hasResource, new_r
+        ))
+
+    return new_manifest_graph
+
+
+def update_local_artifact(
+    manifest: Path | tuple[Path, Path, Graph],
+    artifact_path: Path,
+    sparql_endpoint: str,
+    graph_id: str,
+    http_client: httpx.Client | None = None
+):
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    q = """
+        CONSTRUCT {
+            ?s ?p ?o
+        }
+        WHERE {
+            GRAPH <xxx> {
+                ?s ?p ?o
+            }
+        }
+        """.replace("xxx", graph_id)
+    r = query(sparql_endpoint, q, http_client)
+    r.serialize(destination=artifact_path, format="longturtle")

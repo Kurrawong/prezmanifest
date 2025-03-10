@@ -20,11 +20,9 @@ PREFIX schema: <https://schema.org/>
                 "artifact3.ttl" ,
                 "artifact4.ttl" ,
                 "artifact6.ttl" ,
-                [
-                    schema:contentLocation "artifact7.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/7> ;
-                ] ,
-                "artifact8.ttl" ;
+                "artifact7.ttl" ,
+                "artifact8.ttl" ,
+                "artifact9.ttl" ;
             prof:hasRole mrr:ResourceData ;
             schema:description "Catalogued datasets" ;
             schema:name "Resource Data" ;

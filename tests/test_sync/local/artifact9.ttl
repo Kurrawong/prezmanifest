@@ -1,12 +1,12 @@
-# younger
+# Modified Date greater in Manifest
 
 PREFIX schema: <https://schema.org/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-<http://example.com/dataset/6>
+<http://example.com/dataset/9>
     a schema:Dataset ;
     schema:dateCreated "2025-03-01"^^xsd:date ;
     schema:dateModified "2025-03-01"^^xsd:date ;
-    schema:description "The dataset No. 6" ;
-    schema:name "Dataset Six" ;
+    schema:description "The dataset No. 9" ;
+    schema:name "Dataset Nine" ;
 .

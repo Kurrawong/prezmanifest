@@ -242,7 +242,7 @@ def test_first_is_more_recent_than_second_using_version_indicators():
         "main_entity_iri": None,
     }
 
-    assert not first_is_more_recent_than_second_using_version_indicators(one, two)
+    assert not compare_artifacts(one, two)
 
     three = {
         "modified_date": None,
@@ -252,7 +252,7 @@ def test_first_is_more_recent_than_second_using_version_indicators():
         "main_entity_iri": None,
     }
 
-    assert not first_is_more_recent_than_second_using_version_indicators(two, three)
+    assert not compare_artifacts(two, three)
 
     four = {
         "modified_date": None,
@@ -262,7 +262,7 @@ def test_first_is_more_recent_than_second_using_version_indicators():
         "main_entity_iri": None,
     }
 
-    assert not first_is_more_recent_than_second_using_version_indicators(three, four)
+    assert not compare_artifacts(three, four)
 
     five = {
         "modified_date": None,
@@ -280,7 +280,7 @@ def test_first_is_more_recent_than_second_using_version_indicators():
         "main_entity_iri": None,
     }
 
-    assert not first_is_more_recent_than_second_using_version_indicators(five, six)
+    assert not compare_artifacts(five, six)
 
     seven = {
         "modified_date": None,
@@ -290,7 +290,7 @@ def test_first_is_more_recent_than_second_using_version_indicators():
         "main_entity_iri": None,
     }
 
-    assert not first_is_more_recent_than_second_using_version_indicators(six, seven)
+    assert not compare_artifacts(six, seven)
 
 
 def test_local_artifact_is_more_recent_then_stored_data(fuseki_container):
@@ -318,7 +318,7 @@ def test_local_artifact_is_more_recent_then_stored_data(fuseki_container):
     #
     # assert r["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
 
-    r = local_artifact_is_more_recent_then_stored_data(
+    r = local_artifact_more_recent(
         MANIFEST,
         TESTS_DIR / "demo-vocabs-updated1" / "vocabs" / "language-test.ttl",
         SPARQL_ENDPOINT,

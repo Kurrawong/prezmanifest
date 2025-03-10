@@ -3,6 +3,7 @@ PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
 PREFIX prez: <https://prez.dev/>
 PREFIX prof: <http://www.w3.org/ns/dx/prof/>
 PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 []
     a prez:Manifest ;
@@ -22,7 +23,11 @@ PREFIX schema: <https://schema.org/>
                 [
                     schema:contentLocation "artifact7.ttl" ;
                     schema:mainEntity <http://example.com/dataset/7> ;
-
+                ] ,
+                [
+                    schema:contentLocation "artifact9.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/9> ;
+                    schema:dateModified "2025-03-02"^^xsd:date ;
                 ] ;
             prof:hasRole mrr:ResourceData ;
             schema:description "Catalogued datasets" ;
