@@ -33,11 +33,7 @@ def test_sync(fuseki_container):
     a = sync(
         MANIFEST_FILE_LOCAL,
         SPARQL_ENDPOINT,
-        None,
     )
-
-    import pprint
-    pprint.pprint(a)
 
     # check status before sync
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
@@ -58,6 +54,9 @@ def test_sync(fuseki_container):
         False, False, False, False
     )
 
+    import pprint
+    pprint.pprint(a)
+
     # check status after sync
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact2.ttl")]["direction"] == "same"
@@ -74,8 +73,6 @@ def test_sync(fuseki_container):
     shutil.move(MANIFEST_ROOT / "catalogue.ttx", MANIFEST_ROOT / "catalogue.ttl")
     shutil.move(MANIFEST_ROOT / "artifact6.ttx", MANIFEST_ROOT / "artifact6.ttl")
     Path(MANIFEST_ROOT / "http--example.com-dataset-8.ttl").unlink()
-
-
 
 
 def test_sync_cli(fuseki_container):

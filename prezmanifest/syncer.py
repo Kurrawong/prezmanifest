@@ -98,7 +98,7 @@ def sync(
 
     update_remote_catalogue = False
     for k, v in sync_status.items():
-        if update_remote and v["direction"] == "forward":
+        if update_remote and v["direction"] == "upload":
             upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
 
         if add_remote and v["direction"] == "add-remotely":

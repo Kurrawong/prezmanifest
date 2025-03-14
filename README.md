@@ -2,7 +2,23 @@
 
 This repository contains the `prezmanifest` Python package that provides a series of functions to work with Prez Manifests.
 
-_A Prez Manifest is an RDF file that describes and links to a set of resources that can be loaded into an RDF database for the [Prez graph database publication system](http://prez.dev) to provide access to. The Prez Manifest specification is online at: <https://prez.dev/manifest/>._
+## Contents
+
+* [What is a Prez Manifest?](#what-is-a-prez-manifest)
+* [Functions](#functions)
+* [Use](#use)
+* [Testing](#testing)
+* [Extending](#extending)
+* [License](#license)
+* [Contact](#contact)
+* [Background concepts & other resources](#background-concepts--other-resources)
+* [Case Studies](#case-studies)
+
+## What is a Prez Manifest?
+
+A Prez Manifest is an RDF file that describes and links to a set of resources that can be loaded into an RDF database for the [Prez graph database publication system](http://prez.dev) to provide access to. The Prez Manifest specification is online at: <https://prez.dev/manifest/>.
+
+## Functions
 
 The functions provided are:
 
@@ -188,15 +204,11 @@ If I have a manifest locally, I can load it into a remote SPARQL Endpoint like t
 pm load sparql {PATH-TO-MANIFEST} {SPARQL-ENDPOINT}
 ```
 
-Going forward, I don't have to blow away all the content in the SPARQL Endpoint and reload everything whenever I have 
-content changes, instead I can use the `sync` command.
+Going forward, I don't have to blow away all the content in the SPARQL Endpoint and reload everything whenever I have content changes, instead I can use the `sync` command.
 
-`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local
-artifact should be uploaded, teh remote one downloaded or whether there are new artifacts present locally or remotely.
+`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local artifact should be uploaded, teh remote one downloaded or whether there are new artifacts present locally or remotely.
 
-The `tests/test_sync/` directory in this repository contains a _local_ and a _remote_ manifest and content. Following 
-the logic in the testing function `tests/test_sync/test_sync.py::test_sync`, if the _remote_ manifest is loaded, as per
-`pm load sparql tests/test_sync/remote/manifest.ttl {SPARQL-ENDPOINT}` and then `sync` is run like this:
+The `tests/test_sync/` directory in this repository contains a _local_ and a _remote_ manifest and content. Following the logic in the testing function `tests/test_sync/test_sync.py::test_sync`, if the _remote_ manifest is loaded, as per `pm load sparql tests/test_sync/remote/manifest.ttl {SPARQL-ENDPOINT}` and then `sync` is run like this:
 
 ```bash
 pm sync tests/test_sync/local/manifest.ttl {SPARQL-ENDPOINT}
@@ -228,11 +240,14 @@ This is telling you, per artifact, what `sync` will do.
 * `artifact9` is the "same" - no action required
 * `artifact6.ttl` is newer remotely, it should be downloaded
 
-You can choose to have `sync` carry out all these actions or only some - default is all - by setting the `update_remote`
-and so on variables. Setting all to `False` will cause `sync` to do nothing and report only what it _would_ do if they
-where not set, e.g.:
+You can choose to have `sync` carry out all these actions or only some - default is all - by setting the `update_remote` and so on input parameters. Setting all to `False` will cause `sync` to do nothing and report only what it _would_ do if they where not set, e.g.:
 
 ```bash
 pm sync tests/test_sync/local/manifest.ttl http://localhost:3030/test/ False False False False
 ```
 
+Other than doing all this "manually" - interactively, on the command line - I might want to use `sync` in Python application code or cloud _infracode_ scriptin.
+
+For use in Python applications, just import prezmanifest - `uv add prezmanifest` etc. - and use, as per the use of `sync` in `tests/test_sync/test_sync.py::test_sync`.
+
+For use in _infracode_, note that the `pm sync` function can return the table above in JSON by setting the `response format` input parameter, `-f`.
