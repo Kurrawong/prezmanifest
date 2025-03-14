@@ -27,6 +27,8 @@ def test_sync(fuseki_container):
         None,
     ))
 
+    print(a)
+    exit()
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "unchanged"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact2.ttl")]["direction"] == "forward"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact3.ttl")]["direction"] == "forward"
@@ -53,3 +55,7 @@ def test_sync(fuseki_container):
     assert a[str(MANIFEST_ROOT / "artifact7.ttl")]["direction"] == "unchanged"
     assert a[str(MANIFEST_ROOT / artifact_file_name_from_graph_id("http://example.com/dataset/8"))]["direction"] == "unchanged"
     assert a[str(MANIFEST_ROOT / "catalogue.ttl")]["direction"] == "unchanged"
+
+
+def test_sync_cli():
+    pass

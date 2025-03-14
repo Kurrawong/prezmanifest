@@ -1,18 +1,14 @@
-PREFIX dcterms: <http://purl.org/dc/terms/>
-PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
-PREFIX prez: <https://prez.dev/>
 PREFIX prof: <http://www.w3.org/ns/dx/prof/>
 PREFIX schema: <https://schema.org/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-[]
-    a prez:Manifest ;
-    prof:hasResource
+[]    a <https://prez.dev/Manifest> ;
+    prof:hasResource 
         [
-            prof:hasArtifact "catalogue.ttl" ;
-            prof:hasRole mrr:CatalogueData ;
-            schema:description "The definition of, and medata for, the container which here is a dcat:Catalog object" ;
-            schema:name "Catalogue Definition"
+            prof:hasArtifact "labels.ttl" ;
+            prof:hasRole <https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels> ;
+            schema:description "An RDF file containing all the labels for the container content" ;
+            schema:name "Labels" ;
         ] ,
         [
             prof:hasArtifact
@@ -26,17 +22,17 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                 ] ,
                 [
                     schema:contentLocation "artifact9.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/9> ;
                     schema:dateModified "2025-03-02"^^xsd:date ;
+                    schema:mainEntity <http://example.com/dataset/9> ;
                 ] ;
-            prof:hasRole mrr:ResourceData ;
+            prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
             schema:description "Catalogued datasets" ;
             schema:name "Resource Data" ;
         ] ,
         [
-            prof:hasArtifact "labels.ttl" ;
-            prof:hasRole mrr:CompleteCatalogueAndResourceLabels ;
-            schema:description "An RDF file containing all the labels for the container content" ;
-            schema:name "Labels" ;
+            prof:hasArtifact "catalogue.ttl" ;
+            prof:hasRole <https://prez.dev/ManifestResourceRoles/CatalogueData> ;
+            schema:description "The definition of, and medata for, the container which here is a dcat:Catalog object" ;
+            schema:name "Catalogue Definition" ;
         ] ;
 .

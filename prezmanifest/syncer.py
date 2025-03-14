@@ -5,10 +5,10 @@ from kurra.utils import load_graph
 from rdflib import Graph
 from rdflib.namespace import SDO
 from prezmanifest.definednamespaces import MRR
-from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, local_artifact_more_recent
+from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, which_is_more_recent
 from kurra.sparql import query
 from kurra.db import upload
-from prezmanifest.utils import ArtifactComparison, store_remote_artifact_locally, update_local_artifact, absolutise_path
+from prezmanifest.utils import VersionIndicatorComparison, store_remote_artifact_locally, update_local_artifact, absolutise_path
 from rdflib import URIRef
 
 def sync(
@@ -56,18 +56,18 @@ def sync(
 
             # If known, compare it
             if known:
-                replace = local_artifact_more_recent(
+                replace = which_is_more_recent(
                     v,
                     sparql_endpoint,
                     http_client,
                 )
-                if replace == ArtifactComparison.First:
+                if replace == VersionIndicatorComparison.First:
                     direction = "forward"
-                elif replace == ArtifactComparison.Second:
+                elif replace == VersionIndicatorComparison.Second:
                     direction = "reverse"
-                elif replace == ArtifactComparison.Neither:
+                elif replace == VersionIndicatorComparison.Neither:
                     direction = "unchanged"
-                elif ArtifactComparison.CantCalculate:
+                elif VersionIndicatorComparison.CantCalculate:
                     direction = "forward"
             else:  # not known at remote location so forward sync - upload
                 direction = "missing-remotely"

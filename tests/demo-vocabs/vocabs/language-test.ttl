@@ -130,4 +130,5 @@ cs:
     schema:dateCreated "2024-11-21"^^xsd:date ;
     schema:dateModified "2024-11-21"^^xsd:date ;
     schema:publisher <https://kurrawong.ai> ;
+    owl:versionIRI :1.0 ;
 .

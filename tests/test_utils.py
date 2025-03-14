@@ -129,7 +129,7 @@ def test_target_contains_this_manifests_catalogue(fuseki_container):
         assert not target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
 
 
-# TODO
+# TODO add tests
 def test_make_httpx_client():
     pass
 
@@ -142,50 +142,29 @@ def test_get_main_entity_iri_of_artifact():
     assert get_main_entity_iri_of_artifact(MANIFEST.parent / "vocabs/language-test.ttl", MANIFEST) == URIRef("https://example.com/demo-vocabs/language-test")
 
 
-def test_get_version_indicators_for_artifact():
+def test_get_version_indicators_local():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
 
     vi = {}
-    get_version_indicators_for_artifact(
+    get_version_indicators_local(
         MANIFEST,
         TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl",
         vi
     )
 
     assert vi["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
-
-    vi = {
-            "main_entity": URIRef("https://example.com/demo-vocabs/language-test")
-        }
-    get_version_indicators_for_artifact(
-        MANIFEST,
-        TESTS_DIR / "demo-vocabs-updated1" / "vocabs" / "language-test.ttl",
-        vi
-    )
-
-    assert vi["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
-
-    vi = {}
-    get_version_indicators_for_artifact(
-        MANIFEST,
-        TESTS_DIR / "demo-vocabs-updated5" / "vocabs" / "language-test.ttl",
-        vi
-    )
-
-    assert vi["modified_date"] == datetime.strptime("2025-02-28", "%Y-%m-%d")
-
-    assert vi["version_iri"] == "https://example.com/demo-vocabs/language-test/1.1"
+    assert vi["version_iri"] == "https://example.com/demo-vocabs/language-test/1.0"
 
     with pytest.raises(ValueError):
         vi = {}
-        get_version_indicators_for_artifact(
+        get_version_indicators_local(
             MANIFEST,
-            TESTS_DIR / "demo-vocabs-updated6" / "vocabs" / "language-test.ttl",
+            TESTS_DIR / "demo-vocabs" / "vocabs" / "language-testx.ttl",
             vi
         )
 
 
-def test_get_version_indicators_for_graph_in_sparql_endpoint(fuseki_container):
+def test_get_version_indicators_sparql(fuseki_container):
     port = fuseki_container.get_exposed_port(3030)
     SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
     ASSET_PATH = TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
@@ -214,9 +193,9 @@ def test_get_version_indicators_for_graph_in_sparql_endpoint(fuseki_container):
 
     count = int(r[0]["count"]["value"])
 
-    assert count == 70
+    assert count == 71
 
-    r = get_version_indicators_for_graph_in_sparql_endpoint(
+    r = get_version_indicators_sparql(
         ASSET_GRAPH_IRI,
         SPARQL_ENDPOINT,
         http_client=c
@@ -225,10 +204,10 @@ def test_get_version_indicators_for_graph_in_sparql_endpoint(fuseki_container):
     assert r["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
 
 
-def test_first_is_more_recent_than_second_using_version_indicators():
+def test_compare_version_indicators():
     one = {
         "modified_date": datetime.strptime("2024-11-20", "%Y-%m-%d"),
-        "version": None,
+        "version_info": None,
         "version_iri": None,
         "file_size": None,
         "main_entity_iri": None,
@@ -236,37 +215,37 @@ def test_first_is_more_recent_than_second_using_version_indicators():
 
     two = {
         "modified_date": datetime.strptime("2024-11-21", "%Y-%m-%d"),
-        "version": "1.1",
+        "version_info": "1.1",
         "version_iri": None,
         "file_size": None,
         "main_entity_iri": None,
     }
 
-    assert not compare_artifacts(one, two)
+    assert compare_version_indicators(one, two) == VersionIndicatorComparison.Second
 
     three = {
         "modified_date": None,
-        "version": "1.2.2",
+        "version_info": "1.2.2",
         "version_iri": None,
         "file_size": None,
         "main_entity_iri": None,
     }
 
-    assert not compare_artifacts(two, three)
+    assert compare_version_indicators(two, three) == VersionIndicatorComparison.Second
 
     four = {
         "modified_date": None,
-        "version": "1.2.3",
+        "version_info": "1.2.3",
         "version_iri": None,
         "file_size": None,
         "main_entity_iri": None,
     }
 
-    assert not compare_artifacts(three, four)
+    assert compare_version_indicators(three, four) == VersionIndicatorComparison.Second
 
     five = {
         "modified_date": None,
-        "version": None,
+        "version_info": None,
         "version_iri": "https://example.com/demo-vocabs/language-test/1",
         "file_size": None,
         "main_entity_iri": None,
@@ -274,58 +253,69 @@ def test_first_is_more_recent_than_second_using_version_indicators():
 
     six = {
         "modified_date": None,
-        "version": None,
+        "version_info": None,
         "version_iri": "https://example.com/demo-vocabs/language-test/2.0",
         "file_size": None,
         "main_entity_iri": None,
     }
 
-    assert not compare_artifacts(five, six)
+    assert compare_version_indicators(five, six) == VersionIndicatorComparison.Second
 
     seven = {
         "modified_date": None,
-        "version": None,
+        "version_info": None,
         "version_iri": "https://example.com/demo-vocabs/language-test/2.1",
         "file_size": None,
         "main_entity_iri": None,
     }
 
-    assert not compare_artifacts(six, seven)
+    assert compare_version_indicators(six, seven) == VersionIndicatorComparison.Second
 
 
-def test_local_artifact_is_more_recent_then_stored_data(fuseki_container):
+def test_which_is_more_recent(fuseki_container):
     port = fuseki_container.get_exposed_port(3030)
-    MANIFEST = TESTS_DIR / "demo-vocabs-updated1" / "manifest.ttl"
     SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
-    ASSET_PATH = TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
-    ASSET_GRAPH_IRI = "https://example.com/demo-vocabs/language-test"
+    ARTIFACT_PATH = TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
+    ARTIFACT_MAIN_ENTITY = "https://example.com/demo-vocabs/language-test"
 
     c = make_httpx_client()
 
     upload(
         SPARQL_ENDPOINT,
-        ASSET_PATH,
-        ASSET_GRAPH_IRI,
+        ARTIFACT_PATH,
+        ARTIFACT_MAIN_ENTITY,
         False,
         c
     )
 
-    # r = get_version_indicators_for_graph_in_sparql_endpoint(
-    #     ASSET_GRAPH_IRI,
-    #     SPARQL_ENDPOINT,
-    #     http_client=c
-    # )
-    #
-    # assert r["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
+    vi = {
+        'main_entity': URIRef('https://example.com/demo-vocabs/language-test'),
+        'modified_date': datetime(2025, 2, 28, 0, 0),
+        'version_iri': 'https://example.com/demo-vocabs/language-test/1.1',
+        'file_size': 5053
+    }
 
-    r = local_artifact_more_recent(
-        MANIFEST,
-        TESTS_DIR / "demo-vocabs-updated1" / "vocabs" / "language-test.ttl",
+    r = which_is_more_recent(
+        vi,
         SPARQL_ENDPOINT,
         c
     )
 
-    assert r
+    assert r == VersionIndicatorComparison.First
+
+    vi2 = {
+        'main_entity': URIRef('https://example.com/demo-vocabs/language-test'),
+        'modified_date': datetime(2023, 2, 28, 0, 0),
+        'file_size': 5053
+    }
+
+    r = which_is_more_recent(
+        vi2,
+        SPARQL_ENDPOINT,
+        c
+    )
+
+    assert r == VersionIndicatorComparison.Second
 
 
 def test_denormalise_artifacts():

@@ -268,7 +268,7 @@ def get_main_entity_iri_of_artifact(
     return URIRef(mes[0])
 
 
-def get_version_indicators_for_artifact(
+def get_version_indicators_local(
         manifest: Path | tuple[Path, Path, Graph],
         artifact: Path,
         version_indicators: dict
@@ -326,7 +326,7 @@ def get_version_indicators_for_artifact(
     return
 
 
-def get_version_indicators_for_graph_in_sparql_endpoint(
+def get_version_indicators_sparql(
     main_entity: str,
     sparql_endpoint: str,
     http_client: httpx.Client | None = None,
@@ -387,14 +387,14 @@ def get_version_indicators_for_graph_in_sparql_endpoint(
     return indicators
 
 
-class ArtifactComparison(Enum):
+class VersionIndicatorComparison(Enum):
     First = "first"
     Second = "second"
     Neither = "neither"
     CantCalculate = "cant_calculate"
 
 
-def compare_artifacts(first: dict, second: dict) -> ArtifactComparison:
+def compare_version_indicators(first: dict, second: dict) -> VersionIndicatorComparison:
     """Compares Modified Date, Version IRI & Version info for each and returns latest"""
 
     """Even weighted aggregate score for each version indicator"""
@@ -405,7 +405,7 @@ def compare_artifacts(first: dict, second: dict) -> ArtifactComparison:
     has_version_info_comparison = first.get("version_info") and second.get("version_info")
 
     if not has_modified_date_comparison and not has_version_iri_comparison and not has_version_info_comparison:
-        return ArtifactComparison.CantCalculate
+        return VersionIndicatorComparison.CantCalculate
 
     if has_modified_date_comparison:
         if first["modified_date"] > second["modified_date"]:
@@ -434,27 +434,27 @@ def compare_artifacts(first: dict, second: dict) -> ArtifactComparison:
     # TODO: add test for file_size, Git version etc.
 
     if first_score > second_score:
-        return ArtifactComparison.First
+        return VersionIndicatorComparison.First
     elif second_score == first_score:
-        return ArtifactComparison.Neither
+        return VersionIndicatorComparison.Neither
     else:
-        return ArtifactComparison.Second
+        return VersionIndicatorComparison.Second
 
 
-def local_artifact_more_recent(
+def which_is_more_recent(
     version_indicators: dict,
     sparql_endpoint: str = None,
     http_client: httpx.Client | None = None,
-) -> ArtifactComparison:
+) -> VersionIndicatorComparison:
     """Tests to see if the given artifact is more recent than a previously stored copy of its content"""
 
-    remote = get_version_indicators_for_graph_in_sparql_endpoint(
+    remote = get_version_indicators_sparql(
         version_indicators["main_entity"],
         sparql_endpoint,
         http_client
     )
 
-    return compare_artifacts(version_indicators, remote)
+    return compare_version_indicators(version_indicators, remote)
 
 
 def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
@@ -563,7 +563,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
     # get Version Indicators info only for Resources with certain Roles
     for k, v in artifacts_info.items():
         if v["role"] in [MRR.CatalogueData, MRR.ResourceData]:
-            get_version_indicators_for_artifact((manifest_path, manifest_root, manifest_graph), k, v)
+            get_version_indicators_local((manifest_path, manifest_root, manifest_graph), k, v)
 
     return artifacts_info
 
