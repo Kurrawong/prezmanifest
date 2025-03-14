@@ -1,5 +1,4 @@
 from pathlib import Path
-import json
 import httpx
 from kurra.utils import load_graph
 from rdflib import Graph
@@ -19,7 +18,7 @@ def sync(
     update_local: bool = True,
     add_remote: bool = True,
     add_local: bool = True,
-) -> str:
+) -> dict:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     sync_status = {}
@@ -62,15 +61,15 @@ def sync(
                     http_client,
                 )
                 if replace == VersionIndicatorComparison.First:
-                    direction = "forward"
+                    direction = "upload"
                 elif replace == VersionIndicatorComparison.Second:
-                    direction = "reverse"
+                    direction = "download"
                 elif replace == VersionIndicatorComparison.Neither:
-                    direction = "unchanged"
+                    direction = "same"
                 elif VersionIndicatorComparison.CantCalculate:
-                    direction = "forward"
+                    direction = "upload"
             else:  # not known at remote location so forward sync - upload
-                direction = "missing-remotely"
+                direction = "add-remotely"
 
             sync_status[str(k)] = {
                 "main_entity": v["main_entity"],
@@ -92,9 +91,9 @@ def sync(
     for x in query(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True):
         remote_entity = URIRef(x["p"]["value"])
         if remote_entity not in local_entities:
-            sync_status[remote_entity] = {
+            sync_status[str(remote_entity)] = {
                 "main_entity": URIRef(remote_entity),
-                "direction": "missing-locally"
+                "direction": "add-locally"
             }
 
     update_remote_catalogue = False
@@ -102,11 +101,11 @@ def sync(
         if update_remote and v["direction"] == "forward":
             upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
 
-        if add_remote and v["direction"] == "missing-remotely":
+        if add_remote and v["direction"] == "add-remotely":
             upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
             update_remote_catalogue = True
 
-        if add_local and v["direction"] == "missing-locally":
+        if add_local and v["direction"] == "add-locally":
             updated_local_manifest = store_remote_artifact_locally(
                 (manifest_path, manifest_root, manifest_graph),
                 sparql_endpoint,
@@ -120,7 +119,7 @@ def sync(
             cat.add((cat_iri, SDO.hasPart, URIRef(v["main_entity"])))
             cat.serialize(destination=cat_artifact_path, format="longturtle")
 
-        if update_local and v["direction"] == "reverse":
+        if update_local and v["direction"] == "download":
             update_local_artifact(
                 (manifest_path, manifest_root, manifest_graph),
                 Path(k),
@@ -138,4 +137,4 @@ def sync(
             http_client,
         )
 
-    return json.dumps(sync_status, indent=4)
+    return sync_status

@@ -41,7 +41,7 @@ You can also always install the latest, unstable, release from its version contr
 ## Use
 
 > [!TIP]
-> See the [Case Study](#case-study---indigenous-studies-unit-catalogue) below for a short description of the 
+> See the [Case Study: Establish](#case-study-establish) below for a short description of the 
 > establishment of a new catalogue using prezmanifest.
 
 ### Library
@@ -74,6 +74,7 @@ PrezManifest top-level Command Line Interface. Ask for help (-h) for each Comman
 ╰────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────╮
 │ validate   Validate the structure and content of a Prez Manifest                                       │
+│ sync       Synchronize a Prez Manifest's resources with loaded copies of them in a SPARQL Endpoint     │
 │ label      Discover labels missing from data in a in a Prez Manifest and patch them                    │
 │ document   Create documentation from a Prez Manifest                                                   │
 │ load       Load a Prez Manifest's content into a file or DB                                            │
@@ -86,9 +87,18 @@ To find out more about each Command, ask for helo like this - for load:
 pm load -h
 ```
 
+> [!TIP]
+> See the [Case Study: Sync](#case-study-sync) below for a description of the different ways to sync
+
 ## Testing
 
 Run `uv run pytest`, or Poetry etc. equivalents, to execute pytest. You must have Docker Desktop running to allow all loader tests to be executed as some use temporary test containers.
+
+## Extending
+
+Many functions have been placed into `prezmanifest/utils.py` and hopefully extensions can be made to individual functions there. 
+
+For example, to extend the criteria `prezmanifest` uses to judge the newness of a local v. a remote artifacts for the `sync` function, see the [`compare_version_indicators()`](prezmanifest/utils.py#L397)
 
 ## License
 
@@ -118,7 +128,9 @@ See the various Manifest files in `tests/demo-vocabs/` for examples of them in u
 
 [KurrawongAI](https://kurrawong.ai) makes available labels for all the elements of about 100 well-known ontologies and vocabularies at <https://demo.dev.kurrawong.ai/catalogs/exm:demo-vocabs>. You can use this as a source (SPARQL Endpoint) of labels to patch content in Manifests that are missing labels with.
 
-## Case Study - Indigenous Studies Unit Catalogue
+## Case Studies
+
+### Case Study: Establish
 
 The Indigenous Studies Unit Catalogue is a new catalogue of resources - books, articles, boxes of archived documents - 
 produced by the [Indigenous Studies Unit](https://mspgh.unimelb.edu.au/centres-institutes/onemda/research-group/indigenous-studies-unit) 
@@ -167,3 +179,60 @@ to improve the presentation of the data in Prez in the following ways:
     * it produced a single _trig_ file `isu-catalogue.trig` containing RDF graphs which can easily be uploaded to the 
       database delivering the catalogue
     * `pm load sparql isu-catalogue/manifest.ttl http://a-sparql-endpoint.com/ds -u username -p password` could have been run to load the content directly into the ISU RDF DB, if it had been available
+
+### Case Study: Sync
+
+If I have a manifest locally, I can load it into a remote SPARQL Endpoint like this:
+
+```bash
+pm load sparql {PATH-TO-MANIFEST} {SPARQL-ENDPOINT}
+```
+
+Going forward, I don't have to blow away all the content in the SPARQL Endpoint and reload everything whenever I have 
+content changes, instead I can use the `sync` command.
+
+`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local
+artifact should be uploaded, teh remote one downloaded or whether there are new artifacts present locally or remotely.
+
+The `tests/test_sync/` directory in this repository contains a _local_ and a _remote_ manifest and content. Following 
+the logic in the testing function `tests/test_sync/test_sync.py::test_sync`, if the _remote_ manifest is loaded, as per
+`pm load sparql tests/test_sync/remote/manifest.ttl {SPARQL-ENDPOINT}` and then `sync` is run like this:
+
+```bash
+pm sync tests/test_sync/local/manifest.ttl {SPARQL-ENDPOINT}
+```
+
+You will see a report like this:
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Artifact                          ┃ Main Entity                   ┃ Direction    ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ /../../../artifact4.ttl           │ http://example.com/dataset/4  │ upload       │
+│ /../../../artifact5.ttl           │ http://example.com/dataset/5  │ add-remotely │
+│ /../../../artifact6.ttl           │ http://example.com/dataset/6  │ download     │
+│ /../../../artifact7.ttl           │ http://example.com/dataset/7  │ upload       │
+│ /../../../artifact9.ttl           │ http://example.com/dataset/9  │ same         │
+│ /../../../artifacts/artifact1.ttl │ http://example.com/dataset/1  │ same         │
+│ /../../../artifacts/artifact2.ttl │ http://example.com/dataset/2  │ upload       │
+│ /../../../artifacts/artifact3.ttl │ http://example.com/dataset/3  │ upload       │
+│ /../../../catalogue.ttl           │ https://example.com/sync-test │ same         │
+│ http://example.com/dataset/8      │ http://example.com/dataset/8  │ add-locally  │
+└───────────────────────────────────┴───────────────────────────────┴──────────────┘
+```
+
+This is telling you, per artifact, what `sync` will do. 
+
+* the local copy of `artifact4.ttl` is newer than the remote one, so it wants to "upload"
+* the remote location is missing `artifact5.ttl`, so it wants to upload that too
+* `artifact9` is the "same" - no action required
+* `artifact6.ttl` is newer remotely, it should be downloaded
+
+You can choose to have `sync` carry out all these actions or only some - default is all - by setting the `update_remote`
+and so on variables. Setting all to `False` will cause `sync` to do nothing and report only what it _would_ do if they
+where not set, e.g.:
+
+```bash
+pm sync tests/test_sync/local/manifest.ttl http://localhost:3030/test/ False False False False
+```
+

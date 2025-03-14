@@ -28,6 +28,7 @@ from prezmanifest.definednamespaces import MRR, OLIS
 from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
     get_files_from_artifact,
+get_catalogue_iri_from_manifest
 )
 from prezmanifest.utils import get_manifest_paths_and_graph
 from prezmanifest.validator import validate
@@ -53,6 +54,11 @@ def load(
 
     # validate and load
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+
+    catalogue_iri_orig = get_catalogue_iri_from_manifest((manifest_path, manifest_root, manifest_graph))
+    vg_iri = catalogue_iri_orig
+    catalogue_iri = URIRef(str(catalogue_iri_orig) + "-catalogue")
+
 
     if not isinstance(return_data_type, ReturnDatatype):
         raise ValueError(
@@ -176,7 +182,6 @@ def load(
         )
 
     vg = Graph()
-    vg_iri = None
 
     for s, o in manifest_graph.subject_objects(PROF.hasResource):
         for role in manifest_graph.objects(o, PROF.hasRole):
@@ -185,20 +190,17 @@ def load(
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     # load the Catalogue, determine the Virtual Graph & Catalogue IRIs
                     # and fail if we can't see a Catalogue object
-                    c = load_graph(manifest_root / str(artifact))
-                    vg_iri = c.value(
-                        predicate=RDF.type, object=DCAT.Catalog
-                    ) or c.value(predicate=RDF.type, object=SDO.DataCatalog)
+                    catalogue_graph = load_graph(manifest_root / artifact)
+
                     if vg_iri is None:
                         raise ValueError(
                             "ERROR: Could not create a Virtual Graph as no Catalog found in the Catalogue data"
                         )
-                    catalogue_iri = URIRef(str(vg_iri) + "-catalogue")
 
                     # add to the System Graph
                     vg.add((vg_iri, RDF.type, OLIS.VirtualGraph))
                     vg.add((vg_iri, OLIS.isAliasFor, catalogue_iri))
-                    vg_name = c.value(  # type: ignore
+                    vg_name = catalogue_graph.value(  # type: ignore
                         subject=vg_iri,
                         predicate=SDO.name | DCTERMS.title | SKOS.prefLabel,
                     ) or str(vg_iri)
@@ -206,7 +208,7 @@ def load(
 
                     # export the Catalogue data
                     _export(
-                        data=c,
+                        data=catalogue_graph,
                         iri=catalogue_iri,
                         http_client=http_client,
                         sparql_endpoint=sparql_endpoint,
@@ -214,58 +216,58 @@ def load(
                         return_data_type=return_data_type,
                     )
 
-        # non-catalogue resources
-        for s, o in manifest_graph.subject_objects(PROF.hasResource):
-            for role in manifest_graph.objects(o, PROF.hasRole):
-                # The data files & background - must be processed after Catalogue
-                if role in [
-                    MRR.CompleteCatalogueAndResourceLabels,
-                    MRR.IncompleteCatalogueAndResourceLabels,
-                    MRR.ResourceData,
-                ]:
-                    for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                        for f in get_files_from_artifact(
-                                (manifest_path, manifest_root, manifest_graph), artifact
-                        ):
-                            if str(f.name).endswith(".ttl"):
-                                fg = Graph().parse(f)
-                                # fg.bind("rdf", RDF)
+    # non-catalogue resources
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
+            # The data files & background - must be processed after Catalogue
+            if role in [
+                MRR.CompleteCatalogueAndResourceLabels,
+                MRR.IncompleteCatalogueAndResourceLabels,
+                MRR.ResourceData,
+            ]:
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+                    for f in get_files_from_artifact(
+                            (manifest_path, manifest_root, manifest_graph), artifact
+                    ):
+                        if str(f.name).endswith(".ttl"):
+                            fg = Graph().parse(f)
+                            # fg.bind("rdf", RDF)
 
-                                if role == MRR.ResourceData:
-                                    resource_iri = fg.value(
-                                        subject=artifact, predicate=SDO.mainEntity
-                                    )
-                                    if resource_iri is None:
-                                        for entity_class in KNOWN_ENTITY_CLASSES:
-                                            v = fg.value(
-                                                predicate=RDF.type, object=entity_class
-                                            )
-                                            if v is not None:
-                                                resource_iri = v
-
-                                if role in [
-                                    MRR.CompleteCatalogueAndResourceLabels,
-                                    MRR.IncompleteCatalogueAndResourceLabels,
-                                ]:
-                                    resource_iri = URIRef("http://background")
-
-                                if resource_iri is None:
-                                    raise ValueError(
-                                        f"Could not determine Resource IRI for file {f}"
-                                    )
-
-                                vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
-
-                                # export one Resource
-                                _export(
-                                    data=fg,
-                                    iri=resource_iri,
-                                    http_client=http_client,
-                                    sparql_endpoint=sparql_endpoint,
-                                    destination_file=destination_file,
-                                    return_data_type=return_data_type,
+                            if role == MRR.ResourceData:
+                                resource_iri = fg.value(
+                                    subject=artifact, predicate=SDO.mainEntity
                                 )
-                            elif str(f.name).endswith(".trig"):
+                                if resource_iri is None:
+                                    for entity_class in KNOWN_ENTITY_CLASSES:
+                                        v = fg.value(
+                                            predicate=RDF.type, object=entity_class
+                                        )
+                                        if v is not None:
+                                            resource_iri = v
+
+                            if role in [
+                                MRR.CompleteCatalogueAndResourceLabels,
+                                MRR.IncompleteCatalogueAndResourceLabels,
+                            ]:
+                                resource_iri = URIRef("http://background")
+
+                            if resource_iri is None:
+                                raise ValueError(
+                                    f"Could not determine Resource IRI for file {f}"
+                                )
+
+                            vg.add((vg_iri, OLIS.isAliasFor, resource_iri))
+
+                            # export one Resource
+                            _export(
+                                data=fg,
+                                iri=resource_iri,
+                                http_client=http_client,
+                                sparql_endpoint=sparql_endpoint,
+                                destination_file=destination_file,
+                                return_data_type=return_data_type,
+                            )
+                        elif str(f.name).endswith(".trig"):
                                 d = Dataset()
                                 d.parse(f)
                                 for g in d.graphs():
@@ -297,5 +299,3 @@ def load(
         return graph_holder
     else:  # return_data_type is None:
         pass  # return nothing
-
-

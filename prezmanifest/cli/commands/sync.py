@@ -6,6 +6,10 @@ import typer
 from prezmanifest.cli.app import app
 from prezmanifest.syncer import sync
 from prezmanifest.utils import make_httpx_client
+from prezmanifest.cli.console import console
+from rich.table import Table
+import collections
+import json
 
 
 @app.command(
@@ -27,8 +31,14 @@ def sync_command(
     password: Annotated[
         str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
     ] = None,
+    response_format: str = typer.Option(
+        "table",
+        "--response-format",
+        "-f",
+        help="The response format of the SPARQL query. Either 'table' (default) or 'json'",
+    ),
 ) -> None:
-    print(sync(
+    r = sync(
         manifest,
         endpoint,
         make_httpx_client(username, password),
@@ -36,4 +46,23 @@ def sync_command(
         update_local,
         add_remote,
         add_local
-    ))
+    )
+
+    if response_format == "json":
+        print(json.dumps(r, indent=4))
+    else:
+        console.print(result_as_rich_table(r))
+
+
+def result_as_rich_table(sync_status: dict):
+    t = Table()
+    t.add_column("Artifact")
+    t.add_column("Main Entity")
+    t.add_column("Direction")
+
+    for k, v in collections.OrderedDict(sorted(sync_status.items())).items():
+        t.add_row(str(k), str(v["main_entity"]), v["direction"])
+
+    # json.dumps(sync_status, indent=4)
+
+    return t
