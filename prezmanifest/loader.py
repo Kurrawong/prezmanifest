@@ -203,7 +203,7 @@ def load(
                     vg_name = catalogue_graph.value(  # type: ignore
                         subject=vg_iri,
                         predicate=SDO.name | DCTERMS.title | SKOS.prefLabel,
-                    ) or str(vg_iri)
+                    ) or vg_iri
                     vg.add((vg_iri, SDO.name, vg_name))
 
                     # export the Catalogue data

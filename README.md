@@ -23,7 +23,7 @@ A Prez Manifest is an RDF file that describes and links to a set of resources th
 The functions provided are:
 
 * **validate**
-    * performs SHACL validation on the Manifest, followed by existence checking for each resource - are they reachable by this script on the file system or over the Internet? Will also check any [Conformance Claims](#conformance-claims)given in the Manifest)
+    * performs SHACL validation on the Manifest, followed by existence checking for each resource - are they reachable by this script on the file system or over the Internet? Will also check any [Conformance Claims](#conformance-claims) given in the Manifest)
 * **label**
     * lists all the IRIs for elements with a Manifest's Resources that don't have labels. Given a source of additional labels, such as the [KurrawongAI Semantic Background](#kurrawongai-semantic-background), it can try to extract any missing labels and insert them into a Manifest as an additional labelling resource
 * **document**
@@ -48,7 +48,7 @@ To make available the command line script `pm` you need to first install `UV`, s
 uv tool install prezmanifest
 ```
 
-Now you can invoke `pm` anywhere in your termina as long as `~/,local/bin/` is in your `PATH`.
+Now you can invoke `pm` anywhere in your termina as long as `~/.local/bin/` is in your `PATH`.
 
 ### Latest
 
@@ -206,7 +206,7 @@ pm load sparql {PATH-TO-MANIFEST} {SPARQL-ENDPOINT}
 
 Going forward, I don't have to blow away all the content in the SPARQL Endpoint and reload everything whenever I have content changes, instead I can use the `sync` command.
 
-`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local artifact should be uploaded, teh remote one downloaded or whether there are new artifacts present locally or remotely.
+`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local artifact should be uploaded, the remote one downloaded or whether there are new artifacts present locally or remotely.
 
 The `tests/test_sync/` directory in this repository contains a _local_ and a _remote_ manifest and content. Following the logic in the testing function `tests/test_sync/test_sync.py::test_sync`, if the _remote_ manifest is loaded, as per `pm load sparql tests/test_sync/remote/manifest.ttl {SPARQL-ENDPOINT}` and then `sync` is run like this:
 
