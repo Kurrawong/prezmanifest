@@ -15,7 +15,7 @@ from rdflib.namespace import PROF
 
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.loader import ReturnDatatype, load
-from prezmanifest.utils import get_files_from_artifact
+from prezmanifest.utils import get_files_from_artifact, get_manifest_paths_and_graph
 
 
 class LabellerOutputTypes(str, Enum):
@@ -32,17 +32,17 @@ def label(
 ) -> set | Graph | None:
     """ "Main function for labeller module"""
     # create the target from the Manifest
-    manifest_content_graph = load(manifest, return_data_type=ReturnDatatype.graph)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
 
     # determine if any labelling context is given in Manifest
     context_graph = Graph()
-    for s, o in manifest_content_graph.subject_objects(PROF.hasResource):
-        for role in manifest_content_graph.objects(o, PROF.hasRole):
+    for s, o in manifest_graph.subject_objects(PROF.hasResource):
+        for role in manifest_graph.objects(o, PROF.hasRole):
             if role in [
                 MRR.IncompleteCatalogueAndResourceLabels,
                 MRR.CompleteCatalogueAndResourceLabels,
             ]:
-                for artifact in manifest_content_graph.objects(o, PROF.hasArtifact):
+                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     artifact: Literal
                     for f in get_files_from_artifact(manifest, artifact):
                         context_graph += load_graph(f)
@@ -57,22 +57,23 @@ def label(
 
     if output_type == LabellerOutputTypes.iris:
         return find_missing_labels(
-            manifest_content_graph + context_graph,
+            manifest_graph + context_graph,
             additional_context,
             http_client=http_client
         )
 
     elif output_type == LabellerOutputTypes.rdf:
         iris = find_missing_labels(
-            manifest_content_graph,
+            manifest_graph,
             context_graph,
             http_client=http_client
         )
 
-        if additional_context is not None:
-            return extract_labels(iris, additional_context, http_client)
-        else:
-            return None
+        if additional_context is None:
+            raise ValueError("You must provide additional context")
+
+
+        return extract_labels(iris, additional_context, http_client)
 
     else:  # output_type == LabellerOutputTypes.manifest
         # If this is selected, generate the "rdf" output and create a resource for it in the Manifest
@@ -108,7 +109,7 @@ def label(
             ):
                 # If a CompleteCatalogueAndResourceLabels is present in Manifest and yet more labels were discovered,
                 # change CompleteCatalogueAndResourceLabels to IncompleteCatalogueAndResourceLabels and add another
-                for s, o in manifest_content_graph.subject_objects(PROF.hasRole):
+                for s, o in manifest_graph.subject_objects(PROF.hasRole):
                     if o == MRR.CompleteCatalogueAndResourceLabels:
                         manifest_only_graph.remove((s, PROF.hasRole, o))
                         manifest_only_graph.add(
