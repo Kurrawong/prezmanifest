@@ -1,15 +1,15 @@
+import collections
+import json
 from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.table import Table
 
 from prezmanifest.cli.app import app
+from prezmanifest.cli.console import console
 from prezmanifest.syncer import sync
 from prezmanifest.utils import make_httpx_client
-from prezmanifest.cli.console import console
-from rich.table import Table
-import collections
-import json
 
 
 @app.command(

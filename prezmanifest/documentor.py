@@ -56,13 +56,13 @@ from pathlib import Path
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCAT, PROF, RDF, SDO, SKOS
 
-from prezmanifest.utils import get_manifest_paths_and_graph
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import (
     get_files_from_artifact,
     get_identifier_from_file,
     load_graph,
 )
+from prezmanifest.utils import get_manifest_paths_and_graph
 from prezmanifest.validator import validate
 
 

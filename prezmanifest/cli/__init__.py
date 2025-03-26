@@ -1,6 +1,7 @@
 from prezmanifest.cli.app import app
-from prezmanifest.cli.commands.validate import validate_command
 from prezmanifest.cli.commands.label import app as label_app
+from prezmanifest.cli.commands.validate import validate_command
+
 app.add_typer(label_app, name="label")
 
 from prezmanifest.cli.commands.document import app as document_app

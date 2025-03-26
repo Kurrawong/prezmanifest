@@ -1,8 +1,9 @@
 import datetime
 from collections.abc import Generator
 from datetime import datetime
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
+
 import httpx
 from kurra.db import sparql
 from kurra.file import load_graph

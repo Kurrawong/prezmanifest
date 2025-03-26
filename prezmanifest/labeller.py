@@ -14,7 +14,6 @@ from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF
 
 from prezmanifest.definednamespaces import MRR
-from prezmanifest.loader import ReturnDatatype, load
 from prezmanifest.utils import get_files_from_artifact, get_manifest_paths_and_graph
 
 

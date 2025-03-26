@@ -22,16 +22,15 @@ import httpx
 from kurra.db import upload
 from kurra.file import export_quads, make_dataset
 from kurra.utils import load_graph
-from rdflib import DCAT, DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
+from rdflib import DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
 
 from prezmanifest.definednamespaces import MRR, OLIS
 from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
     get_files_from_artifact,
-get_catalogue_iri_from_manifest
+    get_catalogue_iri_from_manifest
 )
 from prezmanifest.utils import get_manifest_paths_and_graph
-from prezmanifest.validator import validate
 
 
 class ReturnDatatype(str, Enum):

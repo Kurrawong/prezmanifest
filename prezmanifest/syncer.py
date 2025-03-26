@@ -1,14 +1,18 @@
 from pathlib import Path
+
 import httpx
+from kurra.db import upload
+from kurra.sparql import query
 from kurra.utils import load_graph
 from rdflib import Graph
-from rdflib.namespace import SDO
-from prezmanifest.definednamespaces import MRR
-from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, which_is_more_recent
-from kurra.sparql import query
-from kurra.db import upload
-from prezmanifest.utils import VersionIndicatorComparison, store_remote_artifact_locally, update_local_artifact, absolutise_path
 from rdflib import URIRef
+from rdflib.namespace import SDO
+
+from prezmanifest.definednamespaces import MRR
+from prezmanifest.utils import VersionIndicatorComparison, store_remote_artifact_locally, update_local_artifact, \
+    absolutise_path
+from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, which_is_more_recent
+
 
 def sync(
     manifest: Path | tuple[Path, Path, Graph],
