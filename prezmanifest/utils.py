@@ -241,8 +241,9 @@ def get_main_entity_iri_of_artifact(
     artifact_path = absolutise_path(artifact, manifest_root)
     known_entity_classes = []
     if cc is not None:
-        for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
-            known_entity_classes.append(str(m_e_c))
+        if cc in KNOWN_PROFILES.keys():
+            for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
+                known_entity_classes.append(str(m_e_c))
 
     if len(known_entity_classes) < 1:
         known_entity_classes = [str(x) for x in KNOWN_ENTITY_CLASSES]
