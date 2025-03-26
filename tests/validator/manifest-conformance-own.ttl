@@ -1,0 +1,17 @@
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+PREFIX prez: <https://prez.dev/>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX schema: <https://schema.org/>
+
+[]
+    a prez:Manifest ;
+    prof:hasResource
+        [
+            prof:hasArtifact "gki.ttl" ;
+            prof:hasRole mrr:ResourceData ;
+            schema:description "Geographical Names Example" ;
+            schema:name "Resource Data" ;
+            dcterms:conformsTo "validator-gn.ttl" ;
+        ] ;
+.

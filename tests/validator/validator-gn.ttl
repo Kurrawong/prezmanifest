@@ -1,0 +1,44 @@
+PREFIX : <https://linked.data.gov.au/def/gn/validator/>
+PREFIX cn: <https://linked.data.gov.au/def/cn/>
+PREFIX gn: <https://linked.data.gov.au/def/gn/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX sdo: <https://schema.org/>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+gn:validator
+    a owl:Ontology ;
+    owl:versionIRI :0.0.1 ;
+    owl:versionInfo "" ;
+    sdo:creator <https://orcid.org/0000-0002-8742-7730> ;
+    sdo:dateCreated "2025-03-26"^^xsd:date ;
+    sdo:dateModified "2025-03-26"^^xsd:date ;
+    sdo:definition "SHACL validator for the ICSM Geographical Names Model"@en ;
+    sdo:name "ICSM Geographical Names Model Validator"@en ;
+    sdo:publisher <https://linked.data.gov.au/org/icsm> ;
+.
+
+:req-GN01
+    a sh:NodeShape ;
+    sh:message "Requirement GN01 Each Geographical Name MUST have at least one is name for predicate, indicating a Geographical Object instance, that it is the name for" ;
+    sh:property
+        [
+            sh:minCount 10 ;
+            sh:nodeKind sh:IRI ;
+            sh:path cn:isNameFor ;
+        ] ;
+    sh:targetClass gn:GeographicalName ;
+.
+
+<https://linked.data.gov.au/org/icsm>
+    a sdo:Organization ;
+    sdo:name "Intergovernmental Committee on Surveying & Mapping" ;
+    sdo:url "https://www.icsm.gov.au"^^xsd:anyURI ;
+.
+
+<https://orcid.org/0000-0002-8742-7730>
+    a sdo:Person ;
+    sdo:email "nick@kurrawong.ai"^^xsd:anyURI ;
+    sdo:identifier "https://orcid.org/0000-0002-8742-7730"^^xsd:anyURI ;
+    sdo:name "Nicholas J. Car" ;
+.

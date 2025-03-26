@@ -1,0 +1,111 @@
+PREFIX auslang: <https://linked.data.gov.au/dataset/auslang>
+PREFIX auslangs: <https://linked.data.gov.au/dataset/auslang/>
+PREFIX cn: <https://linked.data.gov.au/def/cn/>
+PREFIX ex: <http://example.com/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX gn: <https://linked.data.gov.au/def/gn/>
+PREFIX gnstatus: <https://linked.data.gov.au/def/gn-statuses/>
+PREFIX gocat: <https://linked.data.gov.au/def/go-categories/>
+PREFIX gpt: <https://linked.data.gov.au/def/gn-part-types/>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<https://linked.data.gov.au/dataset/qldgn/14713>
+    a gn:GeographicalName ;
+    cn:isNameFor <http://example.com/geographical-object/x> ;
+    schema:hasPart [
+        schema:additionalType gpt:geographicalGivenName ;
+        schema:value "Great Keppel" ;
+    ] ;
+    cn:hasLifecycleStage [
+        schema:additionalType gnstatus:Gazetted ;
+        # no dates, assume this is current
+    ] ;
+    skos:historyNote """Derived from the naming of the Keppel Islands by Lieutenant James Cook RN (1728-1779), HM Bark Endeavour, 27 May 1770, after Admiral Augustus Keppel Rn (1725-1786) Viscount Keppel and First Lord of the Admiralty 1782-83. Refer J.C. Beaglehole. The voyage of the Endeavour 1768-1771. Cambridge (UK), 1968, p.328.  Alternative name supplied by Woppaburra Trustees and Elders, and supported by information in Dr Walter E Roth.P.A. report "The Aborigines of the Rockhampton and Surrounding Coast Districts" dated 6th July 1898.  The alternative name of "Wapparaburra"" appears on Admiralty Charts and Departmental records however there is doubt as to the spelling. The alternate name Woppa was added on 06/08/2021 after being provided to the Department by the Applicant for the Woppaburra People Native Title Determination Application (QUD16/2019) on 18/06/2021 who also confirmed Woppa is the preferred alternate name.""" ;
+    schema:dateModified "2021-08-06T08:33:55"^^xsd:dateTime ;
+    ex:nameTemplate "{geographicalGivenName} {geographicalObjectCategory}" ;
+.
+
+# ref https://www.loc.gov/standards/iso639-2/php/langcodes_name.php?code_ID=34
+<https://linked.data.gov.au/dataset/qldgn/14713-35>
+    a gn:GeographicalName ;
+    cn:isNameFor <http://example.com/geographical-object/x> ;
+    schema:hasPart [
+        schema:additionalType gpt:geographicalGivenName ;
+        schema:value "WOP-PA"@aus ;
+        # schema:value "WOP-PA"@E82 ;
+        # schema:value "WOP-PA"^^auslangs:E82 ;
+    ] ;
+    cn:hasLifecycleStage [
+        schema:additionalType gnstatus:Indigenous ;
+        # no dates, assume this is current
+    ] ;
+    ex:nameTemplate "{geographicalGivenName}" ;
+.
+
+<https://linked.data.gov.au/dataset/qldgn/14713-56>
+    a gn:GeographicalName ;
+    cn:isNameFor <http://example.com/geographical-object/x> ;
+    schema:hasPart [
+        schema:additionalType gpt:geographicalGivenName ;
+        schema:value "Woppa"@aus ;  # no specific language indicated
+    ] ;
+    skos:historyNote """The alternate name Woppa was added on 06/08/2021 after being provided to the Department by the Applicant for the Woppaburra People Native Title Determination Application (QUD16/2019) on 18/06/2021 who also confirmed Woppa is the preferred alternate name.""" ;
+    cn:hasLifecycleStage [
+        schema:additionalType gnstatus:Indigenous ;
+        time:hasBeginning [ time:inXSDDate "2021-06-18"^^xsd:date ; ] ;
+        # seen as current - no end date
+    ] ;
+    ex:nameTemplate "{geographicalGivenName}" ;
+.
+
+<https://linked.data.gov.au/dataset/qldgn/14713-97>
+    a gn:GeographicalName ;
+    cn:isNameFor <http://example.com/geographical-object/x> ;
+    schema:hasPart [
+        schema:additionalType gpt:geographicalGivenName ;
+        schema:value "WAPPARABURRA"@aus ;
+    ] ;
+    skos:historyNote "\"Wapparaburra\" appears on Admiralty Charts and Departmental records however there is doubt as to the spelling." ;
+    cn:hasLifecycleStage [
+        schema:additionalType gnstatus:Indigenous ;
+        # no dates, assume this is current
+    ] ;
+    ex:nameTemplate "{geographicalGivenName}" ;
+.
+
+<https://linked.data.gov.au/dataset/qldgn/14713-223>
+    a gn:GeographicalName ;
+    cn:isNameFor <http://example.com/geographical-object/x> ;
+    schema:hasPart [
+        schema:additionalType gpt:geographicalGivenName ;
+        schema:value "WOPPABURRA"@aus ;
+    ] ;
+    skos:historyNote "Alternative name supplied by Woppaburra Trustees and Elders, and supported by information in Dr Walter E Roth.P.A. report \"The Aborigines of the Rockhampton and Surrounding Coast Districts\" dated 6th July 1898." ;
+    cn:hasLifecycleStage [
+        schema:additionalType gnstatus:Indigenous ;
+        # no dates, assume this is current
+    ] ;
+    ex:nameTemplate "{geographicalGivenName}" ;
+.
+
+<http://example.com/geographical-object/x>
+    a geo:Feature ;
+    schema:additionalType gocat:island ;
+    geo:hasGeometry [
+        geo:asWKT "POINT(150.960559999999987 -23.176110000000001)"^^geo:wktLiteral ;
+    ] ;
+.
+
+auslang:E82
+    a skos:Concept ;
+    skos:inScheme auslangs: ;
+    skos:prefLabel "Wapabara" ;
+    skos:notation "E82"^^auslang:langcode ;
+    skos:definition "This is a dialect of Dharumbal E46 according to Terrill (2002:13). Documentation on Dharumbal E46 may be relevant." ;
+    schema:citation
+        "https://collection.aiatsis.gov.au/austlang/language/e82"^^xsd:anyURI ,
+        "Terrill, Angela. 2002. Dharumbal: the language of Rockhampton, Australia: Pacific Linguistics 525. Canberra: Pacific Linguistics." ;
+.

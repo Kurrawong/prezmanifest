@@ -104,6 +104,18 @@ def test_validator_invalid_conformance_all():
         assert "Results (1)" in str(e)
 
 
+def test_own_validator():
+    from rdflib import Namespace
+    from rdflib.namespace import RDF
+    GN = Namespace("https://linked.data.gov.au/def/gn/")
+
+    m = Path(__file__).parent / "validator/manifest-conformance-own.ttl"
+    try:
+        vg = validate(m)
+    except ManifestValidationError as e:
+        assert "Results (5)" in str(e)
+
+
 def test_validator_cli():
     try:
         runner.invoke(

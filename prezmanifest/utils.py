@@ -144,7 +144,7 @@ def get_validator_graph(
         return load_graph(KNOWN_PROFILES[iri_or_path]["path"])
 
     else:
-        return load_graph(absolutise_path(iri_or_path, manifest_path))
+        return load_graph(absolutise_path(iri_or_path, manifest_root))
 
 
 def get_manifest_paths_and_graph(
