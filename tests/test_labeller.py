@@ -16,67 +16,64 @@ runner = CliRunner()
 def test_label_iris():
     with pytest.raises(ValueError):
         label(
-            Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+            Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
             output_type="x",
         )
 
     iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 26
+    assert len(iris) == 31
 
     iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-some.ttl",
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 5
+    assert len(iris) == 16
 
     iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-all.ttl",
         output_type=LabellerOutputTypes.iris,
-        additional_context=Path(__file__).parent / "demo-vocabs/labels-2.ttl",
     )
 
-    # static context file has 2 relevant IRIs, so should be 27 - 2 = 25
-    assert len(iris) == 24
+    assert len(iris) == 0
 
 
 def test_label_iris_sparql(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
     upload(
         SPARQL_ENDPOINT,
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/labels-some.ttl",
         graph_id="http://test",
     )
 
     iris = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         output_type=LabellerOutputTypes.iris,
         additional_context=SPARQL_ENDPOINT,
     )
 
-    assert len(iris) == 5
+    assert len(iris) == 15
 
 
-def test_label_rdf():
+def test_label_rdf_file():
+    with pytest.raises(ValueError):
+        label(
+            Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
+            output_type=LabellerOutputTypes.rdf,
+        )
+
     rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
-        output_type=LabellerOutputTypes.rdf,
-    )
-
-    assert not rdf
-
-    rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         output_type=LabellerOutputTypes.rdf,
         additional_context=Path(__file__).parent
-        / "demo-vocabs/manifest-no-labels_additional-labels.ttl",
+        / "demo-vocabs/labels-some.ttl",
     )
 
-    assert len(rdf) == 47
+    assert len(rdf) == 37
 
 
 def test_label_rdf_sparql(fuseki_container):
@@ -93,7 +90,7 @@ def test_label_rdf_sparql(fuseki_container):
     assert len(rdf) == 0
 
     rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
         SPARQL_ENDPOINT,
     )
@@ -102,33 +99,33 @@ def test_label_rdf_sparql(fuseki_container):
 
     upload(
         SPARQL_ENDPOINT,
-        Path(__file__).parent / "demo-vocabs/labels-2.ttl",
+        Path(__file__).parent / "demo-vocabs/labels-some.ttl",
         graph_id="http://test",
     )
 
     rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
         SPARQL_ENDPOINT,
     )
 
-    assert len(rdf) == 2
+    assert len(rdf) == 37
 
     sparql(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
 
     upload(
         SPARQL_ENDPOINT,
-        Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
+        Path(__file__).parent / "demo-vocabs/labels-all.ttl",
         graph_id="http://test",
     )
 
     rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
         SPARQL_ENDPOINT,
     )
 
-    assert len(rdf) == 49
+    assert len(rdf) == 63
 
 
 def test_label_manifest(fuseki_container):
@@ -143,12 +140,12 @@ def test_label_manifest(fuseki_container):
     )
 
     original_manifest_path = (
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"
     )
     original_manifest_contents = original_manifest_path.read_text()
 
     label(
-        Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl",
+        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         # output="manifest" is default
         additional_context=SPARQL_ENDPOINT,
     )
@@ -177,13 +174,7 @@ def test_label_manifest(fuseki_container):
                     prof:hasRole mrr:ResourceData ;
                     schema:description "skos:ConceptScheme objects in RDF (Turtle) files in the vocabs/ folder" ;
                     schema:name "Resource Data" ;
-                ] ,
-                [
-                    prof:hasArtifact "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" ;
-                    prof:hasRole mrr:CatalogueAndResourceModel ;
-                    schema:description "The default Prez profile for Records API" ;
-                    schema:name "Profile Definition" ;
-                ] ; ;
+                ] ;
         .
         """
     )
@@ -204,8 +195,7 @@ def test_label_iris_mainEntity():
         output_type=LabellerOutputTypes.iris,
     )
 
-    print(iris)
-    assert len(iris) == 5
+    assert len(iris) == 14
 
 
 def test_label_cli_iris():
@@ -214,10 +204,10 @@ def test_label_cli_iris():
         [
             "label",
             "iris",
-            str(Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"),
+            str(Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"),
         ],
     )
-    assert len(result.stdout.splitlines()) == 26
+    assert len(result.stdout.splitlines()) == 31
 
 
 def test_label_cli_rdf(fuseki_container):
@@ -243,11 +233,11 @@ def test_label_cli_rdf(fuseki_container):
         [
             "label",
             "rdf",
-            str(Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"),
+            str(Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"),
             SPARQL_ENDPOINT,
         ],
     )
-    assert len(Graph().parse(data=result.stdout, format="turtle")) == 50
+    assert len(Graph().parse(data=result.stdout, format="turtle")) == 52
 
 
 # TODO: fix not working test
@@ -263,7 +253,7 @@ def test_label_cli_rdf(fuseki_container):
 #     )
 #
 #     original_manifest_path = (
-#             Path(__file__).parent / "demo-vocabs/manifest-no-labels.ttl"
+#             Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"
 #     )
 #     original_manifest_contents = original_manifest_path.read_text()
 #

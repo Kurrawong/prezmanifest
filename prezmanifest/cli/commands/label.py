@@ -19,8 +19,23 @@ def iris_command(
     manifest: Path = typer.Argument(
         ..., help="The path of the Prez Manifest file to be labelled"
     ),
+    context: str = typer.Argument(
+        None,
+        help="The path of an RDF file, a directory of RDF files or the URL of a SPARQL endpoint from which to obtain labels",
+    ),
+    username: Annotated[
+        str, typer.Option("--username", "-u", help="SPARQL Endpoint username")
+    ] = None,
+    password: Annotated[
+        str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
+    ] = None,
 ) -> None:
-    for iri in label(manifest, LabellerOutputTypes.iris):
+    for iri in label(
+        manifest,
+        LabellerOutputTypes.iris,
+        context,
+        make_httpx_client(username, password),
+    ):
         print(str(iri))
 
 
@@ -78,3 +93,5 @@ def manifest_command(
         context,
         make_httpx_client(username, password),
     )
+
+    print("A new Resource containing labels has been added to the Manifest")

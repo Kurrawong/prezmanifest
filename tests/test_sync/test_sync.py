@@ -50,10 +50,6 @@ def test_sync(fuseki_container):
     # run sync again, performing no actions to just get updated status
     a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, None, False, False, False, False)
 
-    import pprint
-
-    pprint.pprint(a)
-
     # check status after sync
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact2.ttl")]["direction"] == "same"

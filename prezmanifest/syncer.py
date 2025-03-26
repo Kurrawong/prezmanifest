@@ -25,7 +25,7 @@ from prezmanifest.utils import (
 def sync(
     manifest: Path | tuple[Path, Path, Graph],
     sparql_endpoint: str = None,
-    http_client: httpx.Client | None = None,
+    http_client: httpx.Client = httpx.Client(),
     update_remote: bool = True,
     update_local: bool = True,
     add_remote: bool = True,
