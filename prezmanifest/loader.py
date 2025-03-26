@@ -230,7 +230,11 @@ def load(
                             (manifest_path, manifest_root, manifest_graph), artifact
                     ):
                         if str(f.name).endswith(".ttl"):
-                            fg = Graph().parse(f)
+                            try:
+                                fg = Graph().parse(f)
+                            except Exception as e:
+                                raise ValueError(f"Could not load file {f}. Error is {e}")
+
                             # fg.bind("rdf", RDF)
 
                             if role == MRR.ResourceData:
