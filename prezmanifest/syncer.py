@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import httpx
-from kurra.db import upload
+from kurra.db import upload, clear_graph
 from kurra.sparql import query
 from kurra.utils import load_graph
 from rdflib import Graph
@@ -119,9 +119,11 @@ def sync(
     update_remote_catalogue = False
     for k, v in sync_status.items():
         if update_remote and v["direction"] == "upload":
+            clear_graph(sparql_endpoint, v["main_entity"], http_client)
             upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
 
         if add_remote and v["direction"] == "add-remotely":
+            # no need to clear_graph() as this asset doesn't exist remotely
             upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
             update_remote_catalogue = True
 
@@ -151,6 +153,7 @@ def sync(
             )
 
     if update_remote_catalogue:
+        clear_graph(sparql_endpoint, cat_iri, http_client)
         upload(
             sparql_endpoint,
             cat_artifact_path,
