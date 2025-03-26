@@ -62,16 +62,21 @@ def test_absolutise_path():
 def test_get_files_from_artifact():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
 
-    fs = list(
-        get_files_from_artifact(
-        MANIFEST,
-        Literal("vocabs/*.ttl")
-    ))
-
+    fs = list(get_files_from_artifact(MANIFEST, Literal("vocabs/*.ttl")))
 
     assert len(fs) == 2
-    assert Path("/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/image-test.ttl") in fs
-    assert Path("/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/language-test.ttl") in fs
+    assert (
+        Path(
+            "/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/image-test.ttl"
+        )
+        in fs
+    )
+    assert (
+        Path(
+            "/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/language-test.ttl"
+        )
+        in fs
+    )
 
 
 def test_get_identifier_from_file():
@@ -89,8 +94,7 @@ def test_get_validator_graph():
     assert len(g) == 318
 
     g2 = get_validator_graph(
-        MANIFEST,
-        TESTS_DIR / "demo-vocabs" / "vocabs" / "image-test.ttl"
+        MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "image-test.ttl"
     )
 
     assert len(g2) == 29
@@ -99,7 +103,9 @@ def test_get_validator_graph():
 def test_get_manifest_paths_and_graph():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
 
-    extracted_file_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(MANIFEST)
+    extracted_file_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        MANIFEST
+    )
 
     assert extracted_file_path == MANIFEST
     assert manifest_root == MANIFEST.parent
@@ -109,7 +115,9 @@ def test_get_manifest_paths_and_graph():
 def test_get_catalogue_iri_from_manifest():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
 
-    assert get_catalogue_iri_from_manifest(MANIFEST) == URIRef("https://example.com/demo-vocabs")
+    assert get_catalogue_iri_from_manifest(MANIFEST) == URIRef(
+        "https://example.com/demo-vocabs"
+    )
 
 
 def test_target_contains_this_manifests_catalogue(fuseki_container):
@@ -137,9 +145,13 @@ def test_make_httpx_client():
 def test_get_main_entity_iri_of_artifact():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest-conformance.ttl"
 
-    assert get_main_entity_iri_of_artifact(MANIFEST.parent / "vocabs/image-test.ttl", MANIFEST) == URIRef("https://example.com/demo-vocabs/image-test")
+    assert get_main_entity_iri_of_artifact(
+        MANIFEST.parent / "vocabs/image-test.ttl", MANIFEST
+    ) == URIRef("https://example.com/demo-vocabs/image-test")
 
-    assert get_main_entity_iri_of_artifact(MANIFEST.parent / "vocabs/language-test.ttl", MANIFEST) == URIRef("https://example.com/demo-vocabs/language-test")
+    assert get_main_entity_iri_of_artifact(
+        MANIFEST.parent / "vocabs/language-test.ttl", MANIFEST
+    ) == URIRef("https://example.com/demo-vocabs/language-test")
 
 
 def test_get_version_indicators_local():
@@ -147,9 +159,7 @@ def test_get_version_indicators_local():
 
     vi = {}
     get_version_indicators_local(
-        MANIFEST,
-        TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl",
-        vi
+        MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl", vi
     )
 
     assert vi["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
@@ -158,9 +168,7 @@ def test_get_version_indicators_local():
     with pytest.raises(ValueError):
         vi = {}
         get_version_indicators_local(
-            MANIFEST,
-            TESTS_DIR / "demo-vocabs" / "vocabs" / "language-testx.ttl",
-            vi
+            MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "language-testx.ttl", vi
         )
 
 
@@ -172,13 +180,7 @@ def test_get_version_indicators_sparql(fuseki_container):
 
     c = make_httpx_client()
 
-    upload(
-        SPARQL_ENDPOINT,
-        ASSET_PATH,
-        ASSET_GRAPH_IRI,
-        False,
-        http_client=c
-    )
+    upload(SPARQL_ENDPOINT, ASSET_PATH, ASSET_GRAPH_IRI, False, http_client=c)
 
     q = """
         SELECT (COUNT(*) AS ?count) 
@@ -187,7 +189,9 @@ def test_get_version_indicators_sparql(fuseki_container):
             ?s ?p ?o
           }
         }        
-        """.replace("XXX", ASSET_GRAPH_IRI)
+        """.replace(
+        "XXX", ASSET_GRAPH_IRI
+    )
 
     r = query(SPARQL_ENDPOINT, q, c, return_python=True, return_bindings_only=True)
 
@@ -195,11 +199,7 @@ def test_get_version_indicators_sparql(fuseki_container):
 
     assert count == 71
 
-    r = get_version_indicators_sparql(
-        ASSET_GRAPH_IRI,
-        SPARQL_ENDPOINT,
-        http_client=c
-    )
+    r = get_version_indicators_sparql(ASSET_GRAPH_IRI, SPARQL_ENDPOINT, http_client=c)
 
     assert r["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
 
@@ -280,40 +280,26 @@ def test_which_is_more_recent(fuseki_container):
 
     c = make_httpx_client()
 
-    upload(
-        SPARQL_ENDPOINT,
-        ARTIFACT_PATH,
-        ARTIFACT_MAIN_ENTITY,
-        False,
-        c
-    )
+    upload(SPARQL_ENDPOINT, ARTIFACT_PATH, ARTIFACT_MAIN_ENTITY, False, c)
 
     vi = {
-        'main_entity': URIRef('https://example.com/demo-vocabs/language-test'),
-        'modified_date': datetime(2025, 2, 28, 0, 0),
-        'version_iri': 'https://example.com/demo-vocabs/language-test/1.1',
-        'file_size': 5053
+        "main_entity": URIRef("https://example.com/demo-vocabs/language-test"),
+        "modified_date": datetime(2025, 2, 28, 0, 0),
+        "version_iri": "https://example.com/demo-vocabs/language-test/1.1",
+        "file_size": 5053,
     }
 
-    r = which_is_more_recent(
-        vi,
-        SPARQL_ENDPOINT,
-        c
-    )
+    r = which_is_more_recent(vi, SPARQL_ENDPOINT, c)
 
     assert r == VersionIndicatorComparison.First
 
     vi2 = {
-        'main_entity': URIRef('https://example.com/demo-vocabs/language-test'),
-        'modified_date': datetime(2023, 2, 28, 0, 0),
-        'file_size': 5053
+        "main_entity": URIRef("https://example.com/demo-vocabs/language-test"),
+        "modified_date": datetime(2023, 2, 28, 0, 0),
+        "file_size": 5053,
     }
 
-    r = which_is_more_recent(
-        vi2,
-        SPARQL_ENDPOINT,
-        c
-    )
+    r = which_is_more_recent(vi2, SPARQL_ENDPOINT, c)
 
     assert r == VersionIndicatorComparison.Second
 
@@ -325,7 +311,10 @@ def test_denormalise_artifacts():
     assert manifest_root / "catalogue.ttl" in x.keys()
     assert manifest_root / "vocabs/image-test.ttl" in x.keys()
     assert manifest_root / "vocabs/language-test.ttl" in x.keys()
-    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in x.keys()
+    assert (
+        "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl"
+        in x.keys()
+    )
     assert manifest_root / "_background/labels.ttl" in x.keys()
 
     assert x[manifest_root / "vocabs/image-test.ttl"]["file_size"] == 20324
@@ -336,5 +325,8 @@ def test_denormalise_artifacts():
     assert manifest_root / "catalogue.ttl" in x.keys()
     assert manifest_root / "vocabs/image-test.ttl" in x.keys()
     assert manifest_root / "vocabs/language-test.ttl" in x.keys()
-    assert "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl" in x.keys()
+    assert (
+        "https://raw.githubusercontent.com/RDFLib/prez/refs/heads/main/prez/reference_data/profiles/ogc_records_profile.ttl"
+        in x.keys()
+    )
     assert manifest_root / "_background/labels.ttl" in x.keys()

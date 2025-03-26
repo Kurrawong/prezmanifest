@@ -17,15 +17,15 @@ from prezmanifest.definednamespaces import MRR, PREZ
 KNOWN_PROFILES = {
     URIRef("http://www.opengis.net/def/geosparql"): {
         "path": Path(__file__).parent / "validator-geosparql-1.1.ttl",
-        "main_entity_classes": [SDO.Dataset, DCAT.Dataset]
+        "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://data.idnau.org/pid/cp"): {
         "path": Path(__file__).parent / "validator-idn-cp.ttl",
-        "main_entity_classes": [SDO.Dataset, DCAT.Dataset]
+        "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://w3id.org/profile/vocpub"): {
         "path": Path(__file__).parent / "validator-vocpub-4.10.ttl",
-        "main_entity_classes": [SKOS.ConceptScheme]
+        "main_entity_classes": [SKOS.ConceptScheme],
     },
 }
 
@@ -46,7 +46,7 @@ ENTITY_CLASSES_PER_PROFILE = {
 }
 
 
-def path_or_url(s: str) -> Path|str:
+def path_or_url(s: str) -> Path | str:
     """Converts a string into a Path, preserving http(s)://..."""
     if s.startswith("http") and "://" in str(s):
         return s
@@ -54,14 +54,14 @@ def path_or_url(s: str) -> Path|str:
         return Path(s)
 
 
-def localise_path(p: Path|str, root: Path) -> Path:
+def localise_path(p: Path | str, root: Path) -> Path:
     if str(p).startswith("http") and "://" in str(p):
         return p
     else:
         return Path(str(p).replace(str(root) + "/", ""))
 
 
-def absolutise_path(p: Path|str, root: Path) -> Path|str:
+def absolutise_path(p: Path | str, root: Path) -> Path | str:
     if str(p).startswith("http") and "://" in str(p):
         if "://" not in str(p):
             return str(p).replace(":/", "://")
@@ -72,14 +72,15 @@ def absolutise_path(p: Path|str, root: Path) -> Path|str:
 
 
 def get_files_from_artifact(
-        manifest: Path | tuple[Path, Path, Graph],
-        artifact: Node
-) -> list[Path|str] | Generator[Path]:
+    manifest: Path | tuple[Path, Path, Graph], artifact: Node
+) -> list[Path | str] | Generator[Path]:
     """Returns an iterable (list or generator) of Path objects for files within an artifact literal.
 
     This function will correctly interpret artifacts such as 'file.ttl', '*.ttl', '**/*.trig' etc.
     """
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     if str(artifact).startswith("http") and "://" in str(artifact):
         return [str(artifact)]
@@ -128,11 +129,12 @@ def get_identifier_from_file(file: Path) -> list[URIRef]:
 
 
 def get_validator_graph(
-        manifest: Path | tuple[Path, Path, Graph],
-        iri_or_path: URIRef | Literal
+    manifest: Path | tuple[Path, Path, Graph], iri_or_path: URIRef | Literal
 ) -> Graph:
     """Returns the graph of a validator from either the path of a SHACL file or a known IRI->profile validator file"""
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     if isinstance(iri_or_path, URIRef):
         if iri_or_path not in KNOWN_PROFILES.keys():
@@ -145,7 +147,9 @@ def get_validator_graph(
         return load_graph(absolutise_path(iri_or_path, manifest_path))
 
 
-def get_manifest_paths_and_graph(manifest: Path | tuple[Path, Path, Graph]) -> (Path, Graph):
+def get_manifest_paths_and_graph(
+    manifest: Path | tuple[Path, Path, Graph],
+) -> (Path, Graph):
     """Reads either a Manifest file from a Path, or a Manifest file from a Path and its root directory,
     a Path, and the Manifest as a deserialized Graph and returns the Manifest Path, its root dir as a Path
     and its content as a Graph"""
@@ -161,8 +165,12 @@ def get_manifest_paths_and_graph(manifest: Path | tuple[Path, Path, Graph]) -> (
     return manifest_path, manifest_root, manifest_graph
 
 
-def get_catalogue_iri_from_manifest(manifest: Path | tuple[Path, Path, Graph]) -> URIRef:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+def get_catalogue_iri_from_manifest(
+    manifest: Path | tuple[Path, Path, Graph],
+) -> URIRef:
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     for m in manifest_graph.subjects(RDF.type, PREZ.Manifest):
         for r in manifest_graph.objects(m, PROF.hasResource):
@@ -201,9 +209,13 @@ def target_contains_this_manifests_catalogue(
             <xxx> a ?graph_type
           }
         }
-        """.replace("xxx", cat_iri)
+        """.replace(
+        "xxx", cat_iri
+    )
 
-    return query(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True)
+    return query(
+        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+    )
 
 
 def make_httpx_client(
@@ -218,12 +230,14 @@ def make_httpx_client(
 
 
 def get_main_entity_iri_of_artifact(
-        artifact: Path,
-        manifest: Path | tuple[Path, Path, Graph],
-        artifact_graph: Graph = None,
-        cc: URIRef = None
+    artifact: Path,
+    manifest: Path | tuple[Path, Path, Graph],
+    artifact_graph: Graph = None,
+    cc: URIRef = None,
 ) -> URIRef:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
     artifact_path = absolutise_path(artifact, manifest_root)
     known_entity_classes = []
     if cc is not None:
@@ -270,11 +284,11 @@ def get_main_entity_iri_of_artifact(
 
 
 def get_version_indicators_local(
-        manifest: Path | tuple[Path, Path, Graph],
-        artifact: Path,
-        version_indicators: dict
+    manifest: Path | tuple[Path, Path, Graph], artifact: Path, version_indicators: dict
 ):
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
     artifact_path = absolutise_path(artifact, manifest_root)
     artifact_graph = load_graph(artifact_path)
 
@@ -310,10 +324,14 @@ def get_version_indicators_local(
             }}
             """
         # only use values for Version Indicators if not already present - i.e. from the manifest
-        for r in query(artifact_graph, q, return_python=True, return_bindings_only=True):
+        for r in query(
+            artifact_graph, q, return_python=True, return_bindings_only=True
+        ):
             if version_indicators.get("modified_date") is None:
                 if r.get("md") is not None:
-                    version_indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
+                    version_indicators["modified_date"] = datetime.strptime(
+                        r["md"]["value"], "%Y-%m-%d"
+                    )
             if version_indicators.get("version_iri") is None:
                 if r.get("vi") is not None:
                     version_indicators["version_iri"] = r["vi"]["value"]
@@ -371,7 +389,9 @@ def get_version_indicators_sparql(
             }}
         }}
         """
-    res = sparql(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True)
+    res = sparql(
+        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+    )
     if len(res) == 0:
         raise ValueError(
             "The system got no results from its querying of the SPARQL endpoint"
@@ -379,7 +399,9 @@ def get_version_indicators_sparql(
 
     for r in res:
         if r.get("md") is not None:
-            indicators["modified_date"] = datetime.strptime(r["md"]["value"], "%Y-%m-%d")
+            indicators["modified_date"] = datetime.strptime(
+                r["md"]["value"], "%Y-%m-%d"
+            )
         if r.get("vi") is not None:
             indicators["version_iri"] = r["vi"]["value"]
         if r.get("v") is not None:
@@ -401,11 +423,19 @@ def compare_version_indicators(first: dict, second: dict) -> VersionIndicatorCom
     """Even weighted aggregate score for each version indicator"""
     first_score = 0
     second_score = 0
-    has_modified_date_comparison = first.get("modified_date") and second.get("modified_date")
+    has_modified_date_comparison = first.get("modified_date") and second.get(
+        "modified_date"
+    )
     has_version_iri_comparison = first.get("version_iri") and second.get("version_iri")
-    has_version_info_comparison = first.get("version_info") and second.get("version_info")
+    has_version_info_comparison = first.get("version_info") and second.get(
+        "version_info"
+    )
 
-    if not has_modified_date_comparison and not has_version_iri_comparison and not has_version_info_comparison:
+    if (
+        not has_modified_date_comparison
+        and not has_version_iri_comparison
+        and not has_version_info_comparison
+    ):
         return VersionIndicatorComparison.CantCalculate
 
     if has_modified_date_comparison:
@@ -450,9 +480,7 @@ def which_is_more_recent(
     """Tests to see if the given artifact is more recent than a previously stored copy of its content"""
 
     remote = get_version_indicators_sparql(
-        version_indicators["main_entity"],
-        sparql_endpoint,
-        http_client
+        version_indicators["main_entity"], sparql_endpoint, http_client
     )
 
     return compare_version_indicators(version_indicators, remote)
@@ -461,20 +489,22 @@ def which_is_more_recent(
 def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
     """For each Artifiact in the Manifest, return a dict:
 
-     Artifact path,
-     Main Entity,
-     Conformance Claims
-     Date Modified
-     Version IRI
-     Version Info
-     Role
-     Version Indicators
+    Artifact path,
+    Main Entity,
+    Conformance Claims
+    Date Modified
+    Version IRI
+    Version Info
+    Role
+    Version Indicators
 
-     of each asset's path, main entity IRI, manifest role and version indicators"""
+    of each asset's path, main entity IRI, manifest role and version indicators"""
 
     artifacts_info = {}
 
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     # for each artifact, get what we can directly from the Manifest
     q = """
@@ -541,7 +571,9 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
 
     for r in query(manifest_graph, q, return_python=True, return_bindings_only=True):
         artifact = path_or_url(r["a"]["value"])
-        files = get_files_from_artifact((manifest_path, manifest_root, manifest_graph), Literal(artifact))
+        files = get_files_from_artifact(
+            (manifest_path, manifest_root, manifest_graph), Literal(artifact)
+        )
 
         for file in files:
             me = URIRef(r["me"]["value"]) if r.get("me") is not None else None
@@ -564,7 +596,9 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
     # get Version Indicators info only for Resources with certain Roles
     for k, v in artifacts_info.items():
         if v["role"] in [MRR.CatalogueData, MRR.ResourceData]:
-            get_version_indicators_local((manifest_path, manifest_root, manifest_graph), k, v)
+            get_version_indicators_local(
+                (manifest_path, manifest_root, manifest_graph), k, v
+            )
 
     return artifacts_info
 
@@ -585,7 +619,9 @@ def store_remote_artifact_locally(
     """Writes a remote graph to a local file and registers that file as a Resource in the given Manifest.
 
     Only the Resource Role ResourceData is supported."""
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
     q = """
         CONSTRUCT {
             ?s ?p ?o
@@ -595,7 +631,9 @@ def store_remote_artifact_locally(
                 ?s ?p ?o
             }
         }
-        """.replace("xxx", graph_id)
+        """.replace(
+        "xxx", graph_id
+    )
     r = query(sparql_endpoint, q, http_client)
     artifact_path = str(artifact_file_name_from_graph_id(graph_id))
     r.serialize(destination=manifest_root / artifact_path, format="longturtle")
@@ -610,21 +648,19 @@ def store_remote_artifact_locally(
                 new_r = r
 
         a = BNode()
-        new_manifest_graph.add((
-            a, SDO.contentLocation, Literal(artifact_path)  # relative to manifest_root
-        ))
-        new_manifest_graph.add((
-            a, SDO.mainEntity, URIRef(graph_id)
-        ))
-        new_manifest_graph.add((
-            new_r, PROF.hasArtifact, a
-        ))
-        new_manifest_graph.add((
-            new_r, PROF.hasRole, MRR.ResourceData  # only one supported for now
-        ))
-        new_manifest_graph.add((
-            m, PROF.hasResource, new_r
-        ))
+        new_manifest_graph.add(
+            (
+                a,
+                SDO.contentLocation,
+                Literal(artifact_path),  # relative to manifest_root
+            )
+        )
+        new_manifest_graph.add((a, SDO.mainEntity, URIRef(graph_id)))
+        new_manifest_graph.add((new_r, PROF.hasArtifact, a))
+        new_manifest_graph.add(
+            (new_r, PROF.hasRole, MRR.ResourceData)  # only one supported for now
+        )
+        new_manifest_graph.add((m, PROF.hasResource, new_r))
 
     return new_manifest_graph
 
@@ -634,9 +670,11 @@ def update_local_artifact(
     artifact_path: Path,
     sparql_endpoint: str,
     graph_id: str,
-    http_client: httpx.Client | None = None
+    http_client: httpx.Client | None = None,
 ):
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
     q = """
         CONSTRUCT {
             ?s ?p ?o
@@ -646,6 +684,8 @@ def update_local_artifact(
                 ?s ?p ?o
             }
         }
-        """.replace("xxx", graph_id)
+        """.replace(
+        "xxx", graph_id
+    )
     r = query(sparql_endpoint, q, http_client)
     r.serialize(destination=artifact_path, format="longturtle")

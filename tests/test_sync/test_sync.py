@@ -9,6 +9,7 @@ from prezmanifest.loader import load
 from prezmanifest.utils import artifact_file_name_from_graph_id
 import json
 import shutil
+
 runner = CliRunner(mix_stderr=False)
 from prezmanifest.cli import app
 
@@ -47,14 +48,10 @@ def test_sync(fuseki_container):
     assert a[str(MANIFEST_ROOT / "catalogue.ttl")]["direction"] == "same"
 
     # run sync again, performing no actions to just get updated status
-    a = sync(
-        MANIFEST_FILE_LOCAL,
-        SPARQL_ENDPOINT,
-        None,
-        False, False, False, False
-    )
+    a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, None, False, False, False, False)
 
     import pprint
+
     pprint.pprint(a)
 
     # check status after sync
@@ -65,7 +62,15 @@ def test_sync(fuseki_container):
     assert a[str(MANIFEST_ROOT / "artifact5.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifact6.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifact7.ttl")]["direction"] == "same"
-    assert a[str(MANIFEST_ROOT / artifact_file_name_from_graph_id("http://example.com/dataset/8"))]["direction"] == "same"
+    assert (
+        a[
+            str(
+                MANIFEST_ROOT
+                / artifact_file_name_from_graph_id("http://example.com/dataset/8")
+            )
+        ]["direction"]
+        == "same"
+    )
     assert a[str(MANIFEST_ROOT / "catalogue.ttl")]["direction"] == "same"
 
     # tidy up
@@ -82,12 +87,18 @@ def test_sync_cli(fuseki_container):
     # ensure the SPARQL store's clear
     sparql(SPARQL_ENDPOINT, "DROP ALL")
 
-    raw_output = str(runner.invoke(app,["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT, "-f", "json"]).stdout)
+    raw_output = str(
+        runner.invoke(
+            app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT, "-f", "json"]
+        ).stdout
+    )
 
     r = json.loads(raw_output)
 
     assert str(MANIFEST_FILE_REMOTE.parent / "catalogue.ttl") in r.keys()
 
     # test cli pretty formatting
-    raw_output = str(runner.invoke(app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT]).stdout)
+    raw_output = str(
+        runner.invoke(app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT]).stdout
+    )
     assert "Main Entity" in raw_output

@@ -31,7 +31,9 @@ def label(
 ) -> set | Graph | None:
     """ "Main function for labeller module"""
     # create the target from the Manifest
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     # determine if any labelling context is given in Manifest
     context_graph = Graph()
@@ -56,21 +58,16 @@ def label(
 
     if output_type == LabellerOutputTypes.iris:
         return find_missing_labels(
-            manifest_graph + context_graph,
-            additional_context,
-            http_client=http_client
+            manifest_graph + context_graph, additional_context, http_client=http_client
         )
 
     elif output_type == LabellerOutputTypes.rdf:
         iris = find_missing_labels(
-            manifest_graph,
-            context_graph,
-            http_client=http_client
+            manifest_graph, context_graph, http_client=http_client
         )
 
         if additional_context is None:
             raise ValueError("You must provide additional context")
-
 
         return extract_labels(iris, additional_context, http_client)
 

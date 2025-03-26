@@ -9,9 +9,17 @@ from rdflib import URIRef
 from rdflib.namespace import SDO
 
 from prezmanifest.definednamespaces import MRR
-from prezmanifest.utils import VersionIndicatorComparison, store_remote_artifact_locally, update_local_artifact, \
-    absolutise_path
-from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts, which_is_more_recent
+from prezmanifest.utils import (
+    VersionIndicatorComparison,
+    store_remote_artifact_locally,
+    update_local_artifact,
+    absolutise_path,
+)
+from prezmanifest.utils import (
+    get_manifest_paths_and_graph,
+    denormalise_artifacts,
+    which_is_more_recent,
+)
 
 
 def sync(
@@ -23,7 +31,9 @@ def sync(
     add_remote: bool = True,
     add_local: bool = True,
 ) -> dict:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     sync_status = {}
     # For each Artifact in the Manifest
@@ -45,16 +55,18 @@ def sync(
                 "ASK {GRAPH <xxx> {?s ?p ?o}}".replace("xxx", str(v["main_entity"])),
                 http_client,
                 return_python=True,
-                return_bindings_only=True
+                return_bindings_only=True,
             )
             # If not known by graph IRI, just check if it's the catalogue (+ "-catalogue" to IRI)
             if not known and v["role"] == MRR.CatalogueData:
                 known = query(
                     sparql_endpoint,
-                    "ASK {GRAPH <xxx> {?s ?p ?o}}".replace("xxx", str(v["main_entity"] + "-catalogue")),
+                    "ASK {GRAPH <xxx> {?s ?p ?o}}".replace(
+                        "xxx", str(v["main_entity"] + "-catalogue")
+                    ),
                     http_client,
                     return_python=True,
-                    return_bindings_only=True
+                    return_bindings_only=True,
                 )
 
             # If known, compare it
@@ -77,7 +89,7 @@ def sync(
 
             sync_status[str(k)] = {
                 "main_entity": v["main_entity"],
-                "direction": direction
+                "direction": direction,
             }
 
     # Check for things at remote not known in local
@@ -91,13 +103,17 @@ def sync(
                 <xxx> schema:hasPart|dcterms:hasPart ?p
             }
         }
-        """.replace("xxx", str(cat_iri))
-    for x in query(sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True):
+        """.replace(
+        "xxx", str(cat_iri)
+    )
+    for x in query(
+        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+    ):
         remote_entity = URIRef(x["p"]["value"])
         if remote_entity not in local_entities:
             sync_status[str(remote_entity)] = {
                 "main_entity": URIRef(remote_entity),
-                "direction": "add-locally"
+                "direction": "add-locally",
             }
 
     update_remote_catalogue = False
@@ -118,7 +134,9 @@ def sync(
             )
 
             updated_local_manifest.bind("mrr", "https://prez.dev/ManifestResourceRoles")
-            updated_local_manifest.serialize(destination=manifest_path, format="longturtle")
+            updated_local_manifest.serialize(
+                destination=manifest_path, format="longturtle"
+            )
             cat = load_graph(cat_artifact_path)
             cat.add((cat_iri, SDO.hasPart, URIRef(v["main_entity"])))
             cat.serialize(destination=cat_artifact_path, format="longturtle")

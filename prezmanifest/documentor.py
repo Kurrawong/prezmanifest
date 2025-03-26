@@ -153,7 +153,9 @@ def table(manifest: Path, table_format: TableFormats = TableFormats.markdown) ->
 
 
 def catalogue(manifest: Path) -> Graph:
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
     catalogue = Graph()
     for s, o in manifest_graph.subject_objects(PROF.hasResource):

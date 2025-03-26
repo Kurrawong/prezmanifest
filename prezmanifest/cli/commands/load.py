@@ -41,5 +41,3 @@ def file_command(
     file: Path = typer.Argument(..., help="The path of the quads file"),
 ) -> None:
     load(manifest, destination_file=file)
-
-

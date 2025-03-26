@@ -44,7 +44,12 @@ def rdf_command(
     ] = None,
 ) -> None:
     print(
-        label(manifest, LabellerOutputTypes.rdf, context, make_httpx_client(username, password)).serialize(format="longturtle")
+        label(
+            manifest,
+            LabellerOutputTypes.rdf,
+            context,
+            make_httpx_client(username, password),
+        ).serialize(format="longturtle")
     )
 
 
@@ -67,4 +72,9 @@ def manifest_command(
         str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
     ] = None,
 ) -> None:
-    label(manifest, LabellerOutputTypes.manifest, context, make_httpx_client(username, password))
+    label(
+        manifest,
+        LabellerOutputTypes.manifest,
+        context,
+        make_httpx_client(username, password),
+    )

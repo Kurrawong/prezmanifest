@@ -28,7 +28,7 @@ from prezmanifest.definednamespaces import MRR, OLIS
 from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
     get_files_from_artifact,
-    get_catalogue_iri_from_manifest
+    get_catalogue_iri_from_manifest,
 )
 from prezmanifest.utils import get_manifest_paths_and_graph
 
@@ -48,16 +48,19 @@ def load(
     return_data_type: ReturnDatatype = ReturnDatatype.none,
 ) -> None | Graph | Dataset:
     """Loads a catalogue of data from a prezmanifest file, whose content are valid according to the Prez Manifest Model
-        (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
-        given SPARQL Endpoint."""
+    (https://kurrawong.github.io/prez.dev/manifest/) either into a specified quads file in the Trig format, or into a
+    given SPARQL Endpoint."""
 
     # validate and load
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(manifest)
+    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
+        manifest
+    )
 
-    catalogue_iri_orig = get_catalogue_iri_from_manifest((manifest_path, manifest_root, manifest_graph))
+    catalogue_iri_orig = get_catalogue_iri_from_manifest(
+        (manifest_path, manifest_root, manifest_graph)
+    )
     vg_iri = catalogue_iri_orig
     catalogue_iri = URIRef(str(catalogue_iri_orig) + "-catalogue")
-
 
     if not isinstance(return_data_type, ReturnDatatype):
         raise ValueError(
@@ -226,13 +229,15 @@ def load(
             ]:
                 for artifact in manifest_graph.objects(o, PROF.hasArtifact):
                     for f in get_files_from_artifact(
-                            (manifest_path, manifest_root, manifest_graph), artifact
+                        (manifest_path, manifest_root, manifest_graph), artifact
                     ):
                         if str(f.name).endswith(".ttl"):
                             try:
                                 fg = Graph().parse(f)
                             except Exception as e:
-                                raise ValueError(f"Could not load file {f}. Error is {e}")
+                                raise ValueError(
+                                    f"Could not load file {f}. Error is {e}"
+                                )
 
                             # fg.bind("rdf", RDF)
 
@@ -271,19 +276,19 @@ def load(
                                 return_data_type=return_data_type,
                             )
                         elif str(f.name).endswith(".trig"):
-                                d = Dataset()
-                                d.parse(f)
-                                for g in d.graphs():
-                                    if g.identifier != URIRef("urn:x-rdflib:default"):
-                                        vg.add((vg_iri, OLIS.isAliasFor, g.identifier))
-                                _export(
-                                    data=d,
-                                    iri=None,
-                                    http_client=http_client,
-                                    sparql_endpoint=sparql_endpoint,
-                                    destination_file=destination_file,
-                                    return_data_type=return_data_type,
-                                )
+                            d = Dataset()
+                            d.parse(f)
+                            for g in d.graphs():
+                                if g.identifier != URIRef("urn:x-rdflib:default"):
+                                    vg.add((vg_iri, OLIS.isAliasFor, g.identifier))
+                            _export(
+                                data=d,
+                                iri=None,
+                                http_client=http_client,
+                                sparql_endpoint=sparql_endpoint,
+                                destination_file=destination_file,
+                                return_data_type=return_data_type,
+                            )
 
         # export the System Graph
         _export(

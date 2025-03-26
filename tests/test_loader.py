@@ -66,7 +66,9 @@ def test_fuseki_query(fuseki_container):
             ?s ?p ?o
           }
         }        
-        """.replace("XXX", TESTING_GRAPH)
+        """.replace(
+        "XXX", TESTING_GRAPH
+    )
 
     r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
 
@@ -89,7 +91,9 @@ def test_fuseki_query(fuseki_container):
             ?s ?p ?o
           }
         }        
-        """.replace("XXX", TESTING_GRAPH)
+        """.replace(
+        "XXX", TESTING_GRAPH
+    )
 
     r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
 
