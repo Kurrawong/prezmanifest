@@ -10,11 +10,11 @@ from pathlib import Path
 import httpx
 from kurra.utils import load_graph
 from labelify import extract_labels, find_missing_labels
-from rdflib import BNode, Graph, Literal, URIRef
+from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF, RDF
 
 from prezmanifest.definednamespaces import MRR, PREZ
-from prezmanifest.utils import get_files_from_artifact, get_manifest_paths_and_graph, denormalise_artifacts
+from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts
 
 
 class LabellerOutputTypes(str, Enum):
@@ -46,10 +46,13 @@ def label(
     artifacts = denormalise_artifacts((manifest_path, manifest_root, manifest_graph))
 
     for k, v in artifacts.items():
-        if v["role"] in [MRR.CatalogueData, MRR.ResourceData]: 
+        if v["role"] in [MRR.CatalogueData, MRR.ResourceData]:
             content_graph += load_graph(k)
-        elif v["role"] in [MRR.CompleteCatalogueAndResourceLabels, MRR.IncompleteCatalogueAndResourceLabels]:
-            context_graph += load_graph(k)    
+        elif v["role"] in [
+            MRR.CompleteCatalogueAndResourceLabels,
+            MRR.IncompleteCatalogueAndResourceLabels,
+        ]:
+            context_graph += load_graph(k)
 
     # add labels for system IRIs
     context_graph.parse(Path(__file__).parent / "system-labels.ttl")
@@ -91,10 +94,16 @@ def label(
             new_resource = BNode()
 
             # Add to the Manifest
-            manifest_iri = manifest_graph.value(predicate=RDF.type, object=PREZ.Manifest)
+            manifest_iri = manifest_graph.value(
+                predicate=RDF.type, object=PREZ.Manifest
+            )
             manifest_graph.add((manifest_iri, PROF.hasResource, new_resource))
-            manifest_graph.add((new_resource, PROF.hasRole, MRR.IncompleteCatalogueAndResourceLabels))
-            manifest_graph.add((new_resource, PROF.hasArtifact, Literal(new_artifact.name)))
+            manifest_graph.add(
+                (new_resource, PROF.hasRole, MRR.IncompleteCatalogueAndResourceLabels)
+            )
+            manifest_graph.add(
+                (new_resource, PROF.hasArtifact, Literal(new_artifact.name))
+            )
 
             manifest_graph.serialize(destination=manifest, format="longturtle")
         else:

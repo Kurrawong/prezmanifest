@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from kurra.db import upload
 from typer.testing import CliRunner
@@ -162,7 +164,7 @@ def test_get_version_indicators_local():
         MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl", vi
     )
 
-    assert vi["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
+    assert vi["modified_date"] == date_parse("2024-11-21")
     assert vi["version_iri"] == "https://example.com/demo-vocabs/language-test/1.0"
 
     with pytest.raises(ValueError):
@@ -201,12 +203,12 @@ def test_get_version_indicators_sparql(fuseki_container):
 
     r = get_version_indicators_sparql(ASSET_GRAPH_IRI, SPARQL_ENDPOINT, http_client=c)
 
-    assert r["modified_date"] == datetime.strptime("2024-11-21", "%Y-%m-%d")
+    assert r["modified_date"] == date_parse("2024-11-21")
 
 
 def test_compare_version_indicators():
     one = {
-        "modified_date": datetime.strptime("2024-11-20", "%Y-%m-%d"),
+        "modified_date": date_parse("2024-11-20"),
         "version_info": None,
         "version_iri": None,
         "file_size": None,
@@ -214,7 +216,7 @@ def test_compare_version_indicators():
     }
 
     two = {
-        "modified_date": datetime.strptime("2024-11-21", "%Y-%m-%d"),
+        "modified_date": date_parse("2024-11-21"),
         "version_info": "1.1",
         "version_iri": None,
         "file_size": None,

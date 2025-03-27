@@ -1,14 +1,14 @@
-from pathlib import Path
-
-import kurra.sparql
-from typer.testing import CliRunner
-from prezmanifest.syncer import sync
-from tests.fuseki.conftest import fuseki_container
-from kurra.db import sparql
-from prezmanifest.loader import load
-from prezmanifest.utils import artifact_file_name_from_graph_id
 import json
 import shutil
+from pathlib import Path
+
+from kurra.db import sparql
+from typer.testing import CliRunner
+
+from prezmanifest.loader import load
+from prezmanifest.syncer import sync
+from prezmanifest.utils import artifact_file_name_from_graph_id
+from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner(mix_stderr=False)
 from prezmanifest.cli import app

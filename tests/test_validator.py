@@ -106,7 +106,7 @@ def test_validator_invalid_conformance_all():
 
 def test_own_validator():
     from rdflib import Namespace
-    from rdflib.namespace import RDF
+
     GN = Namespace("https://linked.data.gov.au/def/gn/")
 
     m = Path(__file__).parent / "validator/manifest-conformance-own.ttl"

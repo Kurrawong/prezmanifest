@@ -69,8 +69,7 @@ def test_label_rdf_file():
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         output_type=LabellerOutputTypes.rdf,
-        additional_context=Path(__file__).parent
-        / "demo-vocabs/labels-some.ttl",
+        additional_context=Path(__file__).parent / "demo-vocabs/labels-some.ttl",
     )
 
     assert len(rdf) == 37

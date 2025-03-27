@@ -1,10 +1,9 @@
-import datetime
 from collections.abc import Generator
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
 import httpx
+from dateutil.parser import parse as date_parse
 from kurra.db import sparql
 from kurra.file import load_graph
 from kurra.sparql import query
@@ -330,9 +329,7 @@ def get_version_indicators_local(
         ):
             if version_indicators.get("modified_date") is None:
                 if r.get("md") is not None:
-                    version_indicators["modified_date"] = datetime.strptime(
-                        r["md"]["value"], "%Y-%m-%d"
-                    )
+                    version_indicators["modified_date"] = date_parse(r["md"]["value"])
             if version_indicators.get("version_iri") is None:
                 if r.get("vi") is not None:
                     version_indicators["version_iri"] = r["vi"]["value"]
@@ -400,9 +397,7 @@ def get_version_indicators_sparql(
 
     for r in res:
         if r.get("md") is not None:
-            indicators["modified_date"] = datetime.strptime(
-                r["md"]["value"], "%Y-%m-%d"
-            )
+            indicators["modified_date"] = date_parse(r["md"]["value"])
         if r.get("vi") is not None:
             indicators["version_iri"] = r["vi"]["value"]
         if r.get("v") is not None:
