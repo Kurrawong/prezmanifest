@@ -73,7 +73,7 @@ def label(
         combined_graph = manifest_graph + content_graph + context_graph
 
         iris_missing_labels = find_missing_labels(
-            combined_graph, None, http_client=http_client
+            combined_graph, http_client=http_client
         )
 
         return extract_labels(iris_missing_labels, additional_context, http_client)
