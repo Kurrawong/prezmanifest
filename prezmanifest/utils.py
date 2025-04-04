@@ -233,6 +233,7 @@ def get_main_entity_iri_of_artifact(
     manifest: Path | tuple[Path, Path, Graph],
     artifact_graph: Graph = None,
     cc: URIRef = None,
+    atype: URIRef = None,
 ) -> URIRef:
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
         manifest
@@ -243,6 +244,9 @@ def get_main_entity_iri_of_artifact(
         if cc in KNOWN_PROFILES.keys():
             for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
                 known_entity_classes.append(str(m_e_c))
+
+    if atype is not None:
+        known_entity_classes.append(str(atype))
 
     if len(known_entity_classes) < 1:
         known_entity_classes = [str(x) for x in KNOWN_ENTITY_CLASSES]
@@ -299,6 +303,7 @@ def get_version_indicators_local(
             (manifest_path, manifest_root, manifest_graph),
             artifact_graph,
             version_indicators.get("conformance_claim"),
+            version_indicators.get("additional_type"),
         )
 
     # if we have a Main Entity at this point, we can get the content-based Indicators
@@ -511,7 +516,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
         PREFIX prof: <http://www.w3.org/ns/dx/prof/>
         PREFIX schema: <https://schema.org/>
 
-        SELECT ?a ?me ?cc ?dm ?vi ?v ?r
+        SELECT ?a ?me ?cc ?atype ?dm ?vi ?v ?r
         WHERE {
             # if the Resource has a Blank Node artifact, it must provide the Main Entity IRI
             {
@@ -534,6 +539,14 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 }
                 
                 OPTIONAL {
+                    ?bn schema:additionalType ?atype_local .
+                }
+                
+                OPTIONAL {
+                    ?x schema:additionalType ?atype_resource .
+                }                
+                
+                OPTIONAL {
                     ?bn schema:dateModified ?dm .
                 } 
                 
@@ -546,6 +559,8 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 }     
                 
                 BIND(COALESCE(?cc_local, ?cc_resource) AS ?cc)
+                
+                BIND(COALESCE(?atype_local, ?atype_resource) AS ?atype)
                    
                 FILTER isBLANK(?bn)
             }
@@ -559,6 +574,10 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 OPTIONAL {
                     ?x dcterms:conformsTo ?cc .
                 }
+                
+                OPTIONAL {
+                    ?x schema:additionalType ?atype .
+                }                
                 
                 FILTER isLITERAL(?a)
             }
@@ -578,6 +597,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
             vi = r["vi"]["value"] if r.get("vi") is not None else None
             v = r["v"]["value"] if r.get("v") is not None else None
             cc = URIRef(r["cc"]["value"]) if r.get("cc") is not None else None
+            atype = URIRef(r["atype"]["value"]) if r.get("atype") is not None else None
 
             artifacts_info[file] = {
                 "main_entity": me,
@@ -587,6 +607,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 "version_info": v,
                 "file_size": None,
                 "conformance_claim": cc,
+                "additional_type": atype,
             }
 
     # get Version Indicators info only for Resources with certain Roles
