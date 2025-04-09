@@ -93,8 +93,7 @@ def get_files_from_artifact(
                 artifact_str[:glob_marker_location],
                 artifact_str[glob_marker_location:],
             ]
-
-            return Path(manifest_root / path_or_url(glob_parts[0])).glob(glob_parts[1])
+            return Path(manifest_root / path_or_url(glob_parts[0])).rglob(glob_parts[1])
     elif isinstance(artifact, BNode):
         contentLocation = manifest_graph.value(
             subject=artifact, predicate=SDO.contentLocation
