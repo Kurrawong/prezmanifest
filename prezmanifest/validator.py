@@ -140,7 +140,7 @@ def validate(manifest: Path) -> Graph:
                     )
                     if not valid:
                         raise ManifestValidationError(
-                            f"Resource {content_location} Shapes invalid according to conformance claim:\n\n{error_msg}"
+                            f"Resource {file} Shapes invalid according to conformance claim:\n\n{error_msg}"
                         )
 
                 if artifact_cc:
