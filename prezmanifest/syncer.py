@@ -90,6 +90,7 @@ def sync(
             sync_status[str(k)] = {
                 "main_entity": v["main_entity"],
                 "direction": direction,
+                "sync": v["sync"]
             }
 
     # Check for things at remote not known in local
@@ -114,43 +115,46 @@ def sync(
             sync_status[str(remote_entity)] = {
                 "main_entity": URIRef(remote_entity),
                 "direction": "add-locally",
+                "sync": True,
             }
 
     update_remote_catalogue = False
     for k, v in sync_status.items():
-        if update_remote and v["direction"] == "upload":
-            clear_graph(sparql_endpoint, v["main_entity"], http_client)
-            upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
+        print(f"{k}: {v}")
+        if v["sync"]:
+            if update_remote and v["direction"] == "upload":
+                clear_graph(sparql_endpoint, v["main_entity"], http_client)
+                upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
 
-        if add_remote and v["direction"] == "add-remotely":
-            # no need to clear_graph() as this asset doesn't exist remotely
-            upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
-            update_remote_catalogue = True
+            if add_remote and v["direction"] == "add-remotely":
+                # no need to clear_graph() as this asset doesn't exist remotely
+                upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
+                update_remote_catalogue = True
 
-        if add_local and v["direction"] == "add-locally":
-            updated_local_manifest = store_remote_artifact_locally(
-                (manifest_path, manifest_root, manifest_graph),
-                sparql_endpoint,
-                v["main_entity"],
-                http_client,
-            )
+            if add_local and v["direction"] == "add-locally":
+                updated_local_manifest = store_remote_artifact_locally(
+                    (manifest_path, manifest_root, manifest_graph),
+                    sparql_endpoint,
+                    v["main_entity"],
+                    http_client,
+                )
 
-            updated_local_manifest.bind("mrr", "https://prez.dev/ManifestResourceRoles")
-            updated_local_manifest.serialize(
-                destination=manifest_path, format="longturtle"
-            )
-            cat = load_graph(cat_artifact_path)
-            cat.add((cat_iri, SDO.hasPart, URIRef(v["main_entity"])))
-            cat.serialize(destination=cat_artifact_path, format="longturtle")
+                updated_local_manifest.bind("mrr", "https://prez.dev/ManifestResourceRoles")
+                updated_local_manifest.serialize(
+                    destination=manifest_path, format="longturtle"
+                )
+                cat = load_graph(cat_artifact_path)
+                cat.add((cat_iri, SDO.hasPart, URIRef(v["main_entity"])))
+                cat.serialize(destination=cat_artifact_path, format="longturtle")
 
-        if update_local and v["direction"] == "download":
-            update_local_artifact(
-                (manifest_path, manifest_root, manifest_graph),
-                Path(k),
-                sparql_endpoint,
-                v["main_entity"],
-                http_client,
-            )
+            if update_local and v["direction"] == "download":
+                update_local_artifact(
+                    (manifest_path, manifest_root, manifest_graph),
+                    Path(k),
+                    sparql_endpoint,
+                    v["main_entity"],
+                    http_client,
+                )
 
     if update_remote_catalogue:
         clear_graph(sparql_endpoint, cat_iri, http_client)

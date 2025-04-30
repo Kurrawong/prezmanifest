@@ -515,7 +515,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
         PREFIX prof: <http://www.w3.org/ns/dx/prof/>
         PREFIX schema: <https://schema.org/>
 
-        SELECT ?a ?me ?cc ?atype ?dm ?vi ?v ?r
+        SELECT ?a ?me ?cc ?atype ?sync ?dm ?vi ?v ?r
         WHERE {
             # if the Resource has a Blank Node artifact, it must provide the Main Entity IRI
             {
@@ -543,6 +543,14 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 
                 OPTIONAL {
                     ?x schema:additionalType ?atype_resource .
+                }
+                
+                OPTIONAL {
+                    ?bn prez:sync ?sync_local .
+                }
+                
+                OPTIONAL {
+                    ?x prez:sync ?sync_resource .
                 }                
                 
                 OPTIONAL {
@@ -560,6 +568,8 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 BIND(COALESCE(?cc_local, ?cc_resource) AS ?cc)
                 
                 BIND(COALESCE(?atype_local, ?atype_resource) AS ?atype)
+                
+                BIND(COALESCE(?sync_local, ?sync_resource) AS ?sync)
                    
                 FILTER isBLANK(?bn)
             }
@@ -576,7 +586,11 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 
                 OPTIONAL {
                     ?x schema:additionalType ?atype .
-                }                
+                }
+                
+                OPTIONAL {
+                    ?x prez:sync ?sync .
+                } 
                 
                 FILTER isLITERAL(?a)
             }
@@ -597,6 +611,10 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
             v = r["v"]["value"] if r.get("v") is not None else None
             cc = URIRef(r["cc"]["value"]) if r.get("cc") is not None else None
             atype = URIRef(r["atype"]["value"]) if r.get("atype") is not None else None
+            if r.get("sync") is not None:
+                sync = False if r["sync"]["value"] == "false" else True
+            else:
+                sync = True
 
             artifacts_info[file] = {
                 "main_entity": me,
@@ -607,6 +625,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 "file_size": None,
                 "conformance_claim": cc,
                 "additional_type": atype,
+                "sync": sync
             }
 
     # get Version Indicators info only for Resources with certain Roles
