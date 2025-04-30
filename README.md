@@ -30,15 +30,19 @@ The functions provided are:
     * **table**: can create a Markdown or ASCCIIDOC table of Resources from a Prez Manifest file for use in README files in repositories
     * **catalogue**: add the IRIs of resources within a Manifest's 'Resource Data' object to a catalogue RDF file
 * **load**
-    *  extract all the content of all Resources listed in a Prez Manifest and load it into either a single RDF multi-graph ('quads') file or into an RDF DB instance by using the Graph Store Protocol
+    * extract all the content of all Resources listed in a Prez Manifest and load it into either a single RDF multi-graph ('quads') file or into an RDF DB instance by using the Graph Store Protocol
+* **sync**
+    * synchronises some kinds of resources list in a Manifest with versions of them in a SPARQL Endpoint
+    * acts as `load` if run against an empty SPARQL Endpoint
+    * does not yet load background resources
 
 ## Installation
 
-This Python package is intended to be used on the command line on Linux/UNIX-like systems and/or as a Python library, called directly from other Python code.
+This Python package is intended to be used as a Python library, called directly from other Python code, or on the command line on Linux/UNIX-like systems.
 
 ### Library 
 
-It is available on [PyPI](https://pypi.org) at <https://pypi.org/project/prezmanifest/> so can be installed using [Poetry](https://python-poetry.org) or PIP etc. We do recommend [UV](https://github.com/astral-sh/uv) as the package manager we find easiest to work with.
+It is available on [PyPI](https://pypi.org) at <https://pypi.org/project/prezmanifest/> so can be installed using [Poetry](https://python-poetry.org) or PIP etc. We do recommend [UV](https://github.com/astral-sh/uv) as that's the package manager we find easiest to work with.
 
 ### Command Line
 
@@ -48,7 +52,7 @@ To make available the command line script `pm` you need to first install `UV`, s
 uv tool install prezmanifest
 ```
 
-Now you can invoke `pm` anywhere in your termina as long as `~/,local/bin/` is in your `PATH`.
+Now you can invoke `pm` anywhere in your terminal as long as `~/,local/bin/` is in your `PATH`.
 
 ### Latest
 
@@ -69,6 +73,7 @@ from prezmanifest.validator import validate
 from prezmanifest.labeller import LabellerOutputTypes, label
 from prezmanifest.documentor import table, catalogue
 from prezmanifest.loader import load
+from prezmanifest.syncer import sync
 ```
 
 ### Command Line
