@@ -120,7 +120,6 @@ def sync(
 
     update_remote_catalogue = False
     for k, v in sync_status.items():
-        print(f"{k}: {v}")
         if v["sync"]:
             if update_remote and v["direction"] == "upload":
                 clear_graph(sparql_endpoint, v["main_entity"], http_client)

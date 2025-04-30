@@ -12,12 +12,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             schema:name "Labels" ;
         ] ,
         [
-            prof:hasArtifact 
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                "artifact4.ttl" ;
+            prof:hasArtifact "artifact4.ttl" ;
             prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
             ns1:sync false ;
             schema:description "Catalogued large datasets" ;
