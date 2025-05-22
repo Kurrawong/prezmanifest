@@ -127,3 +127,11 @@ def test_validator_cli():
         )
     except ManifestValidationError as e:
         assert "MinCountConstraintComponent" in str(e)
+
+
+def test_error_reporting():
+    m = Path(__file__).parent / "validator/manifest-syntax-error.ttl"
+    try:
+        vg = validate(m)
+    except SyntaxError as e:
+        assert "Failed to load " in str(e)

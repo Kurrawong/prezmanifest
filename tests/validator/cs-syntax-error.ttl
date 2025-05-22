@@ -1,0 +1,101 @@
+# syntax error on line 17 - un-terminated literal
+
+PREFIX : <https://linked.data.gov.au/def/positional-accuracy/>
+PREFIX astatus: <https://linked.data.gov.au/def/reg-statuses/>
+PREFIX cs: <https://linked.data.gov.au/def/positional-accuracy>
+PREFIX droles: <https://linked.data.gov.au/def/data-roles/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX reg: <http://purl.org/linked-data/registry#>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX unggim: <https://linked.data.gov.au/def/unggim-themes/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+:100m
+    a skos:Concept ;
+    skos:altLabel "Remote ;
+    skos:definition "Minimum spatial accuracy of plus or minus 100 metres. Typically remote area capture"@en ;
+    skos:historyNote "Queensland Roads and Tracks dataset, influenced by the Queensland Spatial Information Council Digital Road Network Standard." ;
+    skos:inScheme cs: ;
+    skos:prefLabel "100m"@en ;
+.
+
+:25m
+    a skos:Concept ;
+    skos:altLabel "Rural"@en ;
+    skos:definition "Minimum spatial accuracy of plus or minus 25 metres. Typically rural capture"@en ;
+    skos:historyNote "Queensland Roads and Tracks dataset, influenced by the Queensland Spatial Information Council Digital Road Network Standard." ;
+    skos:inScheme cs: ;
+    skos:prefLabel "25m"@en ;
+.
+
+:2m
+    a skos:Concept ;
+    skos:altLabel "Urban"@en ;
+    skos:definition "Minimum spatial accuracy of plus or minus 2 metres. Typically urban capture"@en ;
+    skos:historyNote "Queensland Roads and Tracks dataset, influenced by the Queensland Spatial Information Council Digital Road Network Standard." ;
+    skos:inScheme cs: ;
+    skos:prefLabel "2m"@en ;
+.
+
+:5m
+    a skos:Concept ;
+    skos:altLabel "Peri-Urban"@en ;
+    skos:definition "Minimum spatial accuracy of plus or minus 5 metres. Typically peri-urban capture"@en ;
+    skos:historyNote "Queensland Roads and Tracks dataset, influenced by the Queensland Spatial Information Council Digital Road Network Standard." ;
+    skos:inScheme cs: ;
+    skos:prefLabel "5m"@en ;
+.
+
+:unknown
+    a skos:Concept ;
+    skos:altLabel "U"@en ;
+    skos:definition "Minimum spatial accuracy unknown"@en ;
+    skos:historyNote "Queensland Roads and Tracks dataset, influenced by the Queensland Spatial Information Council Digital Road Network Standard." ;
+    skos:inScheme cs: ;
+    skos:prefLabel "Unknown"@en ;
+.
+
+:1.0 schema:name "1.0" .
+
+cs:
+    a skos:ConceptScheme ;
+    reg:status astatus:experimental ;
+    owl:versionIRI :1.0 ;
+    owl:versionInfo "1.0" ;
+    skos:definition "This vocabulary describes categories of positional accuracy information to indicate the spatial accuracy of data capture. "@en ;
+    skos:hasTopConcept
+        :100m ,
+        :25m ,
+        :2m ,
+        :5m ,
+        :unknown ;
+    skos:historyNote """2025-05 NJC: Added status experimental
+
+This vocabulary was created by the Queensland Spatial Information services.""" ;
+    skos:prefLabel "Positional Accuracy"@en ;
+    prov:qualifiedAttribution
+        [
+            prov:agent <https://linked.data.gov.au/org/icsm> ;
+            prov:hadRole droles:custodian ;
+        ] ;
+    schema:creator <https://linked.data.gov.au/org/qsi> ;
+    schema:dateCreated "2023-05-31"^^xsd:date ;
+    schema:dateModified "2025-05-22"^^xsd:date ;
+    schema:keywords unggim:GCRF ;
+    schema:publisher <https://linked.data.gov.au/org/icsm> ;
+    schema:status <https://linked.data.gov.au/def/reg-statuses/experimental> ;
+.
+
+<https://linked.data.gov.au/org/qsi>
+    a schema:Organization ;
+    schema:name "QSI" ;
+    schema:url "http://whatever.com"^^xsd:anyURI ;
+.
+
+<https://linked.data.gov.au/org/icsm>
+    a schema:Organization ;
+    schema:name "ICSM" ;
+    schema:url "http://whatever.com"^^xsd:anyURI ;
+.

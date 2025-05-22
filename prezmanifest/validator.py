@@ -129,7 +129,10 @@ def validate(manifest: Path) -> Graph:
                     artifact_cc = False
 
                 if cc is not None:
-                    data_graph = load_graph(manifest_root / file)
+                    try:
+                        data_graph = load_graph(manifest_root / file)
+                    except SyntaxError as e:
+                        raise SyntaxError(f"Failed to load {file}: {e}")
                     if context_graph is not None:
                         data_graph += context_graph
                     valid, error_msg = shacl_validate_resource(

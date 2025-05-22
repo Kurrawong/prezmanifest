@@ -323,7 +323,7 @@ def get_version_indicators_local(
                 }}
                 
                 OPTIONAL {{
-                 <{version_indicators["main_entity"]}> owl:versionInfo|schema:version|dcterms:hasVersion ?v .
+                 <{version_indicators["main_entity"]}> owl:versionInfo|schema:version ?v .
              }}
             }}
             """
@@ -386,7 +386,7 @@ def get_version_indicators_sparql(
                 }}
     
                 OPTIONAL {{
-                    ?me owl:versionInfo|schema:version|dcterms:hasVersion ?v .
+                    ?me owl:versionInfo|schema:version ?v .
                 }}
             }}
         }}
@@ -562,7 +562,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 }
                 
                 OPTIONAL {
-                    ?bn owl:versionInfo|schema:version|dcterms:hasVersion ?v .
+                    ?bn owl:versionInfo|schema:version ?v .
                 }     
                 
                 BIND(COALESCE(?cc_local, ?cc_resource) AS ?cc)
