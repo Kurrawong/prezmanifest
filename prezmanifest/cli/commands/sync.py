@@ -35,6 +35,9 @@ def sync_command(
     password: Annotated[
         str, typer.Option("--password", "-p", help="SPARQL Endpoint password")
     ] = None,
+    timeout: Annotated[
+        int, typer.Option("--timeout", "-t", help="Timeout per request")
+    ] = 60,
     response_format: str = typer.Option(
         "table",
         "--response-format",
@@ -45,7 +48,7 @@ def sync_command(
     r = sync(
         manifest,
         endpoint,
-        make_httpx_client(username, password),
+        make_httpx_client(username, password, timeout),
         update_remote,
         update_local,
         add_remote,

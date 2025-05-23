@@ -29,6 +29,7 @@ from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
     get_files_from_artifact,
     get_catalogue_iri_from_manifest,
+    make_httpx_client,
 )
 from prezmanifest.utils import get_manifest_paths_and_graph
 
@@ -44,6 +45,7 @@ def load(
     sparql_endpoint: str = None,
     sparql_username: str = None,
     sparql_password: str = None,
+    timeout: int = 60,
     destination_file: Path = None,
     return_data_type: ReturnDatatype = ReturnDatatype.none,
 ) -> None | Graph | Dataset:
@@ -85,7 +87,6 @@ def load(
     # establish a reusable client for http requests
     # also allows for basic authentication to be used
     if sparql_endpoint:
-        auth = None
         if sparql_username:
             if not sparql_password:
                 if not sys.stdin.isatty():
@@ -94,8 +95,12 @@ def load(
                         "A password must be given if a sparql username is set"
                     )
                 sparql_password = getpass()
-            auth = httpx.BasicAuth(sparql_username, sparql_password)
-        http_client = httpx.Client(base_url=sparql_endpoint, auth=auth)
+
+        http_client = make_httpx_client(
+            sparql_username=sparql_username,
+            sparql_password=sparql_password,
+            timeout=timeout,
+        )
     else:
         http_client = None
 
