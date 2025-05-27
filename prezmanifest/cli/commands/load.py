@@ -22,12 +22,16 @@ def sparql_command(
     password: Annotated[
         str, typer.Option("--password", "-p", help="SPARQL Endpoint password.")
     ] = None,
+    timeout: Annotated[
+        int, typer.Option("--timeout", "-t", help="Timeout per request")
+    ] = 60,
 ) -> None:
     load(
         manifest,
         sparql_endpoint=endpoint,
         sparql_username=username,
         sparql_password=password,
+        timeout=timeout,
     )
 
 
