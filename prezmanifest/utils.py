@@ -26,6 +26,14 @@ KNOWN_PROFILES = {
         "path": Path(__file__).parent / "validator-vocpub-4.10.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
+    URIRef("https://linked.data.gov.au/def/loci-dp"): {
+     "path": Path(__file__).parent / "validator-locidp.ttl",
+     "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
+    },
+    # URIRef("https://linked.data.gov.au/def/eia-dp"): {
+    #     "path": Path(__file__).parent / "validator-eiadp.ttl",
+    #     "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
+    # },
 }
 
 KNOWN_ENTITY_CLASSES = [
