@@ -2,6 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
+import httpx
 from kurra.db import sparql
 from typer.testing import CliRunner
 
@@ -10,7 +11,7 @@ from prezmanifest.syncer import sync
 from prezmanifest.utils import artifact_file_name_from_graph_id
 from tests.fuseki.conftest import fuseki_container
 
-runner = CliRunner(mix_stderr=False)
+runner = CliRunner()
 from prezmanifest.cli import app
 
 
@@ -48,7 +49,7 @@ def test_sync(fuseki_container):
     assert a[str(MANIFEST_ROOT / "catalogue.ttl")]["direction"] == "same"
 
     # run sync again, performing no actions to just get updated status
-    a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, None, False, False, False, False)
+    a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, httpx.Client(), False, False, False, False)
 
     # check status after sync
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
@@ -134,7 +135,7 @@ def test_sync_sync_predicate(fuseki_container):
     assert a[str(MANIFEST_ROOT / "catalogue.ttl")]["direction"] == "same"
 
     # run sync again, performing no actions to just get updated status
-    a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, None, False, False, False, False)
+    a = sync(MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, httpx.Client(), False, False, False, False)
 
     # check status after sync
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
