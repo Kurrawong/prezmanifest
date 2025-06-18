@@ -23,7 +23,11 @@ KNOWN_PROFILES = {
         "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://w3id.org/profile/vocpub"): {
-        "path": Path(__file__).parent / "validator-vocpub-4.10.ttl",
+        "path": Path(__file__).parent / "validator-vocpub-5.1.ttl",
+        "main_entity_classes": [SKOS.ConceptScheme],
+    },
+    URIRef("https://linked.data.gov.au/def/vocpub"): {
+        "path": Path(__file__).parent / "validator-vocpub-5.1.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
     URIRef("https://linked.data.gov.au/def/loci-dp"): {
