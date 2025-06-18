@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import httpx
+from kurra.db import sparql
 from kurra.db import upload, clear_graph
 from kurra.sparql import query
-from kurra.db import sparql
 from kurra.utils import load_graph
 from rdflib import Graph
 from rdflib import URIRef

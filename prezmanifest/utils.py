@@ -496,7 +496,7 @@ def which_is_more_recent(
 
 
 def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
-    """For each Artifiact in the Manifest, return a dict:
+    """For each Artifact in the Manifest, return a dict:
 
     Artifact path,
     Main Entity,

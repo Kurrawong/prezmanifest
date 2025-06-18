@@ -236,7 +236,8 @@ def test_label_cli_rdf(fuseki_container):
             SPARQL_ENDPOINT,
         ],
     )
-    assert len(Graph().parse(data=result.stdout, format="turtle")) == 52
+    g = Graph().parse(data=result.stdout, format="turtle")
+    assert len(g) == 52
 
 
 # TODO: fix not working test
