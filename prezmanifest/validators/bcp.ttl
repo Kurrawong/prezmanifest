@@ -1,0 +1,211 @@
+PREFIX : <https://linked.data.gov.au/def/bcp/validator/>
+PREFIX dcat: <http://www.w3.org/ns/dcat#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX schema: <https://schema.org/>
+PREFIX sh: <http://www.w3.org/ns/shacl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+
+<https://linked.data.gov.au/def/bcp/validator>
+    a owl:Ontology ;
+    schema:dateCreated "2025-05-30"^^xsd:date ;
+    schema:creator <http://orcid.org/0000-0002-8742-7730> ;
+    schema:dateModified "2025-06-12"^^xsd:date ;
+    schema:publisher <https://linked.data.gov.au/org/dcceew> ;
+    schema:description "The Basic Catalogue Profile SHACL validator" ;
+    schema:name "Basic Catalogue Profile Validator" ;
+    schema:hasPart
+        :Requirement-CW-exists ,
+        :Requirement-CW-name ,
+        :Requirement-CW-desc ,
+        :Requirement-CW-created ,
+        :Requirement-CW-modified ,
+        :Requirement-CW-creator ,
+        :Requirement-CW-publisher ,
+        :Requirement-CW-history ,
+        :Requirement-CW-license ;
+.
+
+<https://linked.data.gov.au/org/dcceew>
+    a schema:Organization ;
+    schema:name "Department of Climate Change, energy, the Environment and Water" ;
+    schema:url "https://www.dcceew.gov.au/"^^xsd:anyURI ;
+.
+
+<http://orcid.org/0000-0002-8742-7730>
+    schema:affiliation <https://kurrawong.ai> ;
+    schema:email "nick@kurrawong.ai"^^xsd:anyURI ;
+    schema:name "Nicholas J Car" ;
+.
+
+<https://kurrawong.ai>
+    a schema:Organization ;
+    schema:name "KurrawongAI" ;
+    schema:url "https://kurrawong.ai"^^xsd:anyURI ;
+.
+
+:Requirement-CW-name
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Each catalogued resource MUST have one and only one name which is to be a text literal, indicated using the schema:name predicate" ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:datatype rdf:langString ]
+            [ sh:datatype xsd:string ]
+        ) ;
+    ] ;
+.
+
+:Requirement-CW-desc
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Each catalogued resource MUST have one and description which is to be a text literal, indicated using the schema:description predicate" ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:datatype rdf:langString ]
+            [ sh:datatype xsd:string ]
+        ) ;
+    ] ;
+.
+
+# :Requirement-CW-id
+# nothing to validate
+
+:Requirement-CW-created
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Requirement D-created: Each catalogued resource MUST have exactly one created date indicated using the schema:dateCreated predicate with a literal value of either xsd:date, xsd:dateTime or xsd:dateTimeStamp type" ;
+    sh:property [
+        sh:path schema:dateCreated ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:datatype xsd:dateTime ]
+            [ sh:datatype xsd:date ]
+            [ sh:datatype xsd:dateTimeStamp ]
+            [ sh:datatype xsd:gYear ]
+        ) ;
+    ]
+.
+
+:Requirement-CW-modified
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Requirement D-modified: Each catalogued resource MUST have exactly one created date indicated using the schema:dateModified predicate with a literal value of either xsd:date, xsd:dateTime or xsd:dateTimeStamp type" ;
+    sh:property [
+        sh:path schema:dateModified ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:datatype xsd:dateTime ]
+            [ sh:datatype xsd:date ]
+            [ sh:datatype xsd:dateTimeStamp ]
+        ) ;
+    ]
+.
+
+:Requirement-CW-creator
+	a sh:NodeShape ;
+    sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+	sh:property [
+		sh:path schema:creator ;
+        sh:minCount 1 ;
+		sh:description "Requirement D-creator: Each catalogued resource MUST indicate one or more agents with the schema:creator predicate, typed as an schema:Person or schema:Organization" ;
+        sh:or (
+            [ sh:class schema:Organization ]
+            [ sh:class schema:Person ]
+        ) ;
+	] ;
+.
+
+:Requirement-CW-publisher
+	a sh:NodeShape ;
+    sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+	sh:property [
+		sh:path schema:publisher ;
+		sh:description "Requirement D-publisher: Each catalogued resource MUST indicate one or more agents with the schema:publisher predicate, typed as an schema:Person or schema:Organization" ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:class schema:Organization ]
+            [ sh:class schema:Person ]
+        ) ;
+	] ;
+.
+
+:Requirement-CW-history
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Requirement D-history: Each catalogued resource SHOULD indicate how it was produced or its origin by use of one of the following predicates: skos:historyNote, schema:citation, prov:wasDerivedFrom" ;
+    sh:or (
+        :provenance-properties-01
+        :provenance-properties-02
+        :provenance-properties-04
+    ) ;
+    sh:severity sh:Warning ;
+.
+
+:Requirement-CW-license
+	a sh:NodeShape ;
+	sh:targetClass
+        schema:CreativeWork ,
+        schema:Dataset ;
+    sh:message "Requirement D-license: Each catalogued resource MUST indicate a license that defines conditions for its use with the schema:license predicate with the value indicated coming from either the RDF Licenses dataset or being locally-defined odrl:Policy instance" ;
+    sh:property [
+        sh:path schema:license ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+    ]
+.
+
+:provenance-properties-01
+    a sh:PropertyShape ;
+    sh:path prov:wasDerivedFrom ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+.
+
+:provenance-properties-02
+    a sh:PropertyShape ;
+    sh:path schema:citation ;
+    sh:minCount 1 ;
+    sh:or (
+        [ sh:datatype xsd:anyURI ]
+        [ sh:datatype xsd:string ]
+    ) ;
+.
+
+:provenance-properties-04
+    a sh:PropertyShape ;
+    sh:path skos:historyNote ;
+    sh:minCount 1 ;
+    sh:or (
+        [ sh:datatype rdf:langString ]
+        [ sh:datatype xsd:string ]
+    ) ;
+.
