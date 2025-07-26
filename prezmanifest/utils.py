@@ -15,29 +15,29 @@ from prezmanifest.definednamespaces import MRR, PREZ
 
 KNOWN_PROFILES = {
     URIRef("http://www.opengis.net/def/geosparql"): {
-        "path": Path(__file__).parent / "validator-geosparql-1.1.ttl",
+        "path": Path(__file__).parent / "validators/geosparql-1.1.ttl",
         "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://data.idnau.org/pid/cp"): {
-        "path": Path(__file__).parent / "validator-idn-cp.ttl",
+        "path": Path(__file__).parent / "validators/idn-cp.ttl",
         "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://w3id.org/profile/vocpub"): {
-        "path": Path(__file__).parent / "validator-vocpub-5.2.ttl",
+        "path": Path(__file__).parent / "validators/vocpub-5.2.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
     URIRef("https://linked.data.gov.au/def/vocpub"): {
-        "path": Path(__file__).parent / "validator-vocpub-5.2.ttl",
+        "path": Path(__file__).parent / "validators/vocpub-5.2.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
     URIRef("https://linked.data.gov.au/def/loci-dp"): {
-     "path": Path(__file__).parent / "validator-locidp.ttl",
+     "path": Path(__file__).parent / "validators/locidp.ttl",
      "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
-    # URIRef("https://linked.data.gov.au/def/eia-dp"): {
-    #     "path": Path(__file__).parent / "validator-eiadp.ttl",
-    #     "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
-    # },
+    URIRef("https://linked.data.gov.au/def/bcp"): {
+        "path": Path(__file__).parent / "validators/bcp.ttl",
+        "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
+    },
 }
 
 KNOWN_ENTITY_CLASSES = [

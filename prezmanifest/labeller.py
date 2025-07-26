@@ -64,7 +64,7 @@ def label(
             combined_graph, additional_context, http_client=http_client
         )
 
-        return iris_missing_labels
+        return sorted(iris_missing_labels)
 
     elif output_type == LabellerOutputTypes.rdf:
         if additional_context is None:

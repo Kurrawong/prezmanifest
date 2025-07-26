@@ -67,7 +67,7 @@ def validate(manifest: Path) -> Graph:
     # SHACL validation
 
     mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    shacl_graph = load_graph(ME.parent / "validator.ttl")
+    shacl_graph = load_graph(ME.parent / "validators/prezmanifest.ttl")
     valid, error_msg = shacl_validate_resource(
         manifest_graph + mrr_vocab_graph, shacl_graph
     )

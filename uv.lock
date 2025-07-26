@@ -213,7 +213,7 @@ wheels = [
 
 [[package]]
 name = "labelify"
-version = "0.5.2"
+version = "0.5.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "html5rdf" },
@@ -221,9 +221,9 @@ dependencies = [
     { name = "rdflib" },
     { name = "sparqlwrapper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/a0/2fd4bea876d9b724eeda084892a488210f34231af17247e2be19dcadafd7/labelify-0.5.2.tar.gz", hash = "sha256:45efb78d01d3d3a377f0aa29c5c377e9dbacec42f62d413970e3268ed1f0ea07", size = 197607 }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/7e/3515117db8b2986372176c70191cc556349636a2955f4e37de9ccad086cd/labelify-0.5.4.tar.gz", hash = "sha256:3d1fa9f585d33823954d277ad7432f262b15beaa449114ebef77279080f91cb2", size = 201870 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/fc/307e59d434485a493fcbed374822b0397e3e5aa1a11f921782ac6a98afcd/labelify-0.5.2-py3-none-any.whl", hash = "sha256:7d2ba18525910b7762fdcddf9431ab7cb1458c5f82afbf57a92f2714cddb45b8", size = 9803 },
+    { url = "https://files.pythonhosted.org/packages/d1/45/c2c94efa14f9cd1af661b9700cf59a6fd6703f89e57b83fc8b8d4b401f11/labelify-0.5.4-py3-none-any.whl", hash = "sha256:94ebe425e3bbd1e9f3f8eed359012416d9e32f9f1e47a94130d4227721bd94eb", size = 9805 },
 ]
 
 [[package]]
@@ -318,7 +318,7 @@ wheels = [
 
 [[package]]
 name = "prezmanifest"
-version = "1.0.10"
+version = "1.0.14"
 source = { editable = "." }
 dependencies = [
     { name = "dateutils" },
@@ -340,7 +340,7 @@ dev = [
 requires-dist = [
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "kurra", specifier = ">=1.5.4,<2" },
-    { name = "labelify", specifier = ">=0.5.2" },
+    { name = "labelify", specifier = ">=0.5.4" },
     { name = "pyshacl", specifier = ">=0.29.0" },
     { name = "typer", specifier = ">=0.15.1,<0.16" },
 ]
