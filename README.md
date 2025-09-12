@@ -52,7 +52,7 @@ To make available the command line script `pm` you need to first install `UV`, s
 uv tool install prezmanifest
 ```
 
-Now you can invoke `pm` anywhere in your terminal as long as `~/,local/bin/` is in your `PATH`.
+Now you can invoke `pm` anywhere in your terminal as long as `/local/bin/` is in your `PATH`.
 
 ### Latest
 
