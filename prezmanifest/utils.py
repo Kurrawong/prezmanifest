@@ -31,8 +31,8 @@ KNOWN_PROFILES = {
         "main_entity_classes": [SKOS.ConceptScheme],
     },
     URIRef("https://linked.data.gov.au/def/loci-dp"): {
-     "path": Path(__file__).parent / "validators/locidp.ttl",
-     "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
+        "path": Path(__file__).parent / "validators/locidp.ttl",
+        "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
     URIRef("https://linked.data.gov.au/def/bcp"): {
         "path": Path(__file__).parent / "validators/bcp.ttl",
@@ -219,9 +219,7 @@ def target_contains_this_manifests_catalogue(
             <xxx> a ?graph_type
           }
         }
-        """.replace(
-        "xxx", cat_iri
-    )
+        """.replace("xxx", cat_iri)
 
     return query(
         sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
@@ -638,7 +636,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
                 "file_size": None,
                 "conformance_claim": cc,
                 "additional_type": atype,
-                "sync": sync
+                "sync": sync,
             }
 
     # get Version Indicators info only for Resources with certain Roles
@@ -679,9 +677,7 @@ def store_remote_artifact_locally(
                 ?s ?p ?o
             }
         }
-        """.replace(
-        "xxx", graph_id
-    )
+        """.replace("xxx", graph_id)
     r = query(sparql_endpoint, q, http_client)
     artifact_path = str(artifact_file_name_from_graph_id(graph_id))
     r.serialize(destination=manifest_root / artifact_path, format="longturtle")
@@ -732,8 +728,6 @@ def update_local_artifact(
                 ?s ?p ?o
             }
         }
-        """.replace(
-        "xxx", graph_id
-    )
+        """.replace("xxx", graph_id)
     r = query(sparql_endpoint, q, http_client)
     r.serialize(destination=artifact_path, format="longturtle")
