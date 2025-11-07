@@ -1,24 +1,20 @@
 from pathlib import Path
 
 import httpx
-from kurra.db import sparql
-from kurra.db import upload, clear_graph
+from kurra.db import clear_graph, sparql, upload
 from kurra.sparql import query
 from kurra.utils import load_graph
-from rdflib import Graph
-from rdflib import URIRef
+from rdflib import Graph, URIRef
 from rdflib.namespace import SDO
 
 from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import (
     VersionIndicatorComparison,
+    absolutise_path,
+    denormalise_artifacts,
+    get_manifest_paths_and_graph,
     store_remote_artifact_locally,
     update_local_artifact,
-    absolutise_path,
-)
-from prezmanifest.utils import (
-    get_manifest_paths_and_graph,
-    denormalise_artifacts,
     which_is_more_recent,
 )
 
@@ -91,7 +87,7 @@ def sync(
             sync_status[str(k)] = {
                 "main_entity": v["main_entity"],
                 "direction": direction,
-                "sync": v["sync"]
+                "sync": v["sync"],
             }
 
     # Check for things at remote not known in local
@@ -105,9 +101,7 @@ def sync(
                 <xxx> schema:hasPart|dcterms:hasPart ?p
             }
         }
-        """.replace(
-        "xxx", str(cat_iri)
-    )
+        """.replace("xxx", str(cat_iri))
     for x in query(
         sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
     ):
@@ -139,7 +133,9 @@ def sync(
                     http_client,
                 )
 
-                updated_local_manifest.bind("mrr", "https://prez.dev/ManifestResourceRoles")
+                updated_local_manifest.bind(
+                    "mrr", "https://prez.dev/ManifestResourceRoles"
+                )
                 updated_local_manifest.serialize(
                     destination=manifest_path, format="longturtle"
                 )
@@ -158,10 +154,7 @@ def sync(
 
     if update_remote_catalogue:
         # TODO: work out why SILENT is needed. Why isn't the cat_iri graph known? Should have been uploaded by sync already
-        sparql(
-            sparql_endpoint,
-            f"DROP SILENT GRAPH <{cat_iri}>"
-        )
+        sparql(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>")
         upload(
             sparql_endpoint,
             cat_artifact_path,

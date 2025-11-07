@@ -14,7 +14,7 @@ from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF, RDF
 
 from prezmanifest.definednamespaces import MRR, PREZ
-from prezmanifest.utils import get_manifest_paths_and_graph, denormalise_artifacts
+from prezmanifest.utils import denormalise_artifacts, get_manifest_paths_and_graph
 
 
 class LabellerOutputTypes(str, Enum):

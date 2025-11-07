@@ -67,18 +67,8 @@ def test_get_files_from_artifact():
     fs = list(get_files_from_artifact(MANIFEST, Literal("vocabs/*.ttl")))
 
     assert len(fs) == 2
-    assert (
-        Path(
-            "/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/image-test.ttl"
-        )
-        in fs
-    )
-    assert (
-        Path(
-            "/Users/nick/work/kurrawong/prez-manifest/tests/demo-vocabs/vocabs/language-test.ttl"
-        )
-        in fs
-    )
+    assert Path(TESTS_DIR / "demo-vocabs" / "vocabs" / "image-test.ttl") in fs
+    assert Path(TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl") in fs
 
 
 def test_get_identifier_from_file():
@@ -191,9 +181,7 @@ def test_get_version_indicators_sparql(fuseki_container):
             ?s ?p ?o
           }
         }        
-        """.replace(
-        "XXX", ASSET_GRAPH_IRI
-    )
+        """.replace("XXX", ASSET_GRAPH_IRI)
 
     r = query(SPARQL_ENDPOINT, q, c, return_python=True, return_bindings_only=True)
 

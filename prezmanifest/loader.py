@@ -27,11 +27,11 @@ from rdflib import DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef
 from prezmanifest.definednamespaces import MRR, OLIS
 from prezmanifest.utils import (
     KNOWN_ENTITY_CLASSES,
-    get_files_from_artifact,
     get_catalogue_iri_from_manifest,
+    get_files_from_artifact,
+    get_manifest_paths_and_graph,
     make_httpx_client,
 )
-from prezmanifest.utils import get_manifest_paths_and_graph
 
 
 class ReturnDatatype(str, Enum):
