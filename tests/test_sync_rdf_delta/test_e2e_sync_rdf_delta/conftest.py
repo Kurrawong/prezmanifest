@@ -1,0 +1,37 @@
+from pathlib import Path
+
+import httpx
+import pytest
+from testcontainers.compose import DockerCompose
+
+from prezmanifest.syncer import DeltaEventClient
+
+DELTA_PORT = 9999
+FUSEKI_PORT = 9998
+filepath = Path(__file__).parent.resolve()
+compose = DockerCompose(str(filepath))
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup(request: pytest.FixtureRequest):
+    compose.start()
+    compose.wait_for(f"http://localhost:{FUSEKI_PORT}/ds")
+    request.addfinalizer(lambda: compose.stop())
+
+
+@pytest.fixture(scope="module")
+def client():
+    _client = DeltaEventClient(f"http://localhost:{DELTA_PORT}", "ds")
+    yield _client
+    _client._inner.close()
+
+
+@pytest.fixture(scope="module")
+def http_client():
+    with httpx.Client() as _client:
+        yield _client
+
+
+@pytest.fixture(scope="module")
+def sparql_endpoint():
+    return f"http://localhost:{FUSEKI_PORT}/ds"
