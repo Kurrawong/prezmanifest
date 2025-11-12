@@ -12,26 +12,27 @@ filepath = Path(__file__).parent.resolve()
 compose = DockerCompose(str(filepath))
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup(request: pytest.FixtureRequest):
+@pytest.fixture(autouse=True)
+def setup():
     compose.start()
     compose.wait_for(f"http://localhost:{FUSEKI_PORT}/ds")
-    request.addfinalizer(lambda: compose.stop())
+    yield
+    compose.stop()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def client():
     _client = DeltaEventClient(f"http://localhost:{DELTA_PORT}", "ds")
     yield _client
     _client._inner.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def http_client():
     with httpx.Client() as _client:
         yield _client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def sparql_endpoint():
     return f"http://localhost:{FUSEKI_PORT}/ds"

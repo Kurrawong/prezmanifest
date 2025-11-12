@@ -9,6 +9,10 @@ from prezmanifest.syncer import DeltaEventClient, sync_rdf_delta
 
 
 def test(client: DeltaEventClient, sparql_endpoint: str):
+    """
+    This tests a sync where the previous commit is not found and loads the manifest with only append statements in
+    the RDF patch log.
+    """
     project_root = Path(__file__).parent.parent.parent.parent
     manifest_path = (
         Path(__file__).parent.parent.parent / "demo-vocabs/manifest-mainEntity.ttl"
