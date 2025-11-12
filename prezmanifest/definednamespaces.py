@@ -32,3 +32,10 @@ class PREZ(DefinedNamespace):
     _fail = True
 
     Manifest: URIRef
+
+
+class MVT(DefinedNamespace):
+    _NS = Namespace("https://prez.dev/ManifestVersionTypes/")
+    _fail = True
+
+    GitCommitHash: URIRef

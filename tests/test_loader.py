@@ -209,6 +209,13 @@ def test_load_with_artifact_bn():
     Path(results_file).unlink()
 
 
+def test_load_returns_dataset():
+    manifest = Path(__file__).parent / "demo-vocabs" / "manifest-mainEntity.ttl"
+    ds = load(manifest, return_data_type=ReturnDatatype.dataset)
+    assert isinstance(ds, Dataset)
+    assert len(ds) == 175
+
+
 # TODO: not working
 # def test_load_cli_file(fs):
 #     warnings.filterwarnings(

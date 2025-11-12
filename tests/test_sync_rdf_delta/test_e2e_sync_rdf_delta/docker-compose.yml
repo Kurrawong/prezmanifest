@@ -1,0 +1,17 @@
+services:
+  rdf-delta-server:
+    image: ghcr.io/kurrawong/rdf-delta:0.2.2
+    ports:
+      - 9999:1066
+
+  fuseki:
+    image: ghcr.io/kurrawong/rdf-delta:0.2.2
+    ports:
+      - 9998:3030
+    command: [ "/bin/bash", "-c", "/opt/rdf-delta/fuseki-entrypoint.sh" ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://rdf-delta-server:1066" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
