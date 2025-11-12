@@ -100,11 +100,6 @@ def test(
         http_client=http_client,
         event_client=client,
     )
-    # TODO:
-    # Add sleep 0.5 seconds
-    # The apron-image concept is now deleted.
-    # The new dog-image concept is now added.
-    # The RDF patch log should be this exactly:
 
     # Sleep to allow RDF Delta to sync
     time.sleep(0.5)
