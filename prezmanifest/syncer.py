@@ -10,6 +10,7 @@ from kurra.sparql import query
 from kurra.utils import load_graph
 from rdf_delta import DeltaClient
 from rdflib import BNode, Dataset, Graph, Literal, URIRef
+from rdflib.compare import to_canonical_graph
 from rdflib.namespace import RDF, SDO
 from rdflib.query import Result
 
@@ -257,14 +258,28 @@ def _rdf_patch_body_substr(s: str) -> str:
     return s[tx_pos:tc_pos]
 
 
+def _generate_canon_dataset(ds: Dataset) -> Dataset:
+    """Generate a canonical dataset from a dataset."""
+    return_ds = Dataset()
+    for graph in ds.graphs():
+        canon_graph = to_canonical_graph(graph)
+        target_graph = return_ds.graph(graph.identifier)
+        for triple in canon_graph:
+            target_graph.add(triple)
+    return return_ds
+
+
 def _generate_rdf_patch_body_add(ds: Dataset) -> str:
     """Generate an add-only RDF patch body from a dataset."""
-    output = ds.serialize(format="patch", operation="add")
+    return_ds = _generate_canon_dataset(ds)
+    output = return_ds.serialize(format="patch", operation="add")
     return _rdf_patch_body_substr(output)
 
 
 def _generate_rdf_patch_body_diff(ds: Dataset, previous_ds: Dataset) -> str:
     """Generate an RDF patch body diff between two datasets."""
+    previous_ds = _generate_canon_dataset(previous_ds)
+    ds = _generate_canon_dataset(ds)
     output = previous_ds.serialize(format="patch", target=ds)
     return _rdf_patch_body_substr(output)
 
@@ -353,6 +368,7 @@ def sync_rdf_delta(
         repo.git.checkout(previous_commit_hash)
         previous_ds = load(manifest, return_data_type=ReturnDatatype.dataset)
         _add_commit_hash_to_dataset(previous_commit_hash, previous_ds)
+        _add_commit_hash_to_dataset(current_commit_hash, ds)
 
         # Generate an RDF patch between the previous commit dataset and the current commit dataset.
         rdf_patch_body = _generate_rdf_patch_body_diff(ds, previous_ds)
