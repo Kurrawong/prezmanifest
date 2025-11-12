@@ -326,7 +326,7 @@ def sync_rdf_delta(
     sparql_endpoint: str,
     http_client: httpx.Client,
     event_client: EventClient,
-) -> dict[Any, Any]:
+):
     """Synchronize a Prez Manifest's resources with an event-based system that takes RDF patches.
 
     Parameters:
@@ -335,12 +335,6 @@ def sync_rdf_delta(
         sparql_endpoint: The URL of the SPARQL Endpoint.
         http_client: The HTTP client to use for making requests.
         event_client: The event client to use for sending events.
-
-    Returns:
-        Sync status dict where the key is the entity name and the value is a status dict with the following keys:
-        - main_entity
-        - direction
-        - sync
     """
 
     # Load the manifest on the latest commit.
@@ -375,6 +369,3 @@ def sync_rdf_delta(
 
     # Create the event.
     event_client.create_event(rdf_patch_body)
-
-    # Return the status dict
-    return {}
