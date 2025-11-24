@@ -21,8 +21,23 @@ def setup():
 
 
 @pytest.fixture
-def client():
-    _client = DeltaEventClient(f"http://localhost:{DELTA_PORT}", "ds")
+def delta_port():
+    return DELTA_PORT
+
+
+@pytest.fixture
+def datasource():
+    return "ds"
+
+
+@pytest.fixture
+def delta_url(delta_port: int):
+    return f"http://localhost:{delta_port}"
+
+
+@pytest.fixture
+def client(delta_port: int, datasource: str):
+    _client = DeltaEventClient(f"http://localhost:{delta_port}", datasource)
     yield _client
     _client._inner.close()
 

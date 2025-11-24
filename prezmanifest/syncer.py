@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol
 from uuid import uuid4
 
 import httpx
