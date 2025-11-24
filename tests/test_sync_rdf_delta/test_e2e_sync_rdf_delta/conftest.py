@@ -4,7 +4,7 @@ import httpx
 import pytest
 from testcontainers.compose import DockerCompose
 
-from prezmanifest.syncer import DeltaEventClient
+from prezmanifest.event.client import DeltaEventClient
 
 DELTA_PORT = 9999
 FUSEKI_PORT = 9998

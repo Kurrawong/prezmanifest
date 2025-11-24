@@ -1,5 +1,6 @@
 import io
 import time
+from pathlib import Path
 
 import httpx
 from rdflib.query import Result
@@ -9,6 +10,10 @@ from prezmanifest.cli import app
 
 runner = CliRunner()
 
+manifest_file = str(
+    Path(__file__).parent.parent.parent / "demo-vocabs/manifest-mainEntity.ttl"
+)
+
 
 def test_sync_rdf_delta(sparql_endpoint: str, delta_url: str, datasource: str):
     result = runner.invoke(
@@ -17,7 +22,7 @@ def test_sync_rdf_delta(sparql_endpoint: str, delta_url: str, datasource: str):
             "event",
             "sync",
             "rdf-delta",
-            "tests/demo-vocabs/manifest-mainEntity.ttl",
+            manifest_file,
             sparql_endpoint,
             delta_url,
             datasource,

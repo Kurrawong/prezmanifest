@@ -3,7 +3,8 @@ from typing import Annotated
 
 import typer
 
-from prezmanifest.syncer import DeltaEventClient, sync_rdf_delta
+from prezmanifest.event.client import DeltaEventClient
+from prezmanifest.event.syncer import sync_rdf_delta
 from prezmanifest.utils import make_httpx_client
 
 app = typer.Typer()
