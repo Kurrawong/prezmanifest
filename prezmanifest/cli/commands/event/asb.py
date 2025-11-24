@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 
-from prezmanifest.event.client import AzureServiceBusEventClient
+from prezmanifest.event.asb_client import AzureServiceBusEventClient
 from prezmanifest.event.syncer import sync_rdf_delta
 from prezmanifest.utils import make_httpx_client
 
