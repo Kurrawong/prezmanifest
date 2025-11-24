@@ -31,7 +31,10 @@ def test_sync_rdf_delta(sparql_endpoint: str, delta_url: str, datasource: str):
     if result.exception is not None:
         raise result.exception
     assert result.exit_code == 0
-    assert "successfully synchronized" in result.output
+    assert (
+        "The Prez Manifest synchronization event has been sent to RDF Delta"
+        in result.output
+    )
 
     query = """
                 PREFIX olis: <https://olis.dev/>

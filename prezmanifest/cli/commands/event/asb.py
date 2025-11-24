@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 
-from prezmanifest.event.client import DeltaEventClient
+from prezmanifest.event.client import AzureServiceBusEventClient
 from prezmanifest.event.syncer import sync_rdf_delta
 from prezmanifest.utils import make_httpx_client
 
@@ -11,18 +11,23 @@ app = typer.Typer()
 
 
 @app.command(
-    name="rdf-delta",
-    help="Synchronize a Prez Manifest's resources by sending RDF patch logs to RDF Delta.",
+    name="azure-service-bus",
+    help="Synchronize a Prez Manifest's resources by sending RDF patch logs to Azure Service Bus.",
 )
 def event_sync_command(
     manifest: Path = typer.Argument(
         ..., help="The path of the Prez Manifest file to be loaded"
     ),
     endpoint: str = typer.Argument(..., help="The URL of the SPARQL Endpoint"),
-    delta_url: str = typer.Argument(..., help="The URL of the RDF Delta endpoint"),
-    delta_datasource: str = typer.Argument(
-        ..., help="The name of the RDF Delta datasource"
+    connection: str = typer.Argument(
+        ..., help="The Azure Service Bus connection string"
     ),
+    topic: str = typer.Argument(..., help="The Azure Service Bus topic name"),
+    subscription: str = typer.Argument(
+        ..., help="The Azure Service Bus subscription name"
+    ),
+    session: str = typer.Argument(..., help="The Azure Service Bus session ID"),
+    websocket: bool = typer.Option(False, "--websocket", help="Use WebSockets"),
     username: Annotated[
         str, typer.Option("--username", "-u", help="SPARQL Endpoint username")
     ] = None,
@@ -35,9 +40,13 @@ def event_sync_command(
 ):
     cwd = Path.cwd()
     http_client = make_httpx_client(username, password, timeout)
-    event_client = DeltaEventClient(delta_url, delta_datasource)
+    event_client = AzureServiceBusEventClient(
+        connection, topic, subscription, session, websocket
+    )
     try:
         sync_rdf_delta(cwd, manifest, endpoint, http_client, event_client)
-        print("The Prez Manifest synchronization event has been sent to RDF Delta.")
+        print(
+            "The Prez Manifest synchronization event has been sent to Azure Service Bus."
+        )
     finally:
         http_client.close()
