@@ -33,7 +33,7 @@ def test_sync_azure_service_bus(
         return original_create_event(self, payload)
 
     with patch(
-        "prezmanifest.event.client.AzureServiceBusEventClient.create_event",
+        "prezmanifest.event.asb_client.AzureServiceBusEventClient.create_event",
         spy_create_event,
     ):
         result = runner.invoke(
