@@ -6,7 +6,7 @@ from azure.servicebus import ServiceBusClient
 from typer.testing import CliRunner
 
 from prezmanifest.cli import app
-from prezmanifest.event.client import AzureServiceBusEventClient
+from prezmanifest.event.asb_client import AzureServiceBusEventClient
 
 runner = CliRunner()
 

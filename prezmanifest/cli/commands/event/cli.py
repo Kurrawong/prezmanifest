@@ -11,6 +11,7 @@ sync_app.add_typer(rdf_delta_app)
 
 try:
     import azure.servicebus
+
     from prezmanifest.cli.commands.event.asb import app as asb_app
 
     sync_app.add_typer(asb_app)
