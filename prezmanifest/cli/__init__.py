@@ -12,4 +12,7 @@ from prezmanifest.cli.commands.load import app as load_app
 
 app.add_typer(load_app, name="load")
 
+from prezmanifest.cli.commands.event.cli import event_app
 from prezmanifest.cli.commands.sync import sync_command
+
+app.add_typer(event_app)
