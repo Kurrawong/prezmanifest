@@ -266,5 +266,7 @@ For use in _infracode_, note that the `pm sync` function can return the table ab
 * update version in pyproject.toml
 * commit all updates: `git commit -a "..."`
 * tag with version: `git tag x.y.z`
-* `uv build`
-* `uv publish -u __token__ -p {TOKEN}`
+* push tags: `git push --tags`
+* build: `uv build`
+* publish: `uv publish -u __token__ -p {TOKEN}`
+* make GitHub release
