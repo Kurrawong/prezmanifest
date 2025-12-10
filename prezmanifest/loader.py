@@ -19,7 +19,7 @@ from getpass import getpass
 from pathlib import Path
 
 import httpx
-from kurra.db import upload
+from kurra.db.gsp import upload
 from kurra.file import export_quads, make_dataset
 from kurra.utils import load_graph
 from rdflib import DCTERMS, PROF, RDF, SDO, SKOS, Dataset, Graph, URIRef

@@ -256,3 +256,15 @@ Other than doing all this "manually" - interactively, on the command line - I mi
 For use in Python applications, just import prezmanifest - `uv add prezmanifest` etc. - and use, as per the use of `sync` in `tests/test_sync/test_sync.py::test_sync`.
 
 For use in _infracode_, note that the `pm sync` function can return the table above in JSON by setting the `response format` input parameter, `-f`.
+
+
+
+## Release Procedure
+
+* format code: `task format`
+* pass tests: `task test`
+* update version in pyproject.toml
+* commit all updates: `git commit -a "..."`
+* tag with version: `git tag x.y.z`
+* `uv build`
+* `uv publish -u __token__ -p {TOKEN}`

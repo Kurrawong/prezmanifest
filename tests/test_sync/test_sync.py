@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 import httpx
-from kurra.db import sparql
+from kurra.sparql import query
 from typer.testing import CliRunner
 
 from prezmanifest.loader import load
@@ -27,7 +27,7 @@ def test_sync(fuseki_container):
     shutil.copy(MANIFEST_ROOT / "artifact6.ttl", MANIFEST_ROOT / "artifact6.ttx")
 
     # ensure the SPARQL store's clear
-    sparql(SPARQL_ENDPOINT, "DROP ALL")
+    query(SPARQL_ENDPOINT, "DROP ALL")
 
     # load it with remote data
     load(MANIFEST_FILE_REMOTE, SPARQL_ENDPOINT)
@@ -84,12 +84,12 @@ def test_sync_cli(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
     # ensure the SPARQL store's clear
-    sparql(SPARQL_ENDPOINT, "DROP ALL")
+    query(SPARQL_ENDPOINT, "DROP ALL")
 
     raw_output = str(
         runner.invoke(
             app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT, "-f", "json"]
-        ).stdout
+        ).output
     )
 
     r = json.loads(raw_output)
@@ -115,7 +115,7 @@ def test_sync_sync_predicate(fuseki_container):
     shutil.copy(MANIFEST_ROOT / "artifact6.ttl", MANIFEST_ROOT / "artifact6.ttx")
 
     # ensure the SPARQL store's clear
-    sparql(SPARQL_ENDPOINT, "DROP ALL")
+    query(SPARQL_ENDPOINT, "DROP ALL")
 
     # load it with remote data
     load(MANIFEST_FILE_REMOTE, SPARQL_ENDPOINT)

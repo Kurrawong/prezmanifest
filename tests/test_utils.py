@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest
-from kurra.db import upload
+from kurra.db.gsp import upload
 from typer.testing import CliRunner
 
 import prezmanifest.loader
@@ -116,16 +116,16 @@ def test_target_contains_this_manifests_catalogue(fuseki_container):
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
     port = fuseki_container.get_exposed_port(3030)
 
-    with httpx.Client() as client:
+    with httpx.Client() as http_client:
         SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
 
         # positive test
-        sparql(SPARQL_ENDPOINT, "DROP ALL", client)
+        query(SPARQL_ENDPOINT, "DROP ALL", http_client=http_client)
         prezmanifest.loader.load(MANIFEST, SPARQL_ENDPOINT)
         assert target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
 
         # negative test
-        sparql(SPARQL_ENDPOINT, "DROP ALL", client)
+        query(SPARQL_ENDPOINT, "DROP ALL", http_client=http_client)
         assert not target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
 
 
@@ -183,20 +183,24 @@ def test_get_version_indicators_sparql(fuseki_container):
         }        
         """.replace("XXX", ASSET_GRAPH_IRI)
 
-    r = query(SPARQL_ENDPOINT, q, c, return_python=True, return_bindings_only=True)
+    r = query(
+        SPARQL_ENDPOINT,
+        q,
+        http_client=c,
+        return_format="python",
+        return_bindings_only=True,
+    )
 
-    count = int(r[0]["count"]["value"])
-
-    assert count == 71
+    assert r[0]["count"] == 71
 
     r = get_version_indicators_sparql(ASSET_GRAPH_IRI, SPARQL_ENDPOINT, http_client=c)
 
-    assert r["modified_date"] == date_parse("2024-11-21")
+    assert r["modified_date"] == date_parse("2024-11-21").date()
 
 
 def test_compare_version_indicators():
     one = {
-        "modified_date": date_parse("2024-11-20"),
+        "modified_date": date_parse("2024-11-20").date(),
         "version_info": None,
         "version_iri": None,
         "file_size": None,
@@ -204,7 +208,7 @@ def test_compare_version_indicators():
     }
 
     two = {
-        "modified_date": date_parse("2024-11-21"),
+        "modified_date": date_parse("2024-11-21").date(),
         "version_info": "1.1",
         "version_iri": None,
         "file_size": None,
@@ -270,26 +274,26 @@ def test_which_is_more_recent(fuseki_container):
 
     c = make_httpx_client()
 
-    upload(SPARQL_ENDPOINT, ARTIFACT_PATH, ARTIFACT_MAIN_ENTITY, False, c)
+    upload(SPARQL_ENDPOINT, ARTIFACT_PATH, ARTIFACT_MAIN_ENTITY, False, http_client=c)
 
     vi = {
         "main_entity": URIRef("https://example.com/demo-vocabs/language-test"),
-        "modified_date": datetime(2025, 2, 28, 0, 0),
+        "modified_date": datetime.datetime(2025, 2, 28, 0, 0).date(),
         "version_iri": "https://example.com/demo-vocabs/language-test/1.1",
         "file_size": 5053,
     }
 
-    r = which_is_more_recent(vi, SPARQL_ENDPOINT, c)
+    r = which_is_more_recent(vi, SPARQL_ENDPOINT, http_client=c)
 
     assert r == VersionIndicatorComparison.First
 
     vi2 = {
         "main_entity": URIRef("https://example.com/demo-vocabs/language-test"),
-        "modified_date": datetime(2023, 2, 28, 0, 0),
+        "modified_date": datetime.datetime(2023, 2, 28, 0, 0).date(),
         "file_size": 5053,
     }
 
-    r = which_is_more_recent(vi2, SPARQL_ENDPOINT, c)
+    r = which_is_more_recent(vi2, SPARQL_ENDPOINT, http_client=c)
 
     assert r == VersionIndicatorComparison.Second
 

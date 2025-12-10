@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import httpx
 from git import Repo
-from kurra.db import clear_graph, sparql, upload
+from kurra.db.gsp import clear, upload
 from kurra.sparql import query
 from kurra.utils import load_graph
 from rdf_delta import DeltaClient
@@ -58,8 +58,8 @@ def sync(
             known = query(
                 sparql_endpoint,
                 "ASK {GRAPH <xxx> {?s ?p ?o}}".replace("xxx", str(v["main_entity"])),
-                http_client,
-                return_python=True,
+                http_client=http_client,
+                return_format="python",
                 return_bindings_only=True,
             )
             # If not known by graph IRI, just check if it's the catalogue (+ "-catalogue" to IRI)
@@ -69,8 +69,8 @@ def sync(
                     "ASK {GRAPH <xxx> {?s ?p ?o}}".replace(
                         "xxx", str(v["main_entity"] + "-catalogue")
                     ),
-                    http_client,
-                    return_python=True,
+                    http_client=http_client,
+                    return_format="python",
                     return_bindings_only=True,
                 )
 
@@ -111,9 +111,13 @@ def sync(
         }
         """.replace("xxx", str(cat_iri))
     for x in query(
-        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+        sparql_endpoint,
+        q,
+        http_client=http_client,
+        return_format="python",
+        return_bindings_only=True,
     ):
-        remote_entity = URIRef(x["p"]["value"])
+        remote_entity = x["p"]
         if remote_entity not in local_entities:
             sync_status[str(remote_entity)] = {
                 "main_entity": URIRef(remote_entity),
@@ -125,12 +129,24 @@ def sync(
     for k, v in sync_status.items():
         if v["sync"]:
             if update_remote and v["direction"] == "upload":
-                clear_graph(sparql_endpoint, v["main_entity"], http_client)
-                upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
+                clear(sparql_endpoint, v["main_entity"], http_client)
+                upload(
+                    sparql_endpoint,
+                    Path(k),
+                    v["main_entity"],
+                    False,
+                    http_client=http_client,
+                )
 
             if add_remote and v["direction"] == "add-remotely":
-                # no need to clear_graph() as this asset doesn't exist remotely
-                upload(sparql_endpoint, Path(k), v["main_entity"], False, http_client)
+                # no need to clear() as this asset doesn't exist remotely
+                upload(
+                    sparql_endpoint,
+                    Path(k),
+                    v["main_entity"],
+                    False,
+                    http_client=http_client,
+                )
                 update_remote_catalogue = True
 
             if add_local and v["direction"] == "add-locally":
@@ -162,13 +178,13 @@ def sync(
 
     if update_remote_catalogue:
         # TODO: work out why SILENT is needed. Why isn't the cat_iri graph known? Should have been uploaded by sync already
-        sparql(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>")
+        query(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>")
         upload(
             sparql_endpoint,
             cat_artifact_path,
             cat_iri,
             False,
-            http_client,
+            http_client=http_client,
         )
 
     return sync_status

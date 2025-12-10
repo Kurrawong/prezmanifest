@@ -1,10 +1,10 @@
+import datetime
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
 
 import httpx
 from dateutil.parser import parse as date_parse
-from kurra.db import sparql
 from kurra.file import load_graph
 from kurra.sparql import query
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
@@ -222,7 +222,11 @@ def target_contains_this_manifests_catalogue(
         """.replace("xxx", cat_iri)
 
     return query(
-        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+        sparql_endpoint,
+        q,
+        http_client=http_client,
+        return_format="python",
+        return_bindings_only=True,
     )
 
 
@@ -278,7 +282,7 @@ def get_main_entity_iri_of_artifact(
     if not isinstance(g, Graph):
         raise ValueError(f"Could not load a graph of the artifact at {artifact_path}")
 
-    for r in query(g, q, return_python=True, return_bindings_only=True):
+    for r in query(g, q, return_format="python", return_bindings_only=True):
         if r.get("me"):
             mes.append(r["me"]["value"])
 
@@ -340,7 +344,7 @@ def get_version_indicators_local(
             """
         # only use values for Version Indicators if not already present - i.e. from the manifest
         for r in query(
-            artifact_graph, q, return_python=True, return_bindings_only=True
+            artifact_graph, q, return_format="python", return_bindings_only=True
         ):
             if version_indicators.get("modified_date") is None:
                 if r.get("md") is not None:
@@ -402,8 +406,12 @@ def get_version_indicators_sparql(
             }}
         }}
         """
-    res = sparql(
-        sparql_endpoint, q, http_client, return_python=True, return_bindings_only=True
+    res = query(
+        sparql_endpoint,
+        q,
+        http_client=http_client,
+        return_format="python",
+        return_bindings_only=True,
     )
     if len(res) == 0:
         raise ValueError(
@@ -412,11 +420,11 @@ def get_version_indicators_sparql(
 
     for r in res:
         if r.get("md") is not None:
-            indicators["modified_date"] = date_parse(r["md"]["value"])
+            indicators["modified_date"] = r["md"]
         if r.get("vi") is not None:
-            indicators["version_iri"] = r["vi"]["value"]
+            indicators["version_iri"] = r["vi"]
         if r.get("v") is not None:
-            indicators["version_info"] = r["v"]["value"]
+            indicators["version_info"] = r["v"]
 
     return indicators
 
@@ -450,9 +458,14 @@ def compare_version_indicators(first: dict, second: dict) -> VersionIndicatorCom
         return VersionIndicatorComparison.CantCalculate
 
     if has_modified_date_comparison:
-        if first["modified_date"] > second["modified_date"]:
+        first_date = (
+            first["modified_date"].date()
+            if isinstance(first["modified_date"], datetime.datetime)
+            else first["modified_date"]
+        )
+        if first_date > second["modified_date"]:
             first_score += 1
-        elif first["modified_date"] == second["modified_date"]:
+        elif first_date == second["modified_date"]:
             pass
         else:
             second_score += 1
@@ -608,7 +621,9 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
         }
         """
 
-    for r in query(manifest_graph, q, return_python=True, return_bindings_only=True):
+    for r in query(
+        manifest_graph, q, return_format="python", return_bindings_only=True
+    ):
         artifact = path_or_url(r["a"]["value"])
         files = get_files_from_artifact(
             (manifest_path, manifest_root, manifest_graph), Literal(artifact)
@@ -678,7 +693,7 @@ def store_remote_artifact_locally(
             }
         }
         """.replace("xxx", graph_id)
-    r = query(sparql_endpoint, q, http_client)
+    r = query(sparql_endpoint, q, http_client=http_client, return_format="python")
     artifact_path = str(artifact_file_name_from_graph_id(graph_id))
     r.serialize(destination=manifest_root / artifact_path, format="longturtle")
 
@@ -729,5 +744,5 @@ def update_local_artifact(
             }
         }
         """.replace("xxx", graph_id)
-    r = query(sparql_endpoint, q, http_client)
+    r = query(sparql_endpoint, q, http_client=http_client, return_format="python")
     r.serialize(destination=artifact_path, format="longturtle")

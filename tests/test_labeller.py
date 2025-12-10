@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import pytest
-from kurra.db import sparql, upload
+from kurra.db.gsp import upload
+from kurra.sparql import query
 from rdflib import Graph
 from rdflib.compare import isomorphic
 from typer.testing import CliRunner
@@ -78,7 +79,7 @@ def test_label_rdf_file():
 def test_label_rdf_sparql(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
-    sparql(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
 
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest.ttl",
@@ -110,7 +111,7 @@ def test_label_rdf_sparql(fuseki_container):
 
     assert len(rdf) == 37
 
-    sparql(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
 
     upload(
         SPARQL_ENDPOINT,
@@ -130,7 +131,7 @@ def test_label_rdf_sparql(fuseki_container):
 def test_label_manifest(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
-    sparql(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
 
     upload(
         SPARQL_ENDPOINT,
@@ -212,7 +213,7 @@ def test_label_cli_iris():
 def test_label_cli_rdf(fuseki_container):
     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
-    sparql(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
 
     upload(
         SPARQL_ENDPOINT,
@@ -244,7 +245,7 @@ def test_label_cli_rdf(fuseki_container):
 # def test_label_cli_manifest(fuseki_container):
 #     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 #
-#     sparql(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+#     query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
 #
 #     upload(
 #         SPARQL_ENDPOINT,

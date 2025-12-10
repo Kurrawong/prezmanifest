@@ -3,7 +3,8 @@ from pathlib import Path
 
 import httpx
 import pytest
-from kurra.db import sparql, upload
+from kurra.db.gsp import upload
+from kurra.sparql import query
 from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
@@ -68,11 +69,9 @@ def test_fuseki_query(fuseki_container):
         }        
         """.replace("XXX", TESTING_GRAPH)
 
-    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
 
-    count = int(r[0]["count"]["value"])
-
-    assert count == 2
+    assert r[0]["count"] == 2
 
     q = "DROP GRAPH <XXX>".replace("XXX", TESTING_GRAPH)
 
@@ -80,7 +79,7 @@ def test_fuseki_query(fuseki_container):
     print(q)
     print("QUERY")
 
-    r = sparql(SPARQL_ENDPOINT, q)
+    r = query(SPARQL_ENDPOINT, q)
 
     q = """
         SELECT (COUNT(*) AS ?count) 
@@ -91,11 +90,9 @@ def test_fuseki_query(fuseki_container):
         }        
         """.replace("XXX", TESTING_GRAPH)
 
-    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
 
-    count = int(r[0]["count"]["value"])
-
-    assert count == 0
+    assert r[0]["count"] == 0
 
 
 def test_load_to_quads_file():
@@ -140,11 +137,9 @@ def test_load_to_fuseki(fuseki_container):
         }      
         """
 
-    r = sparql(SPARQL_ENDPOINT, q, return_python=True, return_bindings_only=True)
+    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
 
-    count = int(r[0]["count"]["value"])
-
-    assert count == 5
+    assert r[0]["count"] == 5
 
 
 def test_load_to_fuseki_basic_auth(fuseki_container):
@@ -169,17 +164,15 @@ def test_load_to_fuseki_basic_auth(fuseki_container):
         }      
         """
     client = httpx.Client(auth=("admin", "admin"))
-    r = sparql(
+    r = query(
         SPARQL_ENDPOINT,
         q,
-        return_python=True,
+        return_format="python",
         return_bindings_only=True,
         http_client=client,
     )
 
-    count = int(r[0]["count"]["value"])
-
-    assert count == 5
+    assert r[0]["count"] == 5
 
 
 def test_load_with_artifact_bn():
@@ -279,10 +272,10 @@ def test_load_returns_dataset():
 #         }
 #         """
 #     client = httpx.Client(auth=("admin", "admin"))
-#     r = sparql(
+#     r = query(
 #         SPARQL_ENDPOINT,
 #         q,
-#         return_python=True,
+#         return_format="python",
 #         return_bindings_only=True,
 #         http_client=client,
 #     )

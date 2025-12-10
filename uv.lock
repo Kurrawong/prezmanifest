@@ -258,7 +258,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "1.5.9"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -267,24 +267,23 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/bf/d42d29865a67b62e3a349fbadac89d6f36b295b01c1d5bbf8711d1d4ca42/kurra-1.5.9.tar.gz", hash = "sha256:020c1f5894d8cc3d742a3e4e9e6e562bc369ea105f3ab6a0f17f0e87e0de3a02", size = 109867, upload-time = "2025-10-27T04:19:23.46Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/51/320b6fea5fe3894631fc683e452a6ca4ee17df051a853558ee0e0ae8d41d/kurra-2.0.1.tar.gz", hash = "sha256:f2d3283e305357d1388c78bdbc20fe49e305398b1f5bfc28aaf14a56528401e5", size = 112968, upload-time = "2025-12-10T10:38:53.37Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/eb/0030524976bc152e09ff8896e60e2a6cd0d25ad670d364e207079003fa8a/kurra-1.5.9-py3-none-any.whl", hash = "sha256:06cbefb1dd9808abbb98001de489852790691802965b86b8b6744584867d113a", size = 18809, upload-time = "2025-10-27T04:19:21.642Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/6f/150d7b8ac50e66dc16f02d8294a142215393511c91973c31ef89a2009783/kurra-2.0.1-py3-none-any.whl", hash = "sha256:7543c157c1cd6ede428adb2c865ad6774a4830dda4da8c193e1eec343027c19e", size = 25281, upload-time = "2025-12-10T10:38:51.782Z" },
 ]
 
 [[package]]
 name = "labelify"
-version = "0.5.4"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "html5rdf" },
     { name = "kurra" },
-    { name = "rdflib" },
     { name = "sparqlwrapper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/7e/3515117db8b2986372176c70191cc556349636a2955f4e37de9ccad086cd/labelify-0.5.4.tar.gz", hash = "sha256:3d1fa9f585d33823954d277ad7432f262b15beaa449114ebef77279080f91cb2", size = 201870, upload-time = "2025-07-26T05:43:00.329Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/0b/c711a45ad7cdd21873e66eb038a94f4ae4cc1aa3e644700f2b22a1b63042/labelify-0.6.0.tar.gz", hash = "sha256:356c39a1937a0462a28aec7c105e8b468cc20b795bc45176f62f99b1a9fbfa57", size = 198643, upload-time = "2025-12-10T12:39:51.021Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/45/c2c94efa14f9cd1af661b9700cf59a6fd6703f89e57b83fc8b8d4b401f11/labelify-0.5.4-py3-none-any.whl", hash = "sha256:94ebe425e3bbd1e9f3f8eed359012416d9e32f9f1e47a94130d4227721bd94eb", size = 9805, upload-time = "2025-07-26T05:42:57.975Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/d6/bd618b72e08c46637d6e39866c5cb3c4e86667e0a64b37787f1d9180f810/labelify-0.6.0-py3-none-any.whl", hash = "sha256:db55148f551b4bfca875a6b8f17c2149383428da4ad01678ddffea8cd3f1e679", size = 9634, upload-time = "2025-12-10T12:39:48.717Z" },
 ]
 
 [[package]]
@@ -401,7 +400,7 @@ wheels = [
 
 [[package]]
 name = "prezmanifest"
-version = "1.0.14"
+version = "1.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "dateutils" },
@@ -426,8 +425,8 @@ dev = [
 requires-dist = [
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=1.5.4,<2" },
-    { name = "labelify", specifier = ">=0.5.4" },
+    { name = "kurra", specifier = ">=2.0.1" },
+    { name = "labelify", specifier = ">=0.6.0" },
     { name = "pyshacl", specifier = ">=0.29.0" },
     { name = "rdf-delta", url = "https://github.com/Kurrawong/rdf-delta-python/archive/refs/tags/0.2.4.zip" },
     { name = "rdflib", specifier = ">=7.5.0" },
