@@ -8,12 +8,12 @@ from rdflib.compare import isomorphic
 
 from prezmanifest import load
 from prezmanifest.definednamespaces import OLIS
-from prezmanifest.loader import ReturnDatatype
-from prezmanifest.syncer import (
+from prezmanifest.event.syncer import (
     _add_commit_hash_to_dataset,
     _generate_rdf_patch_body_add,
     _retrieve_commit_hash,
 )
+from prezmanifest.loader import ReturnDatatype
 
 
 def test_add_commit_hash_to_dataset():

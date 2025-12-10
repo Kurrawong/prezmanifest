@@ -9,7 +9,8 @@ from git import Repo
 from rdflib import RDF, SKOS, Graph, Literal, URIRef
 from rdflib.query import Result
 
-from prezmanifest.syncer import DeltaEventClient, _rdf_patch_body_substr, sync_rdf_delta
+from prezmanifest.event.client import DeltaEventClient
+from prezmanifest.event.syncer import _rdf_patch_body_substr, sync_rdf_delta
 
 
 @pytest.fixture

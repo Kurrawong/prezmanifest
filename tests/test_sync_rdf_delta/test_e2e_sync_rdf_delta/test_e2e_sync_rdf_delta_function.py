@@ -5,7 +5,8 @@ from pathlib import Path
 import httpx
 from rdflib.query import Result
 
-from prezmanifest.syncer import DeltaEventClient, sync_rdf_delta
+from prezmanifest.event.client import DeltaEventClient
+from prezmanifest.event.syncer import sync_rdf_delta
 
 
 def test(client: DeltaEventClient, sparql_endpoint: str):
