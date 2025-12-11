@@ -294,7 +294,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "2.0.1"
+version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -303,9 +303,9 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/51/320b6fea5fe3894631fc683e452a6ca4ee17df051a853558ee0e0ae8d41d/kurra-2.0.1.tar.gz", hash = "sha256:f2d3283e305357d1388c78bdbc20fe49e305398b1f5bfc28aaf14a56528401e5", size = 112968, upload-time = "2025-12-10T10:38:53.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/9e/675ba94aff0b305fa7ba7dd5d96ed22f003eb9b77556aff6d549fa8ea2ad/kurra-2.0.4.tar.gz", hash = "sha256:12485e1b52321bbe41db1aa74eb521face2cf51980c69bd3edb4177397ea481b", size = 114711, upload-time = "2025-12-11T11:45:08.6Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/6f/150d7b8ac50e66dc16f02d8294a142215393511c91973c31ef89a2009783/kurra-2.0.1-py3-none-any.whl", hash = "sha256:7543c157c1cd6ede428adb2c865ad6774a4830dda4da8c193e1eec343027c19e", size = 25281, upload-time = "2025-12-10T10:38:51.782Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/93/d11447c90c95ba806294816f51eab790aadfe92ed854d0d9c5d46ccfd1a0/kurra-2.0.4-py3-none-any.whl", hash = "sha256:9d68577e002f7efffa8a35bb073273fb763fb6c6d81a907a4a019a7eba7ebdcd", size = 24164, upload-time = "2025-12-11T11:45:07.032Z" },
 ]
 
 [[package]]
@@ -467,7 +467,7 @@ requires-dist = [
     { name = "azure-servicebus", marker = "extra == 'azure'", specifier = ">=7.14.3" },
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=2.0.1" },
+    { name = "kurra", specifier = ">=2.0.4" },
     { name = "labelify", specifier = ">=0.6.0" },
     { name = "pyshacl", specifier = ">=0.29.0" },
     { name = "rdf-delta", url = "https://github.com/Kurrawong/rdf-delta-python/archive/refs/tags/0.2.4.zip" },

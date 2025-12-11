@@ -27,6 +27,10 @@ PREFIX schema: <https://schema.org/>
                     schema:contentLocation "http--example.com-dataset-8.ttl" ;
                     schema:mainEntity <http://example.com/dataset/8> ;
                 ] ,
+                [
+                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/8> ;
+                ] ,
                 "artifact1.ttl" ,
                 "artifact2.ttl" ,
                 "artifact3.ttl" ,

@@ -4,11 +4,12 @@ from enum import Enum
 from pathlib import Path
 
 import httpx
-from dateutil.parser import parse as date_parse
 from kurra.file import load_graph
 from kurra.sparql import query
+from kurra.db.gsp import get as gsp_get
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
 from rdflib.namespace import DCAT, OWL, PROF, RDF, SDO, SKOS
+from pickle import load, dump
 
 import prezmanifest
 from prezmanifest.definednamespaces import MRR, PREZ
@@ -284,7 +285,7 @@ def get_main_entity_iri_of_artifact(
 
     for r in query(g, q, return_format="python", return_bindings_only=True):
         if r.get("me"):
-            mes.append(r["me"]["value"])
+            mes.append(r["me"])
 
     if len(mes) != 1:
         if len(mes) > 1:
@@ -348,17 +349,18 @@ def get_version_indicators_local(
         ):
             if version_indicators.get("modified_date") is None:
                 if r.get("md") is not None:
-                    version_indicators["modified_date"] = date_parse(r["md"]["value"])
+                    version_indicators["modified_date"] = r["md"]
             if version_indicators.get("version_iri") is None:
                 if r.get("vi") is not None:
-                    version_indicators["version_iri"] = r["vi"]["value"]
+                    version_indicators["version_iri"] = r["vi"]
             if version_indicators.get("version_info") is None:
                 if r.get("v") is not None:
-                    version_indicators["version_info"] = r["v"]["value"]
+                    version_indicators["version_info"] = r["v"]
     # if not, we may still get file-based indicators
     if artifact_path.is_file():
         version_indicators["file_size"] = artifact_path.stat().st_size
 
+    from rdflib.namespace import XSD
     return
 
 
@@ -624,21 +626,21 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
     for r in query(
         manifest_graph, q, return_format="python", return_bindings_only=True
     ):
-        artifact = path_or_url(r["a"]["value"])
+        artifact = path_or_url(r["a"])
         files = get_files_from_artifact(
             (manifest_path, manifest_root, manifest_graph), Literal(artifact)
         )
 
         for file in files:
-            me = URIRef(r["me"]["value"]) if r.get("me") is not None else None
-            role = URIRef(r["r"]["value"])
-            dm = r["dm"]["value"] if r.get("dm") is not None else None
-            vi = r["vi"]["value"] if r.get("vi") is not None else None
-            v = r["v"]["value"] if r.get("v") is not None else None
-            cc = URIRef(r["cc"]["value"]) if r.get("cc") is not None else None
-            atype = URIRef(r["atype"]["value"]) if r.get("atype") is not None else None
+            me = URIRef(r["me"]) if r.get("me") is not None else None
+            role = URIRef(r["r"])
+            dm = r["dm"] if r.get("dm") is not None else None
+            vi = r["vi"] if r.get("vi") is not None else None
+            v = r["v"] if r.get("v") is not None else None
+            cc = URIRef(r["cc"]) if r.get("cc") is not None else None
+            atype = URIRef(r["atype"]) if r.get("atype") is not None else None
             if r.get("sync") is not None:
-                sync = False if r["sync"]["value"] == "false" else True
+                sync = False if r["sync"] == "false" else True
             else:
                 sync = True
 
@@ -746,3 +748,56 @@ def update_local_artifact(
         """.replace("xxx", graph_id)
     r = query(sparql_endpoint, q, http_client=http_client, return_format="python")
     r.serialize(destination=artifact_path, format="longturtle")
+
+
+def sync_validators(http_client: httpx.Client | None = None):
+    """Checks the Semantic Background, currently https://fuseki.dev.kurrawong.ai/semback, for known validators.
+
+    It then checks local storage to see which, if any, of those validators are stored locally.
+
+    For any missing, it pulls down and stores a copy locally and updates the known list of available validators.
+    """
+    pm_cache = Path().home() / ".pm"
+    cached_validators = pm_cache / "validators.pkl"
+    semback_sparql_endpoint = "https://fuseki.dev.kurrawong.ai/semback"
+
+    # get list of remote known validators
+    q = """
+        PREFIX dcterms: <http://purl.org/dc/terms/>
+        SELECT * 
+        WHERE {
+          <https://kurrawong.ai/semantic-bankground/validators> dcterms:hasPart ?p .
+        }
+        """
+    r = query(semback_sparql_endpoint, q, None, http_client, "python", True)
+    remote_validators = [row["p"] for row in r]
+    # print(remote_validators)
+
+    # get list of local known validators
+    if Path.is_file(cached_validators):
+        cv = load(open(cached_validators, "rb"))
+        local_validators = [str(x.identifier) for x in cv.graphs() if str(x.identifier) not in ["urn:x-rdflib:default"]]
+    else:
+        local_validators = []
+
+    # diff the lists
+    unknown_validators = list(set(remote_validators) - set(local_validators))
+
+    # prepare to cache
+    if len(unknown_validators) > 0:
+        if not pm_cache.exists():
+            Path(pm_cache).mkdir()
+
+        # get & cache unknown validators
+        d = Dataset()
+        for v in unknown_validators:
+            g = gsp_get(semback_sparql_endpoint, v, http_client=http_client)
+            d.add_graph(g)
+            local_validators.append(v)
+            print(f"Caching validator {g.identifier}")
+
+        with open(cached_validators, "wb") as f:
+            dump(d, f)
+        # d.serialize(destination=pm_cache / "validators.trig")
+
+    return sorted(local_validators)

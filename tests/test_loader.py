@@ -280,6 +280,6 @@ def test_load_returns_dataset():
 #         http_client=client,
 #     )
 #
-#     count = int(r[0]["count"]["value"])
+#     count = int(r[0]["count"])
 #
 #     assert count == 5
