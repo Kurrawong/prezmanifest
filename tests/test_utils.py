@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 
 import prezmanifest.loader
 from prezmanifest.utils import *
-from tests.conftest import fuseki_container
+from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner()
 import httpx
@@ -156,7 +156,7 @@ def test_get_version_indicators_local():
         MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl", vi
     )
 
-    assert vi["modified_date"] == date_parse("2024-11-21")
+    assert vi["modified_date"] == date_parse("2024-11-21").date()
     assert vi["version_iri"] == "https://example.com/demo-vocabs/language-test/1.0"
 
     with pytest.raises(ValueError):

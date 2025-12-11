@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 
 import docker
+import httpx
 import pytest
 from testcontainers.core.container import DockerContainer
 
@@ -29,14 +30,16 @@ def wait_for_logs(container, text, timeout=30, interval=0.5):
         time.sleep(interval)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def fuseki_container(request: pytest.FixtureRequest):
     container = DockerContainer(FUSEKI_IMAGE)
     container.with_volume_mapping(
-        str(Path(__file__).parent / "shiro.ini"), "/opt/fuseki/shiro.ini"
+        str(Path(__file__).parent.parent / "fuseki" / "shiro.ini"),
+        "/fuseki/shiro.ini",
     )
     container.with_volume_mapping(
-        str(Path(__file__).parent / "config.ttl"), "/fuseki/config.ttl"
+        str(Path(__file__).parent.parent / "fuseki" / "config.ttl"),
+        "/fuseki/config.ttl",
     )
     container.with_exposed_ports(3030)
     container.start()
@@ -47,3 +50,14 @@ def fuseki_container(request: pytest.FixtureRequest):
 
     request.addfinalizer(cleanup)
     return container
+
+
+@pytest.fixture(scope="function")
+def http_client(request: pytest.FixtureRequest):
+    _http_client = httpx.Client(auth=("admin", "admin"))
+
+    def cleanup():
+        _http_client.close()
+
+    request.addfinalizer(cleanup)
+    return _http_client
