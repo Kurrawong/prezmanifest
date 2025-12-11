@@ -1,18 +1,19 @@
+import shutil
 from datetime import datetime
 
 import pytest
+from dateutil.parser import parse as date_parse
 from kurra.db.gsp import upload
 from typer.testing import CliRunner
 
 import prezmanifest.loader
 from prezmanifest.utils import *
 from tests.conftest import fuseki_container, http_client
-from dateutil.parser import parse as date_parse
-import shutil
 
 runner = CliRunner()
-from prezmanifest.cli import app
 import httpx
+
+from prezmanifest.cli import app
 
 TESTS_DIR = Path(__file__).resolve().parent
 

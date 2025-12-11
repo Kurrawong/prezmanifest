@@ -2,14 +2,14 @@ import datetime
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
+from pickle import dump, load
 
 import httpx
+from kurra.db.gsp import get as gsp_get
 from kurra.file import load_graph
 from kurra.sparql import query
-from kurra.db.gsp import get as gsp_get
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
 from rdflib.namespace import DCAT, OWL, PROF, RDF, SDO, SKOS
-from pickle import load, dump
 
 import prezmanifest
 from prezmanifest.definednamespaces import MRR, PREZ
@@ -361,6 +361,7 @@ def get_version_indicators_local(
         version_indicators["file_size"] = artifact_path.stat().st_size
 
     from rdflib.namespace import XSD
+
     return
 
 
@@ -776,7 +777,11 @@ def sync_validators(http_client: httpx.Client | None = None):
     # get list of local known validators
     if Path.is_file(cached_validators):
         cv = load(open(cached_validators, "rb"))
-        local_validators = [str(x.identifier) for x in cv.graphs() if str(x.identifier) not in ["urn:x-rdflib:default"]]
+        local_validators = [
+            str(x.identifier)
+            for x in cv.graphs()
+            if str(x.identifier) not in ["urn:x-rdflib:default"]
+        ]
     else:
         local_validators = []
 
