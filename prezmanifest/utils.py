@@ -360,8 +360,6 @@ def get_version_indicators_local(
     if artifact_path.is_file():
         version_indicators["file_size"] = artifact_path.stat().st_size
 
-    from rdflib.namespace import XSD
-
     return
 
 

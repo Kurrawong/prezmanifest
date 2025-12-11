@@ -1,18 +1,13 @@
 from pathlib import Path
 
 import httpx
-from git import Repo
 from kurra.db.gsp import clear, upload
 from kurra.sparql import query
 from kurra.utils import load_graph
-from rdf_delta import DeltaClient
-from rdflib import BNode, Dataset, Graph, Literal, URIRef
-from rdflib.compare import to_canonical_graph
-from rdflib.namespace import RDF, SDO
-from rdflib.query import Result
+from rdflib import Graph, URIRef
+from rdflib.namespace import SDO
 
-from prezmanifest.definednamespaces import MRR, MVT, OLIS
-from prezmanifest.loader import ReturnDatatype, load
+from prezmanifest.definednamespaces import MRR
 from prezmanifest.utils import (
     VersionIndicatorComparison,
     absolutise_path,

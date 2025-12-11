@@ -8,12 +8,10 @@ from typer.testing import CliRunner
 
 import prezmanifest.loader
 from prezmanifest.utils import *
-from tests.conftest import fuseki_container, http_client
+from tests.conftest import fuseki_container
 
 runner = CliRunner()
 import httpx
-
-from prezmanifest.cli import app
 
 TESTS_DIR = Path(__file__).resolve().parent
 
