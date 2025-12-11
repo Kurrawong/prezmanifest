@@ -145,7 +145,7 @@ def test_sync_sync_predicate(fuseki_container):
     assert a[str(MANIFEST_ROOT / "artifacts/artifact1.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact2.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifacts/artifact3.ttl")]["direction"] == "same"
-    assert a[str(MANIFEST_ROOT / "artifact4.ttl")]["direction"] == "upload"
+    assert a[str(MANIFEST_ROOT / "artifact4.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifact5.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifact6.ttl")]["direction"] == "same"
     assert a[str(MANIFEST_ROOT / "artifact7.ttl")]["direction"] == "same"
