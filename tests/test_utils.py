@@ -336,4 +336,4 @@ def test_sync_validators():
 
     known_validators = sync_validators(make_httpx_client("kai", "kai"))
 
-    assert len(known_validators) == 7
+    assert len(known_validators) == 10

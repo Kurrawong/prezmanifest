@@ -76,7 +76,8 @@ def test_sync(fuseki_container):
     shutil.move(MANIFEST_ROOT / "manifest.ttx", MANIFEST_FILE_LOCAL)
     shutil.move(MANIFEST_ROOT / "catalogue.ttx", MANIFEST_ROOT / "catalogue.ttl")
     shutil.move(MANIFEST_ROOT / "artifact6.ttx", MANIFEST_ROOT / "artifact6.ttl")
-    Path(MANIFEST_ROOT / "http--example.com-dataset-8.ttl").unlink()
+    for f in MANIFEST_ROOT.glob("http--*.ttl"):
+        f.unlink()
 
 
 def test_sync_cli(fuseki_container):
@@ -164,4 +165,5 @@ def test_sync_sync_predicate(fuseki_container):
     shutil.move(MANIFEST_ROOT / "manifest-sync-pred.ttx", MANIFEST_FILE_LOCAL)
     shutil.move(MANIFEST_ROOT / "catalogue.ttx", MANIFEST_ROOT / "catalogue.ttl")
     shutil.move(MANIFEST_ROOT / "artifact6.ttx", MANIFEST_ROOT / "artifact6.ttl")
-    Path(MANIFEST_ROOT / "http--example.com-dataset-8.ttl").unlink()
+    for f in MANIFEST_ROOT.glob("http--*.ttl"):
+        f.unlink()

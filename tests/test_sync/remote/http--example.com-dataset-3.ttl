@@ -1,0 +1,12 @@
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<http://example.com/dataset/3>
+    a schema:Dataset ;
+    owl:versionIRI <http://example.com/dataset/3/0.9> ;
+    schema:dateCreated "2025-03-01"^^xsd:date ;
+    schema:dateModified "2025-03-01"^^xsd:date ;
+    schema:description "The dataset No. 3" ;
+    schema:name "Dataset Three" ;
+.
