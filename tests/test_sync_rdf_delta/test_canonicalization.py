@@ -23,7 +23,7 @@ def test_simple_blank_node_value_change():
     g2.add((version2, SDO.additionalType, EX.GitCommitHash))
 
     # Generate the patch
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # The patch should show deletion of old commit and addition of new commit
     assert "D _:" in patch and '<https://schema.org/value> "commit-abc123"' in patch
@@ -69,7 +69,7 @@ def test_multiple_blank_nodes_with_identical_structure():
     g2.add((version2, SDO.value, Literal("v2")))  # Changed
     g2.add((version2, SDO.dateCreated, Literal("2024-01-01")))  # Unchanged
 
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # Should only show changes to the value
     assert "D _:" in patch and '<https://schema.org/value> "v1"' in patch
@@ -115,7 +115,7 @@ def test_nested_blank_nodes():
     g2.add((inner2, SDO.value, Literal("v2")))  # Changed
     g2.add((inner2, SDO.dateCreated, Literal("2024-01-01")))  # Unchanged
 
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # Should only show the changed value, not recreate the entire blank node structure
     assert "D _:" in patch and '"v1"' in patch
@@ -167,7 +167,7 @@ def test_blank_node_list_structure():
     g2.add((new_list_node3, RDF.first, Literal("part3")))
     g2.add((new_list_node3, RDF.rest, RDF.nil))
 
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # The patch should show the structural change to the list
     # Old: node2 -> nil, New: node2 -> node3 -> nil
@@ -207,7 +207,7 @@ def test_blank_node_across_multiple_graphs():
     g2b.add((EX.resourceB, SDO.version, version2b))
     g2b.add((version2b, SDO.value, Literal("v1")))  # Unchanged
 
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # Should show changes in graphA only
     assert "<https://example.com/graphA>" in patch
@@ -254,7 +254,7 @@ def test_complex_skos_concept_with_blank_nodes():
     g2.add((note2, SDO.author, Literal("Editor A")))  # Unchanged
     g2.add((note2, SDO.dateCreated, Literal("2024-01-01")))  # Unchanged
 
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # Should only show the changed note value
     assert "D _:" in patch and '"This concept needs review"' in patch
@@ -308,7 +308,7 @@ def test_blank_node_identity_preservation():
     g2.add((b2_v1, SDO.value, Literal("value1")))
 
     # Despite different creation order and internal IDs, the graphs are semantically identical
-    patch = _generate_rdf_patch_body_diff(ds2, ds1)
+    patch = "".join(_generate_rdf_patch_body_diff(ds2, ds1))
 
     # The patch should show NO changes (empty transaction)
     assert "TX ." in patch
