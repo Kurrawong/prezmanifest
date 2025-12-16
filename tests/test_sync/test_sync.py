@@ -9,14 +9,12 @@ from typer.testing import CliRunner
 from prezmanifest.loader import load
 from prezmanifest.syncer import sync
 from prezmanifest.utils import artifact_file_name_from_graph_id
-from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner()
 from prezmanifest.cli import app
 
 
-def test_sync(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+def test_sync(sparql_endpoint):
     MANIFEST_FILE_LOCAL = Path(__file__).parent / "local/manifest.ttl"
     MANIFEST_FILE_REMOTE = Path(__file__).parent / "remote/manifest.ttl"
     MANIFEST_ROOT = Path(__file__).parent / "local"
@@ -27,14 +25,14 @@ def test_sync(fuseki_container):
     shutil.copy(MANIFEST_ROOT / "artifact6.ttl", MANIFEST_ROOT / "artifact6.ttx")
 
     # ensure the SPARQL store's clear
-    query(SPARQL_ENDPOINT, "DROP ALL")
+    query(sparql_endpoint, "DROP ALL")
 
     # load it with remote data
-    load(MANIFEST_FILE_REMOTE, SPARQL_ENDPOINT)
+    load(MANIFEST_FILE_REMOTE, sparql_endpoint)
 
     a = sync(
         MANIFEST_FILE_LOCAL,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     # check status before sync
@@ -50,7 +48,7 @@ def test_sync(fuseki_container):
 
     # run sync again, performing no actions to just get updated status
     a = sync(
-        MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, httpx.Client(), False, False, False, False
+        MANIFEST_FILE_LOCAL, sparql_endpoint, httpx.Client(), False, False, False, False
     )
 
     # check status after sync
@@ -80,16 +78,15 @@ def test_sync(fuseki_container):
         f.unlink()
 
 
-def test_sync_cli(fuseki_container):
+def test_sync_cli(sparql_endpoint):
     MANIFEST_FILE_REMOTE = Path(__file__).parent / "remote/manifest.ttl"
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
 
     # ensure the SPARQL store's clear
-    query(SPARQL_ENDPOINT, "DROP ALL")
+    query(sparql_endpoint, "DROP ALL")
 
     raw_output = str(
         runner.invoke(
-            app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT, "-f", "json"]
+            app, ["sync", str(MANIFEST_FILE_REMOTE), sparql_endpoint, "-f", "json"]
         ).output
     )
 
@@ -99,13 +96,12 @@ def test_sync_cli(fuseki_container):
 
     # test cli pretty formatting
     raw_output = str(
-        runner.invoke(app, ["sync", str(MANIFEST_FILE_REMOTE), SPARQL_ENDPOINT]).stdout
+        runner.invoke(app, ["sync", str(MANIFEST_FILE_REMOTE), sparql_endpoint]).stdout
     )
     assert "Main Entity" in raw_output
 
 
-def test_sync_sync_predicate(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+def test_sync_sync_predicate(sparql_endpoint):
     MANIFEST_FILE_LOCAL = Path(__file__).parent / "local/manifest-sync-pred.ttl"
     MANIFEST_FILE_REMOTE = Path(__file__).parent / "remote/manifest.ttl"
     MANIFEST_ROOT = Path(__file__).parent / "local"
@@ -116,14 +112,14 @@ def test_sync_sync_predicate(fuseki_container):
     shutil.copy(MANIFEST_ROOT / "artifact6.ttl", MANIFEST_ROOT / "artifact6.ttx")
 
     # ensure the SPARQL store's clear
-    query(SPARQL_ENDPOINT, "DROP ALL")
+    query(sparql_endpoint, "DROP ALL")
 
     # load it with remote data
-    load(MANIFEST_FILE_REMOTE, SPARQL_ENDPOINT)
+    load(MANIFEST_FILE_REMOTE, sparql_endpoint)
 
     a = sync(
         MANIFEST_FILE_LOCAL,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     # check status before sync
@@ -139,7 +135,7 @@ def test_sync_sync_predicate(fuseki_container):
 
     # run sync again, performing no actions to just get updated status
     a = sync(
-        MANIFEST_FILE_LOCAL, SPARQL_ENDPOINT, httpx.Client(), False, False, False, False
+        MANIFEST_FILE_LOCAL, sparql_endpoint, httpx.Client(), False, False, False, False
     )
 
     # check status after sync

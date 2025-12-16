@@ -9,7 +9,6 @@ from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
 
 from prezmanifest.loader import ReturnDatatype, load
-from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner()
 
@@ -46,9 +45,7 @@ def test_load_only_one_set():
     Path("temp.trig").unlink(missing_ok=True)
 
 
-def test_fuseki_query(fuseki_container):
-    port = fuseki_container.get_exposed_port(3030)
-    SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
+def test_fuseki_query(sparql_endpoint):
     TESTING_GRAPH = "https://example.com/testing-graph"
 
     data = """
@@ -58,7 +55,7 @@ def test_fuseki_query(fuseki_container):
             ex:a2 ex:b2 ex:c2 .
             """
 
-    upload(SPARQL_ENDPOINT, data, TESTING_GRAPH, False)
+    upload(sparql_endpoint, data, TESTING_GRAPH, False)
 
     q = """
         SELECT (COUNT(*) AS ?count) 
@@ -69,7 +66,7 @@ def test_fuseki_query(fuseki_container):
         }        
         """.replace("XXX", TESTING_GRAPH)
 
-    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
+    r = query(sparql_endpoint, q, return_format="python", return_bindings_only=True)
 
     assert r[0]["count"] == 2
 
@@ -79,7 +76,7 @@ def test_fuseki_query(fuseki_container):
     print(q)
     print("QUERY")
 
-    r = query(SPARQL_ENDPOINT, q)
+    r = query(sparql_endpoint, q)
 
     q = """
         SELECT (COUNT(*) AS ?count) 
@@ -90,7 +87,7 @@ def test_fuseki_query(fuseki_container):
         }        
         """.replace("XXX", TESTING_GRAPH)
 
-    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
+    r = query(sparql_endpoint, q, return_format="python", return_bindings_only=True)
 
     assert r[0]["count"] == 0
 
@@ -122,11 +119,9 @@ def test_load_to_quads_file():
     Path(results_file).unlink()
 
 
-def test_load_to_fuseki(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-
+def test_load_to_fuseki(sparql_endpoint):
     manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
-    load(manifest, sparql_endpoint=SPARQL_ENDPOINT)
+    load(manifest, sparql_endpoint=sparql_endpoint)
 
     q = """
         SELECT (COUNT(DISTINCT ?g) AS ?count)
@@ -137,20 +132,16 @@ def test_load_to_fuseki(fuseki_container):
         }      
         """
 
-    r = query(SPARQL_ENDPOINT, q, return_format="python", return_bindings_only=True)
+    r = query(sparql_endpoint, q, return_format="python", return_bindings_only=True)
 
     assert r[0]["count"] == 5
 
 
-def test_load_to_fuseki_basic_auth(fuseki_container):
-    SPARQL_ENDPOINT = (
-        f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
-    )
-
+def test_load_to_fuseki_basic_auth(sparql_endpoint):
     manifest = Path(__file__).parent / "demo-vocabs" / "manifest.ttl"
     load(
         manifest,
-        sparql_endpoint=SPARQL_ENDPOINT,
+        sparql_endpoint=sparql_endpoint,
         sparql_username="admin",
         sparql_password="admin",
     )
@@ -165,7 +156,7 @@ def test_load_to_fuseki_basic_auth(fuseki_container):
         """
     client = httpx.Client(auth=("admin", "admin"))
     r = query(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         q,
         return_format="python",
         return_bindings_only=True,
@@ -237,23 +228,19 @@ def test_load_returns_dataset():
 
 
 # TODO: not working
-# def test_load_cli_sparql(fuseki_container):
+# def test_load_cli_sparql(sparql_endpoint):
 #     warnings.filterwarnings(
 #         "ignore", category=DeprecationWarning
 #     )  # ignore RDFLib's ConjunctiveGraph warning
 #
 #     manifest = Path(__file__).parent / "demo-vocabs/manifest.ttl"
-#     SPARQL_ENDPOINT = (
-#         f"http://localhost:{fuseki_container.get_exposed_port(3030)}/authds"
-#     )
-#
 #     response = runner.invoke(
 #         app,
 #         [
 #             "load",
 #             "sparql",
 #             manifest,
-#             SPARQL_ENDPOINT,
+#             sparql_endpoint,
 #             "-u",
 #             "admin",
 #             "-p",
@@ -273,7 +260,7 @@ def test_load_returns_dataset():
 #         """
 #     client = httpx.Client(auth=("admin", "admin"))
 #     r = query(
-#         SPARQL_ENDPOINT,
+#         sparql_endpoint,
 #         q,
 #         return_format="python",
 #         return_bindings_only=True,

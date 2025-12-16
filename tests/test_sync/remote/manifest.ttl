@@ -22,14 +22,6 @@ PREFIX schema: <https://schema.org/>
                     schema:mainEntity <http://example.com/dataset/2> ;
                 ] ,
                 [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
                     schema:contentLocation "http--example.com-dataset-6.ttl" ;
                     schema:mainEntity <http://example.com/dataset/6> ;
                 ] ,
@@ -44,18 +36,6 @@ PREFIX schema: <https://schema.org/>
                 [
                     schema:contentLocation "http--example.com-dataset-8.ttl" ;
                     schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-4.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/4> ;
                 ] ,
                 "artifact1.ttl" ,
                 "artifact2.ttl" ,

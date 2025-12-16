@@ -8,7 +8,6 @@ from typer.testing import CliRunner
 
 import prezmanifest.loader
 from prezmanifest.utils import *
-from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner()
 import httpx
@@ -114,21 +113,18 @@ def test_get_catalogue_iri_from_manifest():
     )
 
 
-def test_target_contains_this_manifests_catalogue(fuseki_container):
+def test_target_contains_this_manifests_catalogue(sparql_endpoint):
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
-    port = fuseki_container.get_exposed_port(3030)
 
     with httpx.Client() as http_client:
-        SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
-
         # positive test
-        query(SPARQL_ENDPOINT, "DROP ALL", http_client=http_client)
-        prezmanifest.loader.load(MANIFEST, SPARQL_ENDPOINT)
-        assert target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
+        query(sparql_endpoint, "DROP ALL", http_client=http_client)
+        prezmanifest.loader.load(MANIFEST, sparql_endpoint)
+        assert target_contains_this_manifests_catalogue(MANIFEST, sparql_endpoint)
 
         # negative test
-        query(SPARQL_ENDPOINT, "DROP ALL", http_client=http_client)
-        assert not target_contains_this_manifests_catalogue(MANIFEST, SPARQL_ENDPOINT)
+        query(sparql_endpoint, "DROP ALL", http_client=http_client)
+        assert not target_contains_this_manifests_catalogue(MANIFEST, sparql_endpoint)
 
 
 # TODO add tests
@@ -166,15 +162,13 @@ def test_get_version_indicators_local():
         )
 
 
-def test_get_version_indicators_sparql(fuseki_container):
-    port = fuseki_container.get_exposed_port(3030)
-    SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
+def test_get_version_indicators_sparql(sparql_endpoint):
     ASSET_PATH = TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
     ASSET_GRAPH_IRI = "https://example.com/demo-vocabs/language-test"
 
     c = make_httpx_client()
 
-    upload(SPARQL_ENDPOINT, ASSET_PATH, ASSET_GRAPH_IRI, False, http_client=c)
+    upload(sparql_endpoint, ASSET_PATH, ASSET_GRAPH_IRI, False, http_client=c)
 
     q = """
         SELECT (COUNT(*) AS ?count) 
@@ -186,7 +180,7 @@ def test_get_version_indicators_sparql(fuseki_container):
         """.replace("XXX", ASSET_GRAPH_IRI)
 
     r = query(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         q,
         http_client=c,
         return_format="python",
@@ -195,7 +189,7 @@ def test_get_version_indicators_sparql(fuseki_container):
 
     assert r[0]["count"] == 71
 
-    r = get_version_indicators_sparql(ASSET_GRAPH_IRI, SPARQL_ENDPOINT, http_client=c)
+    r = get_version_indicators_sparql(ASSET_GRAPH_IRI, sparql_endpoint, http_client=c)
 
     assert r["modified_date"] == date_parse("2024-11-21").date()
 
@@ -268,15 +262,13 @@ def test_compare_version_indicators():
     assert compare_version_indicators(six, seven) == VersionIndicatorComparison.Second
 
 
-def test_which_is_more_recent(fuseki_container):
-    port = fuseki_container.get_exposed_port(3030)
-    SPARQL_ENDPOINT = f"http://localhost:{port}/ds"
+def test_which_is_more_recent(sparql_endpoint):
     ARTIFACT_PATH = TESTS_DIR / "demo-vocabs" / "vocabs" / "language-test.ttl"
     ARTIFACT_MAIN_ENTITY = "https://example.com/demo-vocabs/language-test"
 
     c = make_httpx_client()
 
-    upload(SPARQL_ENDPOINT, ARTIFACT_PATH, ARTIFACT_MAIN_ENTITY, False, http_client=c)
+    upload(sparql_endpoint, ARTIFACT_PATH, ARTIFACT_MAIN_ENTITY, False, http_client=c)
 
     vi = {
         "main_entity": URIRef("https://example.com/demo-vocabs/language-test"),
@@ -285,7 +277,7 @@ def test_which_is_more_recent(fuseki_container):
         "file_size": 5053,
     }
 
-    r = which_is_more_recent(vi, SPARQL_ENDPOINT, http_client=c)
+    r = which_is_more_recent(vi, sparql_endpoint, http_client=c)
 
     assert r == VersionIndicatorComparison.First
 
@@ -295,7 +287,7 @@ def test_which_is_more_recent(fuseki_container):
         "file_size": 5053,
     }
 
-    r = which_is_more_recent(vi2, SPARQL_ENDPOINT, http_client=c)
+    r = which_is_more_recent(vi2, sparql_endpoint, http_client=c)
 
     assert r == VersionIndicatorComparison.Second
 
