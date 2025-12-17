@@ -1,4 +1,5 @@
 import io
+import logging
 from pathlib import Path
 from typing import Generator
 
@@ -12,6 +13,8 @@ from prezmanifest import load
 from prezmanifest.definednamespaces import MVT, OLIS
 from prezmanifest.event.client import EventClient
 from prezmanifest.loader import ReturnDatatype
+
+logger = logging.getLogger(__name__)
 
 
 def _add_commit_hash_to_dataset(commit_hash: str, ds: Dataset) -> Dataset:
@@ -114,7 +117,7 @@ def _rdf_patch_body_substr(s: str) -> Generator[str, None, None]:
         end = min(start + chunk_size, len(body))
         if end < len(body):
             # Try to break on a newline to avoid splitting lines
-            newline_pos = body.rfind('\n', start, end)
+            newline_pos = body.rfind("\n", start, end)
             if newline_pos > start:
                 end = newline_pos + 1
         yield body[start:end]
@@ -143,7 +146,9 @@ def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     yield from _rdf_patch_body_substr(output)
 
 
-def _generate_rdf_patch_body_diff(ds: Dataset, previous_ds: Dataset) -> Generator[str, None, None]:
+def _generate_rdf_patch_body_diff(
+    ds: Dataset, previous_ds: Dataset
+) -> Generator[str, None, None]:
     """Generate an RDF patch body diff between two datasets.
 
     Yields:
@@ -180,20 +185,27 @@ def sync_rdf_delta(
         raise ValueError(
             "Could not find the Virtual Graph instance in the Olis system graph"
         )
+    logger.info(f"Virtual Graph IRI: {vg_iri}")
 
     # Query the SPARQL endpoint and retrieve the git commit hash version from the system graph.
     previous_commit_hash = _retrieve_commit_hash(vg_iri, sparql_endpoint, http_client)
+    logger.info(f"Previous commit hash: {previous_commit_hash}")
 
     # The current commit hash. Assume this is the latest.
     repo = Repo(current_working_directory)
     current_commit_hash = repo.head.commit.hexsha
+    logger.info(f"Current commit hash: {current_commit_hash}")
 
     if previous_commit_hash is None:
+        logger.info(
+            "Previous commit hash is None. Adding current commit hash to dataset."
+        )
         _add_commit_hash_to_dataset(current_commit_hash, ds)
         rdf_patch_body_chunks = _generate_rdf_patch_body_add(ds)
     else:
         # Check out the previous commit.
         # Generate the previous manifest dataset.
+        logger.info(f"Checking out previous commit: {previous_commit_hash}")
         repo.git.checkout(previous_commit_hash)
         previous_ds = load(manifest, return_data_type=ReturnDatatype.dataset)
         _add_commit_hash_to_dataset(previous_commit_hash, previous_ds)
@@ -203,5 +215,6 @@ def sync_rdf_delta(
         rdf_patch_body_chunks = _generate_rdf_patch_body_diff(ds, previous_ds)
 
     # Create events for each chunk.
-    for chunk in rdf_patch_body_chunks:
+    for i, chunk in enumerate(rdf_patch_body_chunks):
+        logger.info(f"Creating event for chunk {i + 1}")
         event_client.create_event(chunk)
