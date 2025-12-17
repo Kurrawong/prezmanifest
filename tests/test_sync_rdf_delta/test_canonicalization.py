@@ -41,9 +41,9 @@ def test_simple_blank_node_value_change():
     )
 
     assert delete_bnode is not None and add_bnode is not None
-    assert delete_bnode.group(1) == add_bnode.group(
-        1
-    ), "Same blank node should be used for both operations"
+    assert delete_bnode.group(1) == add_bnode.group(1), (
+        "Same blank node should be used for both operations"
+    )
 
 
 def test_multiple_blank_nodes_with_identical_structure():
@@ -86,9 +86,9 @@ def test_multiple_blank_nodes_with_identical_structure():
     # Should have exactly 1 delete (old v1) and 1 add (new v2)
     # Other properties should not be touched
     date_changes = [line for line in patch_lines if "2024-01-01" in line]
-    assert (
-        len(date_changes) == 0
-    ), f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    assert len(date_changes) == 0, (
+        f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    )
 
 
 def test_nested_blank_nodes():
@@ -128,9 +128,9 @@ def test_nested_blank_nodes():
         if line.startswith("A ") or line.startswith("D ")
     ]
     date_changes = [line for line in patch_lines if "2024-01-01" in line]
-    assert (
-        len(date_changes) == 0
-    ), f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    assert len(date_changes) == 0, (
+        f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    )
 
 
 def test_blank_node_list_structure():
@@ -269,12 +269,12 @@ def test_complex_skos_concept_with_blank_nodes():
     author_changes = [line for line in patch_lines if "Editor A" in line]
     date_changes = [line for line in patch_lines if "2024-01-01" in line]
 
-    assert (
-        len(author_changes) == 0
-    ), f"Unchanged author should not appear, but found: {author_changes}"
-    assert (
-        len(date_changes) == 0
-    ), f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    assert len(author_changes) == 0, (
+        f"Unchanged author should not appear, but found: {author_changes}"
+    )
+    assert len(date_changes) == 0, (
+        f"Unchanged dateCreated should not appear, but found: {date_changes}"
+    )
 
 
 def test_blank_node_identity_preservation():

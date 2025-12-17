@@ -1,12 +1,12 @@
 """Tests for RDF patch chunking functionality in the event syncer."""
 
 import pytest
-from rdflib import Dataset, Literal, Namespace, RDF
+from rdflib import RDF, Dataset, Literal, Namespace
 
 from prezmanifest.event.syncer import (
-    _rdf_patch_body_substr,
     _generate_rdf_patch_body_add,
     _generate_rdf_patch_body_diff,
+    _rdf_patch_body_substr,
 )
 
 EX = Namespace("https://example.com/")
@@ -44,8 +44,10 @@ def test_large_patch_multiple_chunks():
     num_triples = (CHUNK_SIZE // 50) + 10000  # Ensure it's larger than one chunk
 
     triples = "\n".join(
-        [f"A <urn:subject{i}> <urn:predicate{i}> <urn:object{i}> ."
-         for i in range(num_triples)]
+        [
+            f"A <urn:subject{i}> <urn:predicate{i}> <urn:object{i}> ."
+            for i in range(num_triples)
+        ]
     )
     patch = f"TX .\n{triples}\nTC ."
 
@@ -74,8 +76,10 @@ def test_chunk_breaks_on_newlines():
     line_length = 100
     num_lines = (CHUNK_SIZE // line_length) + 100
 
-    lines = [f"A <urn:s{i}> <urn:p{i}> <urn:o{i}> ." + " " * (line_length - 40)
-             for i in range(num_lines)]
+    lines = [
+        f"A <urn:s{i}> <urn:p{i}> <urn:o{i}> ." + " " * (line_length - 40)
+        for i in range(num_lines)
+    ]
     triples = "\n".join(lines)
     patch = f"TX .\n{triples}\nTC ."
 
@@ -85,7 +89,7 @@ def test_chunk_breaks_on_newlines():
     # (because we're breaking on newline boundaries)
     for chunk in chunks[:-1]:
         # The chunk should end with a newline character or be at the exact boundary
-        assert chunk.endswith('\n') or len(chunk) == CHUNK_SIZE
+        assert chunk.endswith("\n") or len(chunk) == CHUNK_SIZE
 
 
 def test_patch_exactly_at_chunk_boundary():
@@ -143,7 +147,7 @@ def test_generate_rdf_patch_body_add_returns_generator():
     result = _generate_rdf_patch_body_add(ds)
 
     # Should be a generator
-    assert hasattr(result, '__iter__') and hasattr(result, '__next__')
+    assert hasattr(result, "__iter__") and hasattr(result, "__next__")
 
     # Collect all chunks
     chunks = list(result)
@@ -156,7 +160,10 @@ def test_generate_rdf_patch_body_add_returns_generator():
     assert "TX ." in combined
     assert "TC ." in combined
     assert "<urn:vocab>" in combined
-    assert "skos:ConceptScheme" in combined or "http://www.w3.org/2004/02/skos/core#ConceptScheme" in combined
+    assert (
+        "skos:ConceptScheme" in combined
+        or "http://www.w3.org/2004/02/skos/core#ConceptScheme" in combined
+    )
 
 
 def test_generate_rdf_patch_body_diff_returns_generator():
@@ -173,7 +180,7 @@ def test_generate_rdf_patch_body_diff_returns_generator():
     result = _generate_rdf_patch_body_diff(ds2, ds1)
 
     # Should be a generator
-    assert hasattr(result, '__iter__') and hasattr(result, '__next__')
+    assert hasattr(result, "__iter__") and hasattr(result, "__next__")
 
     # Collect all chunks
     chunks = list(result)
@@ -200,11 +207,7 @@ def test_large_dataset_yields_multiple_chunks():
     num_triples = (CHUNK_SIZE // 100) + 5000
 
     for i in range(num_triples):
-        g.add((
-            EX[f"subject{i}"],
-            EX[f"predicate{i}"],
-            Literal(f"object value {i}")
-        ))
+        g.add((EX[f"subject{i}"], EX[f"predicate{i}"], Literal(f"object value {i}")))
 
     chunks = list(_generate_rdf_patch_body_add(ds))
 
@@ -278,7 +281,9 @@ def test_very_large_patch_many_chunks():
 
     # Verify total size matches
     total_size = sum(len(chunk) for chunk in chunks)
-    expected_body_size = len(patch[patch.find("TX ."):patch.find("TC .") + len("TC .")])
+    expected_body_size = len(
+        patch[patch.find("TX .") : patch.find("TC .") + len("TC .")]
+    )
     assert total_size == expected_body_size
 
 
@@ -290,11 +295,7 @@ def test_patch_with_unicode_characters():
 
     # Add triples with unicode values
     for i in range(100):
-        g.add((
-            EX[f"subject{i}"],
-            EX.label,
-            Literal(f"日本語テキスト {i} émojis 🎉🎊")
-        ))
+        g.add((EX[f"subject{i}"], EX.label, Literal(f"日本語テキスト {i} émojis 🎉🎊")))
 
     chunks = list(_generate_rdf_patch_body_add(ds))
 
