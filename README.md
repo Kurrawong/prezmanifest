@@ -108,6 +108,22 @@ To find out more about each Command, ask for helo like this - for load:
 pm load -h
 ```
 
+#### Logging
+
+You can control the verbosity of the command line tool by setting the `PM_LOG_LEVEL` environment variable to one of Python's standard logging levels: `DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`. The default level is `WARNING`.
+
+For example, to see detailed debug output:
+
+```bash
+PM_LOG_LEVEL=DEBUG pm load file my-manifest.ttl output.trig
+```
+
+Or for informational messages:
+
+```bash
+PM_LOG_LEVEL=INFO pm validate my-manifest.ttl
+```
+
 > [!TIP]
 > See the [Case Study: Sync](#case-study-sync) below for a description of the different ways to sync
 
