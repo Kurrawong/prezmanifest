@@ -762,10 +762,11 @@ def sync_validators(http_client: httpx.Client | None = None):
 
     # get list of remote known validators
     q = """
-        PREFIX dcterms: <http://purl.org/dc/terms/>
+        PREFIX olis: <https://olis.dev/>
         SELECT * 
         WHERE {
-          <https://kurrawong.ai/semantic-bankground/validators> dcterms:hasPart ?p .
+          <https://kurrawong.ai/semantic-bankground/ontologies> olis:isAliasFor ?p .
+          FILTER(regex(str(?p), 'validator'))
         }
         """
     r = query(semback_sparql_endpoint, q, None, http_client, "python", True)

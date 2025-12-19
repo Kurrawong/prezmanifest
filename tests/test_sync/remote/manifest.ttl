@@ -4,6 +4,12 @@ PREFIX schema: <https://schema.org/>
 []    a <https://prez.dev/Manifest> ;
     prof:hasResource 
         [
+            prof:hasArtifact "labels.ttl" ;
+            prof:hasRole <https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels> ;
+            schema:description "An RDF file containing all the labels for the container content" ;
+            schema:name "Labels" ;
+        ] ,
+        [
             prof:hasArtifact "catalogue.ttl" ;
             prof:hasRole <https://prez.dev/ManifestResourceRoles/CatalogueData> ;
             schema:description "The definition of, and medata for, the container which here is a dcat:Catalog object" ;
@@ -12,24 +18,20 @@ PREFIX schema: <https://schema.org/>
         [
             prof:hasArtifact 
                 [
+                    schema:contentLocation "http--example.com-dataset-2.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/2> ;
+                ] ,
+                [
+                    schema:contentLocation "http--example.com-dataset-6.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/6> ;
+                ] ,
+                [
                     schema:contentLocation "http--example.com-dataset-7.ttl" ;
                     schema:mainEntity <http://example.com/dataset/7> ;
                 ] ,
                 [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
-                ] ,
-                [
-                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
-                    schema:mainEntity <http://example.com/dataset/8> ;
+                    schema:contentLocation "http--example.com-dataset-3.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/3> ;
                 ] ,
                 [
                     schema:contentLocation "http--example.com-dataset-8.ttl" ;
@@ -46,11 +48,5 @@ PREFIX schema: <https://schema.org/>
             prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
             schema:description "Catalogued datasets" ;
             schema:name "Resource Data" ;
-        ] ,
-        [
-            prof:hasArtifact "labels.ttl" ;
-            prof:hasRole <https://prez.dev/ManifestResourceRoles/CompleteCatalogueAndResourceLabels> ;
-            schema:description "An RDF file containing all the labels for the container content" ;
-            schema:name "Labels" ;
         ] ;
 .
