@@ -9,7 +9,6 @@ from typer.testing import CliRunner
 
 from prezmanifest.cli import app
 from prezmanifest.labeller import LabellerOutputTypes, label
-from tests.fuseki.conftest import fuseki_container
 
 runner = CliRunner()
 
@@ -43,10 +42,9 @@ def test_label_iris():
     assert len(iris) == 0
 
 
-def test_label_iris_sparql(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+def test_label_iris_sparql(sparql_endpoint):
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/labels-some.ttl",
         graph_id="http://test",
     )
@@ -54,7 +52,7 @@ def test_label_iris_sparql(fuseki_container):
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         output_type=LabellerOutputTypes.iris,
-        additional_context=SPARQL_ENDPOINT,
+        additional_context=sparql_endpoint,
     )
 
     assert len(iris) == 15
@@ -76,15 +74,13 @@ def test_label_rdf_file():
     assert len(rdf) == 37
 
 
-def test_label_rdf_sparql(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-
-    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+def test_label_rdf_sparql(sparql_endpoint):
+    query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
 
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest.ttl",
         LabellerOutputTypes.rdf,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     assert len(rdf) == 0
@@ -92,13 +88,13 @@ def test_label_rdf_sparql(fuseki_container):
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     assert len(rdf) == 0
 
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/labels-some.ttl",
         graph_id="http://test",
     )
@@ -106,15 +102,15 @@ def test_label_rdf_sparql(fuseki_container):
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     assert len(rdf) == 37
 
-    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+    query(sparql_endpoint, "DROP GRAPH <http://test>")
 
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/labels-all.ttl",
         graph_id="http://test",
     )
@@ -122,19 +118,17 @@ def test_label_rdf_sparql(fuseki_container):
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         LabellerOutputTypes.rdf,
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
     )
 
     assert len(rdf) == 63
 
 
-def test_label_manifest(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-
-    query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+def test_label_manifest(sparql_endpoint):
+    query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
 
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
         graph_id="http://test",
     )
@@ -147,7 +141,7 @@ def test_label_manifest(fuseki_container):
     label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
         # output="manifest" is default
-        additional_context=SPARQL_ENDPOINT,
+        additional_context=sparql_endpoint,
     )
 
     expected_updated_manifest = Graph().parse(
@@ -210,19 +204,17 @@ def test_label_cli_iris():
     assert len(result.stdout.splitlines()) == 31
 
 
-def test_label_cli_rdf(fuseki_container):
-    SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-
-    query(SPARQL_ENDPOINT, "DROP GRAPH <http://test>")
+def test_label_cli_rdf(sparql_endpoint):
+    query(sparql_endpoint, "DROP GRAPH <http://test>")
 
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
         graph_id="http://test",
     )
 
     upload(
-        SPARQL_ENDPOINT,
+        sparql_endpoint,
         Path(__file__).parent / "demo-vocabs/labels-2.ttl",
         graph_id="http://test",
         append=True,
@@ -234,7 +226,7 @@ def test_label_cli_rdf(fuseki_container):
             "label",
             "rdf",
             str(Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"),
-            SPARQL_ENDPOINT,
+            sparql_endpoint,
         ],
     )
     g = Graph().parse(data=result.stdout, format="turtle")
@@ -242,13 +234,11 @@ def test_label_cli_rdf(fuseki_container):
 
 
 # TODO: fix not working test
-# def test_label_cli_manifest(fuseki_container):
-#     SPARQL_ENDPOINT = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
-#
-#     query(SPARQL_ENDPOINT, "DROP SILENT GRAPH <http://test>")
+# def test_label_cli_manifest(sparql_endpoint):
+#     query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
 #
 #     upload(
-#         SPARQL_ENDPOINT,
+#         sparql_endpoint,
 #         Path(__file__).parent / "demo-vocabs/_background/labels.ttl",
 #         graph_id="http://test",
 #     )
@@ -264,7 +254,7 @@ def test_label_cli_rdf(fuseki_container):
 #             "label",
 #             "manifest",
 #             str(original_manifest_path),
-#             SPARQL_ENDPOINT
+#             sparql_endpoint
 #         ],
 #     )
 #

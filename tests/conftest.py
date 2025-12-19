@@ -4,6 +4,7 @@ from pathlib import Path
 import docker
 import httpx
 import pytest
+from kurra.sparql import query
 from testcontainers.core.container import DockerContainer
 
 FUSEKI_IMAGE = "ghcr.io/kurrawong/fuseki-geosparql:git-main-e642d849"
@@ -30,34 +31,36 @@ def wait_for_logs(container, text, timeout=30, interval=0.5):
         time.sleep(interval)
 
 
-@pytest.fixture(scope="function")
-def fuseki_container(request: pytest.FixtureRequest):
+@pytest.fixture(scope="session")
+def fuseki_container():
     container = DockerContainer(FUSEKI_IMAGE)
     container.with_volume_mapping(
-        str(Path(__file__).parent.parent / "fuseki" / "shiro.ini"),
+        str(Path(__file__).parent / "fuseki" / "shiro.ini"),
         "/fuseki/shiro.ini",
     )
     container.with_volume_mapping(
-        str(Path(__file__).parent.parent / "fuseki" / "config.ttl"),
+        str(Path(__file__).parent / "fuseki" / "config.ttl"),
         "/fuseki/config.ttl",
     )
     container.with_exposed_ports(3030)
     container.start()
     wait_for_logs(container, "Started")
 
-    def cleanup():
-        container.stop()
-
-    request.addfinalizer(cleanup)
-    return container
+    yield container
+    container.stop()
 
 
 @pytest.fixture(scope="function")
-def http_client(request: pytest.FixtureRequest):
+def sparql_endpoint(fuseki_container):
+    url = f"http://localhost:{fuseki_container.get_exposed_port(3030)}/ds"
+    yield url
+    with httpx.Client(auth=("admin", "admin")) as http_client:
+        query(url, "DROP ALL", http_client=http_client)
+
+
+@pytest.fixture(scope="function")
+def http_client():
     _http_client = httpx.Client(auth=("admin", "admin"))
 
-    def cleanup():
-        _http_client.close()
-
-    request.addfinalizer(cleanup)
-    return _http_client
+    yield _http_client
+    _http_client.close()
