@@ -1,5 +1,7 @@
 import io
+import logging
 from pathlib import Path
+from typing import Generator
 
 import httpx
 from git import Repo
@@ -11,6 +13,8 @@ from prezmanifest import load
 from prezmanifest.definednamespaces import MVT, OLIS
 from prezmanifest.event.client import EventClient
 from prezmanifest.loader import ReturnDatatype
+
+logger = logging.getLogger(__name__)
 
 
 def _add_commit_hash_to_dataset(commit_hash: str, ds: Dataset) -> Dataset:
@@ -88,13 +92,36 @@ def _retrieve_commit_hash(
     return result.graph.value(subject=vg_iri, predicate=SDO.version)
 
 
-def _rdf_patch_body_substr(s: str) -> str:
-    """Extract the RDF patch body from a string."""
+def _rdf_patch_body_substr(s: str) -> Generator[str, None, None]:
+    """Extract the RDF patch body from a string and yield chunks of ~0.8 MB.
+
+    Chunks the patch body into approximately 0.8 MB pieces to fit within
+    event streaming platform message size limits (typically 1 MB, with 0.2 MB
+    reserved for metadata).
+
+    Yields:
+        Chunks of the RDF patch body, attempting to break on line boundaries
+        when possible to avoid splitting individual patch statements.
+    """
     tx = "TX ."
     tc = "TC ."
     tx_pos = s.find(tx)
     tc_pos = s.find(tc) + len(tc)
-    return s[tx_pos:tc_pos]
+    body = s[tx_pos:tc_pos]
+
+    # Chunk size: 0.8 MB in bytes (0.8 * 1024 * 1024)
+    chunk_size = 838860
+
+    start = 0
+    while start < len(body):
+        end = min(start + chunk_size, len(body))
+        if end < len(body):
+            # Try to break on a newline to avoid splitting lines
+            newline_pos = body.rfind("\n", start, end)
+            if newline_pos > start:
+                end = newline_pos + 1
+        yield body[start:end]
+        start = end
 
 
 def _generate_canon_dataset(ds: Dataset) -> Dataset:
@@ -108,19 +135,29 @@ def _generate_canon_dataset(ds: Dataset) -> Dataset:
     return return_ds
 
 
-def _generate_rdf_patch_body_add(ds: Dataset) -> str:
-    """Generate an add-only RDF patch body from a dataset."""
+def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
+    """Generate an add-only RDF patch body from a dataset.
+
+    Yields:
+        Chunks of the RDF patch body.
+    """
     return_ds = _generate_canon_dataset(ds)
     output = return_ds.serialize(format="patch", operation="add")
-    return _rdf_patch_body_substr(output)
+    yield from _rdf_patch_body_substr(output)
 
 
-def _generate_rdf_patch_body_diff(ds: Dataset, previous_ds: Dataset) -> str:
-    """Generate an RDF patch body diff between two datasets."""
+def _generate_rdf_patch_body_diff(
+    ds: Dataset, previous_ds: Dataset
+) -> Generator[str, None, None]:
+    """Generate an RDF patch body diff between two datasets.
+
+    Yields:
+        Chunks of the RDF patch body.
+    """
     previous_ds = _generate_canon_dataset(previous_ds)
     ds = _generate_canon_dataset(ds)
     output = previous_ds.serialize(format="patch", target=ds)
-    return _rdf_patch_body_substr(output)
+    yield from _rdf_patch_body_substr(output)
 
 
 def sync_rdf_delta(
@@ -148,27 +185,36 @@ def sync_rdf_delta(
         raise ValueError(
             "Could not find the Virtual Graph instance in the Olis system graph"
         )
+    logger.info(f"Virtual Graph IRI: {vg_iri}")
 
     # Query the SPARQL endpoint and retrieve the git commit hash version from the system graph.
     previous_commit_hash = _retrieve_commit_hash(vg_iri, sparql_endpoint, http_client)
+    logger.info(f"Previous commit hash: {previous_commit_hash}")
 
     # The current commit hash. Assume this is the latest.
     repo = Repo(current_working_directory)
     current_commit_hash = repo.head.commit.hexsha
+    logger.info(f"Current commit hash: {current_commit_hash}")
 
     if previous_commit_hash is None:
+        logger.info(
+            "Previous commit hash is None. Adding current commit hash to dataset."
+        )
         _add_commit_hash_to_dataset(current_commit_hash, ds)
-        rdf_patch_body = _generate_rdf_patch_body_add(ds)
+        rdf_patch_body_chunks = _generate_rdf_patch_body_add(ds)
     else:
         # Check out the previous commit.
         # Generate the previous manifest dataset.
+        logger.info(f"Checking out previous commit: {previous_commit_hash}")
         repo.git.checkout(previous_commit_hash)
         previous_ds = load(manifest, return_data_type=ReturnDatatype.dataset)
         _add_commit_hash_to_dataset(previous_commit_hash, previous_ds)
         _add_commit_hash_to_dataset(current_commit_hash, ds)
 
         # Generate an RDF patch between the previous commit dataset and the current commit dataset.
-        rdf_patch_body = _generate_rdf_patch_body_diff(ds, previous_ds)
+        rdf_patch_body_chunks = _generate_rdf_patch_body_diff(ds, previous_ds)
 
-    # Create the event.
-    event_client.create_event(rdf_patch_body)
+    # Create events for each chunk.
+    for i, chunk in enumerate(rdf_patch_body_chunks):
+        logger.info(f"Creating event for chunk {i + 1}")
+        event_client.create_event(chunk)

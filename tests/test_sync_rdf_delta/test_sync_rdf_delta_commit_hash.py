@@ -70,7 +70,7 @@ def test_generate_rdf_patch_body_add():
         <urn:vocab> a skos:ConceptScheme .
     """
     ds = Dataset().parse(data=data, format="turtle")
-    rdf_patch_body = _generate_rdf_patch_body_add(ds)
+    rdf_patch_body = "".join(_generate_rdf_patch_body_add(ds))
     assert (
         rdf_patch_body
         == "TX .\nA <urn:vocab> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#ConceptScheme> .\nTC ."

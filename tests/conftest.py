@@ -4,8 +4,8 @@ from pathlib import Path
 import docker
 import httpx
 import pytest
-from testcontainers.core.container import DockerContainer
 from kurra.sparql import query
+from testcontainers.core.container import DockerContainer
 
 FUSEKI_IMAGE = "ghcr.io/kurrawong/fuseki-geosparql:git-main-e642d849"
 
