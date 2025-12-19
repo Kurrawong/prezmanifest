@@ -72,10 +72,6 @@ def test_fuseki_query(sparql_endpoint):
 
     q = "DROP GRAPH <XXX>".replace("XXX", TESTING_GRAPH)
 
-    print("QUERY")
-    print(q)
-    print("QUERY")
-
     r = query(sparql_endpoint, q)
 
     q = """
