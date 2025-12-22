@@ -141,7 +141,9 @@ def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     Yields:
         Chunks of the RDF patch body.
     """
+    logger.info("Canonicalising add-only dataset")
     return_ds = _generate_canon_dataset(ds)
+    logger.info(f"Serializing add-only RDF patch body to string")
     output = return_ds.serialize(format="patch", operation="add")
     yield from _rdf_patch_body_substr(output)
 
@@ -154,8 +156,11 @@ def _generate_rdf_patch_body_diff(
     Yields:
         Chunks of the RDF patch body.
     """
+    logger.info("Canonicalising diff-only previous dataset")
     previous_ds = _generate_canon_dataset(previous_ds)
+    logger.info("Canonicalising diff-only current dataset")
     ds = _generate_canon_dataset(ds)
+    logger.info("Serializing diff-only RDF patch body to string")
     output = previous_ds.serialize(format="patch", target=ds)
     yield from _rdf_patch_body_substr(output)
 
