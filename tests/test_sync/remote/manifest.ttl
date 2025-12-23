@@ -18,6 +18,14 @@ PREFIX schema: <https://schema.org/>
         [
             prof:hasArtifact 
                 [
+                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/8> ;
+                ] ,
+                [
+                    schema:contentLocation "http--example.com-dataset-8.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/8> ;
+                ] ,
+                [
                     schema:contentLocation "http--example.com-dataset-7.ttl" ;
                     schema:mainEntity <http://example.com/dataset/7> ;
                 ] ,

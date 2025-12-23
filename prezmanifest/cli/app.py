@@ -29,7 +29,9 @@ def setup_logging():
     console_handler.setLevel(log_level)
 
     # Create formatter
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s:%(lineno)d %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d %(message)s"
+    )
     console_handler.setFormatter(formatter)
 
     # Add handler to logger
