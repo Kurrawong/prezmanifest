@@ -141,7 +141,9 @@ def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     Yields:
         Chunks of the RDF patch body.
     """
+    logger.info("Canonicalising add-only dataset")
     return_ds = _generate_canon_dataset(ds)
+    logger.info(f"Serializing add-only RDF patch body to string")
     output = return_ds.serialize(format="patch", operation="add")
     yield from _rdf_patch_body_substr(output)
 
@@ -154,8 +156,11 @@ def _generate_rdf_patch_body_diff(
     Yields:
         Chunks of the RDF patch body.
     """
+    logger.info("Canonicalising diff-only previous dataset")
     previous_ds = _generate_canon_dataset(previous_ds)
+    logger.info("Canonicalising diff-only current dataset")
     ds = _generate_canon_dataset(ds)
+    logger.info("Serializing diff-only RDF patch body to string")
     output = previous_ds.serialize(format="patch", target=ds)
     yield from _rdf_patch_body_substr(output)
 
@@ -200,18 +205,24 @@ def sync_rdf_delta(
         logger.info(
             "Previous commit hash is None. Adding current commit hash to dataset."
         )
+        logger.info(f"Adding commit hash to current manifest dataset")
         _add_commit_hash_to_dataset(current_commit_hash, ds)
+        logger.info(f"Generating RDF patch body chunks for add operation")
         rdf_patch_body_chunks = _generate_rdf_patch_body_add(ds)
     else:
         # Check out the previous commit.
         # Generate the previous manifest dataset.
         logger.info(f"Checking out previous commit: {previous_commit_hash}")
         repo.git.checkout(previous_commit_hash)
+        logger.info(f"Loading previous manifest dataset")
         previous_ds = load(manifest, return_data_type=ReturnDatatype.dataset)
+        logger.info(f"Adding commit hash to previous manifest dataset")
         _add_commit_hash_to_dataset(previous_commit_hash, previous_ds)
+        logger.info(f"Adding commit hash to current manifest dataset")
         _add_commit_hash_to_dataset(current_commit_hash, ds)
 
         # Generate an RDF patch between the previous commit dataset and the current commit dataset.
+        logger.info(f"Generating RDF patch body chunks for diff operation")
         rdf_patch_body_chunks = _generate_rdf_patch_body_diff(ds, previous_ds)
 
     # Create events for each chunk.
