@@ -145,6 +145,7 @@ def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     return_ds = _generate_canon_dataset(ds)
     logger.info(f"Serializing add-only RDF patch body to string")
     output = return_ds.serialize(format="patch", operation="add")
+    logger.info("Serialization done.")
     yield from _rdf_patch_body_substr(output)
 
 
@@ -162,6 +163,7 @@ def _generate_rdf_patch_body_diff(
     ds = _generate_canon_dataset(ds)
     logger.info("Serializing diff-only RDF patch body to string")
     output = previous_ds.serialize(format="patch", target=ds)
+    logger.info("Serialization done.")
     yield from _rdf_patch_body_substr(output)
 
 
