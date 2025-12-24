@@ -470,7 +470,7 @@ requires-dist = [
     { name = "kurra", specifier = ">=2.0.5" },
     { name = "labelify", specifier = ">=0.6.1" },
     { name = "pyshacl", specifier = ">=0.29.0" },
-    { name = "rdf-delta", url = "https://github.com/Kurrawong/rdf-delta-python/archive/refs/tags/0.2.4.zip" },
+    { name = "rdf-delta", specifier = ">=0.2.5" },
     { name = "rdflib", specifier = ">=7.5.0" },
     { name = "typer", specifier = ">=0.15.1,<0.16" },
 ]
@@ -486,7 +486,7 @@ dev = [
 
 [[package]]
 name = "pydantic"
-version = "2.12.4"
+version = "2.12.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-types" },
@@ -494,9 +494,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/96/ad/a17bc283d7d81837c061c49e3eaa27a45991759a1b7eae1031921c6bd924/pydantic-2.12.4.tar.gz", hash = "sha256:0f8cb9555000a4b5b617f66bfd2566264c4984b27589d3b845685983e8ea85ac", size = 821038, upload-time = "2025-11-05T10:50:08.59Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/44/36f1a6e523abc58ae5f928898e4aca2e0ea509b5aa6f6f392a5d882be928/pydantic-2.12.5.tar.gz", hash = "sha256:4d351024c75c0f085a9febbb665ce8c0c6ec5d30e903bdb6394b7ede26aebb49", size = 821591, upload-time = "2025-11-26T15:11:46.471Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/2f/e68750da9b04856e2a7ec56fc6f034a5a79775e9b9a81882252789873798/pydantic-2.12.4-py3-none-any.whl", hash = "sha256:92d3d202a745d46f9be6df459ac5a064fdaa3c1c4cd8adcfa332ccf3c05f871e", size = 463400, upload-time = "2025-11-05T10:50:06.732Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/87/b70ad306ebb6f9b585f114d0ac2137d792b48be34d732d60e597c2f8465a/pydantic-2.12.5-py3-none-any.whl", hash = "sha256:e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d", size = 463580, upload-time = "2025-11-26T15:11:44.605Z" },
 ]
 
 [[package]]
@@ -676,8 +676,8 @@ wheels = [
 
 [[package]]
 name = "rdf-delta"
-version = "0.2.4"
-source = { url = "https://github.com/Kurrawong/rdf-delta-python/archive/refs/tags/0.2.4.zip" }
+version = "0.2.5"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "lark" },
@@ -685,15 +685,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "rdflib" },
 ]
-sdist = { hash = "sha256:22a40ddec8aed57d904d3e5617e0beed2f089cab1b714f24c15c546a512a12e0" }
-
-[package.metadata]
-requires-dist = [
-    { name = "httpx", specifier = ">=0.26.0" },
-    { name = "lark", specifier = ">=1.1.9" },
-    { name = "loguru", specifier = ">=0.7.2" },
-    { name = "pydantic", specifier = ">=2.5.3" },
-    { name = "rdflib", specifier = ">=7.0.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/38/e2/000210b6e1466ba6bc31a0d87ee7ded6fb7ba99312915bb6383bf540e20f/rdf_delta-0.2.5.tar.gz", hash = "sha256:72429fa525d2589c42252eefeb8c2ea2a42f15b0abfd99b80fad824895c75d25", size = 3396, upload-time = "2025-12-24T02:14:40.168Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/bd/465c0636e85e4f9cad5794c26dd4456379c01964152807788251607ecf8f/rdf_delta-0.2.5-py3-none-any.whl", hash = "sha256:96ff38bea62dcc6f81bf4bc769b7f8c390f532a63645e1d89ea3a534cbdc1a39", size = 4190, upload-time = "2025-12-24T02:14:38.841Z" },
 ]
 
 [[package]]
