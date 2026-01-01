@@ -19,8 +19,18 @@ tasks:
       - uv run ruff format $TESTS_DIR
       - uv run ruff check --select I --fix $TESTS_DIR
 
+  require-docker:
+    desc: "Ensure Docker Desktop is running"
+    preconditions:
+      - sh: docker info >/dev/null 2>&1
+        msg: |
+          ❌ Docker Desktop is not running.
+          Please start Docker Desktop and try again.
+
   test:
     desc: Run tests
+    deps:
+      - require-docker
     cmds:
       - uv run pytest $TESTS_DIR -rP
 
