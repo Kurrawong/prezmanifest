@@ -160,7 +160,7 @@ For example, to extend the criteria `prezmanifest` uses to judge the newness of 
 
 ## License
 
-This code is available for reuse according to the https://opensource.org/license/bsd-3-clause[BSD 3-Clause License].
+This code is available for reuse according to the [BSD 3-Clause License](https://opensource.org/license/bsd-3-clause).
 
 &copy; 2024-2025 KurrawongAI
 
@@ -174,7 +174,7 @@ For all matters, please contact:
 
 ## Background concepts & other resources
 
-The amin documentation for Prez Manifests - what they are, how to make them etc., is online at <https://prez.dev>,
+The admin documentation for Prez Manifests - what they are, how to make them etc., is online at <https://prez.dev>,
 however, here are also two concepts referred to above, summarised.
 
 ### Conformance Claims
@@ -221,7 +221,7 @@ to improve the presentation of the data in Prez in the following ways:
     * the example was copy 'n pasted with only minor changes, see `manifest.ttl` in the ISU catalogue repo
     * the initial manifest file was validated with prezmanifest/validator: `pm validate isu-catalogue/manifest.ttl`
 2. A labels file was automatically generated using prezmanifest/labeller
-    * using the [KurrawongAI Semantic Background](https://demo.dev.kurrawong.ai/catalogs/exm:demo-vocabs) as a source of
+    * using the [KurrawongAI Semantic Background](https://github.com/Kurrawong/semantic-background) as a source of
       labels
     * using the command `pm label rdf isu-catalogue/manifest.ttl http://demo.dev.kurrawong.ai/sparql > labels.ttl`
     * the file, `labels.ttl` was stored in the ISU Catalogue repo `_background/` folder and indicated in the manifest
