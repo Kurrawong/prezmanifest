@@ -28,7 +28,7 @@ The functions provided are:
 * **validate**
     * performs SHACL validation on the Manifest, followed by existence checking for each resource - are they reachable
       by this script on the file system or over the Internet? Will also check
-      any [Conformance Claims](#conformance-claims)given in the Manifest)
+      any [Conformance Claims](#conformance-claims) given in the Manifest)
 * **label**
     * lists all the IRIs for elements with a Manifest's Resources that don't have labels. Given a source of additional
       labels, such as the [KurrawongAI Semantic Background](#kurrawongai-semantic-background), it can try to extract any
