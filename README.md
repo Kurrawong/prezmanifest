@@ -188,7 +188,7 @@ resources, e.g. `tests/demo-vocabs/manifest-conformance.ttl`
 ### KurrawongAI Semantic Background
 
 [KurrawongAI](https://kurrawong.ai) makes available labels for all the elements of about 100 well-known ontologies and
-vocabularies at <https://demo.dev.kurrawong.ai/catalogs/exm:demo-vocabs>. You can use this as a source (SPARQL Endpoint)
+vocabularies at [KurrawongAI Semantic Background](https://github.com/Kurrawong/semantic-background). You can use this as a source (SPARQL Endpoint)
 of labels to patch content in Manifests that are missing labels with.
 
 ## Case Studies
