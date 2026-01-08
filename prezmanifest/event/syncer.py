@@ -135,6 +135,66 @@ def _generate_canon_dataset(ds: Dataset) -> Dataset:
     return return_ds
 
 
+def _generate_rdf_patch_from_datasets(ds: Dataset, previous_ds: Dataset) -> str:
+    """Generate an RDF patch body from two datasets.
+
+    Computes the diff between datasets and generates an RDF patch
+    with TX/TC markers but no header.
+
+    Parameters:
+        ds: The current/target dataset.
+        previous_ds: The previous/source dataset.
+
+    Returns:
+        RDF patch body string with TX . at start and TC . at end.
+    """
+    # Convert datasets to sets of quads for faster diff operations
+    logger.info("Extracting quads from current dataset")
+    ds_quads = set(ds.quads())
+    logger.info(f"Quads: {len(ds_quads)}")
+    logger.info("Extracting quads from previous dataset")
+    previous_ds_quads = set(previous_ds.quads())
+    logger.info(f"Quads: {len(previous_ds_quads)}")
+
+    # Compute diffs using set operations
+    # Statements in previous but not in current = deletions
+    logger.info("Computing deletions (previous - current)")
+    to_delete_quads = previous_ds_quads - ds_quads
+    # Statements in current but not in previous = additions
+    logger.info("Computing additions (current - previous)")
+    to_add_quads = ds_quads - previous_ds_quads
+
+    # Build patch body
+    lines = ["TX ."]
+
+    # Serialize and add deletion statements
+    logger.info("Serializing deletions to N-Quads")
+    if to_delete_quads:
+        delete_ds = Dataset()
+        for s, p, o, g in to_delete_quads:
+            delete_ds.add((s, p, o, g))
+        delete_nquads = delete_ds.serialize(format="nquads")
+        for line in delete_nquads.strip().split("\n"):
+            if line:
+                lines.append(f"D {line}")
+
+    # Serialize and add addition statements
+    logger.info("Serializing additions to N-Quads")
+    if to_add_quads:
+        add_ds = Dataset()
+        for s, p, o, g in to_add_quads:
+            add_ds.add((s, p, o, g))
+        add_nquads = add_ds.serialize(format="nquads")
+        for line in add_nquads.strip().split("\n"):
+            if line:
+                lines.append(f"A {line}")
+
+    lines.append("TC .")
+
+    logger.info("RDF patch generation done")
+    return "\n".join(lines)
+
+
 def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     """Generate an add-only RDF patch body from a dataset.
 
@@ -143,8 +203,9 @@ def _generate_rdf_patch_body_add(ds: Dataset) -> Generator[str, None, None]:
     """
     logger.info("Canonicalising add-only dataset")
     return_ds = _generate_canon_dataset(ds)
-    logger.info(f"Serializing add-only RDF patch body to string")
+    logger.info("Serializing add-only RDF patch body to string")
     output = return_ds.serialize(format="patch", operation="add")
+    logger.info("Serialization done.")
     yield from _rdf_patch_body_substr(output)
 
 
@@ -161,7 +222,8 @@ def _generate_rdf_patch_body_diff(
     logger.info("Canonicalising diff-only current dataset")
     ds = _generate_canon_dataset(ds)
     logger.info("Serializing diff-only RDF patch body to string")
-    output = previous_ds.serialize(format="patch", target=ds)
+    output = _generate_rdf_patch_from_datasets(ds, previous_ds)
+    logger.info("Serialization done.")
     yield from _rdf_patch_body_substr(output)
 
 
@@ -205,24 +267,24 @@ def sync_rdf_delta(
         logger.info(
             "Previous commit hash is None. Adding current commit hash to dataset."
         )
-        logger.info(f"Adding commit hash to current manifest dataset")
+        logger.info("Adding commit hash to current manifest dataset")
         _add_commit_hash_to_dataset(current_commit_hash, ds)
-        logger.info(f"Generating RDF patch body chunks for add operation")
+        logger.info("Generating RDF patch body chunks for add operation")
         rdf_patch_body_chunks = _generate_rdf_patch_body_add(ds)
     else:
         # Check out the previous commit.
         # Generate the previous manifest dataset.
         logger.info(f"Checking out previous commit: {previous_commit_hash}")
         repo.git.checkout(previous_commit_hash)
-        logger.info(f"Loading previous manifest dataset")
+        logger.info("Loading previous manifest dataset")
         previous_ds = load(manifest, return_data_type=ReturnDatatype.dataset)
-        logger.info(f"Adding commit hash to previous manifest dataset")
+        logger.info("Adding commit hash to previous manifest dataset")
         _add_commit_hash_to_dataset(previous_commit_hash, previous_ds)
-        logger.info(f"Adding commit hash to current manifest dataset")
+        logger.info("Adding commit hash to current manifest dataset")
         _add_commit_hash_to_dataset(current_commit_hash, ds)
 
         # Generate an RDF patch between the previous commit dataset and the current commit dataset.
-        logger.info(f"Generating RDF patch body chunks for diff operation")
+        logger.info("Generating RDF patch body chunks for diff operation")
         rdf_patch_body_chunks = _generate_rdf_patch_body_diff(ds, previous_ds)
 
     # Create events for each chunk.
