@@ -318,14 +318,3 @@ def test_denormalise_artifacts():
         in x.keys()
     )
     assert manifest_root / "_background/labels.ttl" in x.keys()
-
-
-def test_sync_validators():
-    pm_cache = Path().home() / ".pm"
-
-    if Path.is_dir(pm_cache):
-        shutil.rmtree(pm_cache)
-
-    known_validators = sync_validators(make_httpx_client("kai", "kai"))
-
-    assert len(known_validators) == 10

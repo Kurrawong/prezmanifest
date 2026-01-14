@@ -749,8 +749,10 @@ def update_local_artifact(
     r.serialize(destination=artifact_path, format="longturtle")
 
 
+# TODO: This should be removed in time as it's now defined in kurra
+# .      https://github.com/Kurrawong/kurra/blob/main/kurra/shacl.py#L129
 def sync_validators(http_client: httpx.Client | None = None):
-    """Checks the Semantic Background, currently https://fuseki.dev.kurrawong.ai/semback, for known validators.
+    """Checks the Semantic Background, currently https://fuseki.dev.kurrawong.ai/semback/sparql, for known validators.
 
     It then checks local storage to see which, if any, of those validators are stored locally.
 
@@ -758,7 +760,7 @@ def sync_validators(http_client: httpx.Client | None = None):
     """
     pm_cache = Path().home() / ".pm"
     cached_validators = pm_cache / "validators.pkl"
-    semback_sparql_endpoint = "https://fuseki.dev.kurrawong.ai/semback"
+    semback_sparql_endpoint = "https://fuseki.dev.kurrawong.ai/semback/sparql"
 
     # get list of remote known validators
     q = """
