@@ -750,7 +750,7 @@ def update_local_artifact(
 
 
 def sync_validators(http_client: httpx.Client | None = None):
-    """Checks the Semantic Background, currently https://fuseki.dev.kurrawong.ai/semback, for known validators.
+    """Checks the Semantic Background, currently https://fuseki.dev.kurrawong.ai/semback/query, for known validators.
 
     It then checks local storage to see which, if any, of those validators are stored locally.
 
@@ -758,7 +758,7 @@ def sync_validators(http_client: httpx.Client | None = None):
     """
     pm_cache = Path().home() / ".pm"
     cached_validators = pm_cache / "validators.pkl"
-    semback_sparql_endpoint = "https://fuseki.dev.kurrawong.ai/semback"
+    semback_sparql_endpoint = "https://fuseki.dev.kurrawong.ai/semback/query"
 
     # get list of remote known validators
     q = """
