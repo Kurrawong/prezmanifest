@@ -323,8 +323,5 @@ For use in _infracode_, note that the `pm sync` function can return the table ab
 * pass tests: `task test`
 * update version in pyproject.toml
 * commit all updates: `git commit -a "..."`
-* tag with version: `git tag x.y.z`
-* push tags: `git push --tags`
-* build: `uv build`
-* publish: `uv publish -u __token__ -p {TOKEN}`
 * make GitHub release
+  * this will trigger pypi.yml workflow to publish to PyPI
