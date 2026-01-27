@@ -1,4 +1,3 @@
-import shutil
 from datetime import datetime
 
 import pytest
@@ -77,20 +76,6 @@ def test_get_identifier_from_file():
 
     i = get_identifier_from_file(f1)
     assert i[0] == URIRef("https://example.com/demo-vocabs/image-test")
-
-
-def test_get_validator_graph():
-    MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest.ttl"
-
-    g = get_validator_graph(MANIFEST, URIRef("https://data.idnau.org/pid/cp"))
-
-    assert len(g) == 318
-
-    g2 = get_validator_graph(
-        MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "image-test.ttl"
-    )
-
-    assert len(g2) == 29
 
 
 def test_get_manifest_paths_and_graph():

@@ -22,7 +22,7 @@ PREFIX schema: <https://schema.org/>
             prof:hasArtifact "item-02.ttl" ;
             prof:hasRole mrr:ResourceData ;
             schema:name "Resource Data - Vocab" ;
-            dcterms:conformsTo <https://linked.data.gov.au/def/vocpub> ;
+            dcterms:conformsTo <https://linked.data.gov.au/def/vocpub/validator> ;
         ] ,
         [
             prof:hasArtifact "labels.ttl" ;

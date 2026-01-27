@@ -2,10 +2,8 @@ import datetime
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
-from pickle import dump, load
 
 import httpx
-from kurra.db.gsp import get as gsp_get
 from kurra.file import load_graph
 from kurra.sparql import query
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
@@ -23,11 +21,11 @@ KNOWN_PROFILES = {
         "path": Path(__file__).parent / "validators/idn-cp.ttl",
         "main_entity_classes": [SDO.Dataset, DCAT.Dataset],
     },
-    URIRef("https://w3id.org/profile/vocpub"): {
+    URIRef("https://linked.data.gov.au/def/vocpub/validator"): {
         "path": Path(__file__).parent / "validators/vocpub-5.2.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
-    URIRef("https://linked.data.gov.au/def/vocpub"): {
+    URIRef("https://linked.data.gov.au/def/vocpub/validator"): {
         "path": Path(__file__).parent / "validators/vocpub-5.2.ttl",
         "main_entity_classes": [SKOS.ConceptScheme],
     },
@@ -137,25 +135,6 @@ def get_identifier_from_file(file: Path) -> list[URIRef]:
         return gs
     else:
         return []
-
-
-def get_validator_graph(
-    manifest: Path | tuple[Path, Path, Graph], iri_or_path: URIRef | Literal
-) -> Graph:
-    """Returns the graph of a validator from either the path of a SHACL file or a known IRI->profile validator file"""
-    manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
-        manifest
-    )
-
-    if isinstance(iri_or_path, URIRef):
-        if iri_or_path not in KNOWN_PROFILES.keys():
-            raise ValueError(
-                f"You have specified conformance to an unknown profile. Known profiles are {', '.join(KNOWN_PROFILES.keys())}"
-            )
-        return load_graph(KNOWN_PROFILES[iri_or_path]["path"])
-
-    else:
-        return load_graph(absolutise_path(iri_or_path, manifest_root))
 
 
 def get_manifest_paths_and_graph(
@@ -747,3 +726,33 @@ def update_local_artifact(
         """.replace("xxx", graph_id)
     r = query(sparql_endpoint, q, http_client=http_client, return_format="python")
     r.serialize(destination=artifact_path, format="longturtle")
+
+
+def get_background_graph(manifest: Path | tuple[Path, Path, Graph]) -> Graph:
+    background_graph = Graph()
+
+    # can't use get_manifest_paths_and_graph here as it uses validate
+    manifest_path = manifest
+    manifest_root = Path(manifest).parent.resolve()
+    manifest_graph = load_graph(manifest)
+
+    for resource in manifest_graph.objects(None, PROF.hasResource):
+        for role in manifest_graph.objects(resource, PROF.hasRole):
+            # The data files & background - must be processed after Catalogue
+            if role in [
+                MRR.CompleteCatalogueAndResourceLabels,
+                MRR.IncompleteCatalogueAndResourceLabels,
+            ]:
+                for artifact in manifest_graph.objects(resource, PROF.hasArtifact):
+                    for file in get_files_from_artifact(
+                        (manifest_path, manifest_root, manifest_graph), artifact
+                    ):
+                        if not file.is_file():
+                            raise ValueError(
+                                f"The artifact {file} in Manifest {manifest} is not a file"
+                            )
+
+                        if str(file.name).endswith(".ttl"):
+                            background_graph += load_graph(file)
+
+    return background_graph

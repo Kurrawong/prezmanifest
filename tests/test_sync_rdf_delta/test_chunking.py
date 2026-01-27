@@ -1,6 +1,5 @@
 """Tests for RDF patch chunking functionality in the event syncer."""
 
-import pytest
 from rdflib import RDF, Dataset, Literal, Namespace
 
 from prezmanifest.event.syncer import (

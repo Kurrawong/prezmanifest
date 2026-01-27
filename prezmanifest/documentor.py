@@ -78,8 +78,7 @@ def table(manifest: Path, table_format: TableFormats = TableFormats.markdown) ->
         )
 
     # load and validate manifest
-    validate(manifest)
-    manifest_graph = load_graph(manifest)
+    manifest_graph = validate(manifest)
 
     # add in MRR vocab
     manifest_graph += load_graph(Path(__file__).parent / "mrr.ttl")

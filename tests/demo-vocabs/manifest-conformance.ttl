@@ -18,7 +18,7 @@ PREFIX schema: <https://schema.org/>
                 [
                     schema:contentLocation "vocabs/image-test.ttl" ;
                     schema:mainEntity <https://example.com/demo-vocabs/image-test> ;
-                    dcterms:conformsTo <https://w3id.org/profile/vocpub> ;
+                    dcterms:conformsTo <https://linked.data.gov.au/def/vocpub/validator> ;
                 ] ,
                 "vocabs/language-test.ttl" ;
             prof:hasRole mrr:ResourceData ;

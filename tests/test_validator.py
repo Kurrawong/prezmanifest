@@ -17,7 +17,7 @@ def test_validator_invalid_01():
     try:
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-invalid-01.ttl")
     except ManifestValidationError as e:
-        assert "Manifest Shapes invalid:" in str(e)
+        assert "The manifest file is invalid" in str(e)
 
 
 def test_validator_invalid_03():

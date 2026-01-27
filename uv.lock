@@ -294,18 +294,19 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "2.0.5"
+version = "2.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pyshacl" },
     { name = "rdflib" },
     { name = "rich" },
+    { name = "shacl-rules" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/f0/0ee0a034f0a1298a1285bfd9a075039da5c3fdce0e4c491d66e5ad5d2a1f/kurra-2.0.5.tar.gz", hash = "sha256:7c1eeed55cdc42287b219156f7d17202fe640b079df5215ee8ae43d780c688aa", size = 117296, upload-time = "2025-12-23T08:08:49.207Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/2f/fa33b225bf8206e4e1ec13fbc9cf56d5b32ac21a08054c6bd82c5801d673/kurra-2.2.2.tar.gz", hash = "sha256:84a5c4816e6c78cbaebdb8d558408ed3bf90d4f605ebee65159e7d347c25826c", size = 104285, upload-time = "2026-01-22T00:57:58.83Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/86/8c1bf8baf6e889104a9dc693bea39d9f372c7ed0a60cff68279062100eb4/kurra-2.0.5-py3-none-any.whl", hash = "sha256:fe13f254d8f346c126f846128753519041cc4766d72a32fb2495e2ed49315278", size = 26597, upload-time = "2025-12-23T08:08:46.255Z" },
+    { url = "https://files.pythonhosted.org/packages/77/21/3ca83a5b09bed4636f7c2163f01143ddb5c42657a17c22d0d0fb4dd9d21e/kurra-2.2.2-py3-none-any.whl", hash = "sha256:35310d50825d76373c09777e23b2808a3feb68aebd41b12f1bb677f79e3403fe", size = 30992, upload-time = "2026-01-22T00:57:57.019Z" },
 ]
 
 [[package]]
@@ -467,7 +468,7 @@ requires-dist = [
     { name = "azure-servicebus", marker = "extra == 'azure'", specifier = ">=7.14.3" },
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=2.0.5" },
+    { name = "kurra", specifier = ">=2.2.2" },
     { name = "labelify", specifier = ">=0.6.1" },
     { name = "pyshacl", specifier = ">=0.29.0" },
     { name = "rdf-delta", specifier = ">=0.2.5" },
@@ -736,6 +737,20 @@ wheels = [
 ]
 
 [[package]]
+name = "rich-click"
+version = "1.9.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4b/50/1497dbc52297d6759451bf5a991e9b2d0a122a5d33ac8cd057f81cb9910a/rich_click-1.9.6.tar.gz", hash = "sha256:463bd3dbef54a812282bfa93dde80c471bce359823fc1301be368eab63391cb2", size = 74777, upload-time = "2026-01-22T02:43:58.374Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/87/508930def644be9fb86fec63520151921061c152289b98798017a498d678/rich_click-1.9.6-py3-none-any.whl", hash = "sha256:e78d71e3f73a55548e573ccfd964e18503936e2e736a4a1f74c6c29479a2a054", size = 71430, upload-time = "2026-01-22T02:43:56.939Z" },
+]
+
+[[package]]
 name = "ruff"
 version = "0.14.4"
 source = { registry = "https://pypi.org/simple" }
@@ -759,6 +774,22 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/54/1a/a49f071f04c42345c793d22f6cf5e0920095e286119ee53a64a3a3004825/ruff-0.14.4-py3-none-win32.whl", hash = "sha256:643b69cb63cd996f1fc7229da726d07ac307eae442dd8974dbc7cf22c1e18fff", size = 12493429, upload-time = "2025-11-06T22:07:38.43Z" },
     { url = "https://files.pythonhosted.org/packages/bc/22/e58c43e641145a2b670328fb98bc384e20679b5774258b1e540207580266/ruff-0.14.4-py3-none-win_amd64.whl", hash = "sha256:26673da283b96fe35fa0c939bf8411abec47111644aa9f7cfbd3c573fb125d2c", size = 13635380, upload-time = "2025-11-06T22:07:40.496Z" },
     { url = "https://files.pythonhosted.org/packages/30/bd/4168a751ddbbf43e86544b4de8b5c3b7be8d7167a2a5cb977d274e04f0a1/ruff-0.14.4-py3-none-win_arm64.whl", hash = "sha256:dd09c292479596b0e6fec8cd95c65c3a6dc68e9ad17b8f2382130f87ff6a75bb", size = 12663065, upload-time = "2025-11-06T22:07:42.603Z" },
+]
+
+[[package]]
+name = "shacl-rules"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "lark" },
+    { name = "rdflib" },
+    { name = "rich" },
+    { name = "rich-click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/7c/66bfed6e2df78c50ecd6a0c8a0bfc648b329dae4dcff76112acedac298e0/shacl_rules-0.1.3.tar.gz", hash = "sha256:1913fa102091c1a1edda7f45dfb7c4259d6d5b4e3f49d3435c1ef7b1e6426077", size = 104383, upload-time = "2025-12-17T07:40:22.058Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/99/0212f60457a0538eb18fdd150ea2c1640aa6fb8065ba00e6ae65b8c934df/shacl_rules-0.1.3-py3-none-any.whl", hash = "sha256:fb0183fd30d7e81267fcd4f80fe88b31668d0c4015cc816cd6eb5ff6a087d444", size = 52495, upload-time = "2025-12-17T07:40:20.695Z" },
 ]
 
 [[package]]

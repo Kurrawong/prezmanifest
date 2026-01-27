@@ -9,14 +9,13 @@ specification (see https://prez.dev/manifest/) and checks that all the resources
 from pathlib import Path
 
 import httpx
+import kurra.shacl
 from kurra.utils import load_graph
 from pyparsing import Literal
-from pyshacl import validate as shacl_validate
-from rdflib import BNode, Dataset, Graph
+from rdflib import BNode, Graph, URIRef
 from rdflib.namespace import DCTERMS, PROF, SDO
 
-from prezmanifest.definednamespaces import MRR
-from prezmanifest.utils import get_files_from_artifact, get_validator_graph
+from prezmanifest.utils import get_background_graph, get_files_from_artifact
 
 
 class ManifestValidationError(Exception):
@@ -24,10 +23,23 @@ class ManifestValidationError(Exception):
 
 
 def validate(manifest: Path) -> Graph:
+    """Validates a manifest and any assets listed in it with a conformance claim.
+
+    Uses validators known in the Semantic Background or supplied by the user.
+
+    Args:
+        manifest: path to a manifest file
+
+    Returns:
+        Graph of validated manifest
+    """
+
     # can't use get_manifest_paths_and_graph() here as that function uses validate()
     manifest_path = manifest
     manifest_root = Path(manifest).parent.resolve()
     manifest_graph = load_graph(manifest)
+
+    ME = Path(__file__)
 
     def literal_resolves_as_file_folder_or_url(lit: Literal):
         l_str = str(lit)
@@ -53,57 +65,38 @@ def validate(manifest: Path) -> Graph:
                     f"Content link {manifest_root / l_str} is invalid - not a file"
                 )
 
-    def shacl_validate_resource(data_graph, shacl_graph) -> (bool, str | None):
-        valid, v_graph, v_text = shacl_validate(
-            data_graph, shacl_graph=shacl_graph, allow_warnings=True
-        )
-        if valid:
-            return True, None
-        else:
-            return False, v_text
+    # validate the manifest
+    if not kurra.shacl.check_validator_known("https://prez.dev/manifest-validator"):
+        kurra.shacl.sync_validators()
 
-    ME = Path(__file__)
-
-    # SHACL validation
-
-    mrr_vocab_graph = load_graph(ME.parent / "mrr.ttl")
-    shacl_graph = load_graph(ME.parent / "validators/prezmanifest.ttl")
-    valid, error_msg = shacl_validate_resource(
-        manifest_graph + mrr_vocab_graph, shacl_graph
+    v = kurra.shacl.validate(
+        [manifest_graph, load_graph(ME.parent / "mrr.ttl")],
+        "https://prez.dev/manifest-validator",
     )
-    if not valid:
-        raise ManifestValidationError(f"Manifest Shapes invalid:\n\n{error_msg}")
+    if not v[0]:
+        raise ManifestValidationError(f"The manifest file is invalid:\n\n{v[2]}")
 
-    # get labels graph for SHACL validation
-    context_graph = Graph()
-    for s, o in manifest_graph.subject_objects(PROF.hasResource):
-        for role in manifest_graph.objects(o, PROF.hasRole):
-            # The data files & background - must be processed after Catalogue
-            if role in [
-                MRR.CompleteCatalogueAndResourceLabels,
-                MRR.IncompleteCatalogueAndResourceLabels,
-            ]:
-                for artifact in manifest_graph.objects(o, PROF.hasArtifact):
-                    for f in get_files_from_artifact(
-                        (manifest_path, manifest_root, manifest_graph), artifact
-                    ):
-                        if not f.is_file():
-                            raise ManifestValidationError(f"Artifact {f} is not a file")
+    # get the background graph for merging into artifact graphs for validation
+    background_graph = get_background_graph(manifest)
 
-                        if str(f.name).endswith(".ttl"):
-                            context_graph += load_graph(f)
-                        elif str(f.name).endswith(".trig"):  # TODO: test this option
-                            d = Dataset()
-                            d.parse(f, format="trig")
-                            for g in d.graphs:
-                                context_graph += g
+    # validate each resource with a conformance claim
+    # check all conformance claims validators indicated by IRI are known
+    # if any ar unknown, force a validator sync
+    for validator in manifest_graph.objects(subject=None, predicate=DCTERMS.conformsTo):
+        if not kurra.shacl.check_validator_known(str(validator)):
+            kurra.shacl.sync_validators()
 
-    # Content link validation
-    for s, o in manifest_graph.subject_objects(PROF.hasResource):
-        # see if there's a conformance claim for the resource
-        cc = manifest_graph.value(subject=o, predicate=DCTERMS.conformsTo)
+    # recheck all, in case we had a sync
+    for validator in manifest_graph.objects(subject=None, predicate=DCTERMS.conformsTo):
+        if str(validator).startswith("http"):
+            if not kurra.shacl.check_validator_known(str(validator)):
+                raise ManifestValidationError(
+                    f"The validator <{validator}> indicated in the manifest file is not known to the Semantic Background"
+                )
 
-        for artifact in manifest_graph.objects(o, PROF.hasArtifact):
+    # validate each file referenced in the Manifest
+    for s, resource in manifest_graph.subject_objects(PROF.hasResource):
+        for artifact in manifest_graph.objects(resource, PROF.hasArtifact):
             if isinstance(artifact, BNode):
                 content_location = manifest_graph.value(
                     subject=artifact, predicate=SDO.contentLocation
@@ -115,38 +108,40 @@ def validate(manifest: Path) -> Graph:
             # ensure the artifact resolves
             literal_resolves_as_file_folder_or_url(content_location)
 
-            # if we now have a CC for the resource or the artifact, use it
+            # validate each file in the artifact
             for file in get_files_from_artifact(
                 (manifest_path, manifest_root, manifest_graph), content_location
             ):
-                # if there is a conformance claim for this Resource, use it, if not, check if the artifact has one
-                if cc is None:
-                    cc = manifest_graph.value(
-                        subject=artifact, predicate=DCTERMS.conformsTo
-                    )
-                    artifact_cc = True
-                else:
-                    artifact_cc = False
+                # if there is a conformance claim validator for this artifact, use it
+                validator = manifest_graph.value(
+                    subject=artifact, predicate=DCTERMS.conformsTo
+                )
 
-                if cc is not None:
+                # if not, check if the resource has one to use
+                if validator is None:
+                    validator = manifest_graph.value(
+                        subject=resource, predicate=DCTERMS.conformsTo
+                    )
+
+                if validator is not None:
                     try:
                         data_graph = load_graph(manifest_root / file)
                     except SyntaxError as e:
                         raise SyntaxError(f"Failed to load {file}: {e}")
-                    if context_graph is not None:
-                        data_graph += context_graph
-                    valid, error_msg = shacl_validate_resource(
-                        data_graph,
-                        get_validator_graph(
-                            (manifest_path, manifest_root, manifest_graph), cc
-                        ),
-                    )
-                    if not valid:
-                        raise ManifestValidationError(
-                            f"Resource {file} Shapes invalid according to conformance claim:\n\n{error_msg}"
-                        )
 
-                if artifact_cc:
-                    cc = None
+                    # all validators indicated in the Manifest will have been confirmed known at this point
+                    # or are supplied
+                    if isinstance(validator, URIRef):
+                        pass
+                    else:  # must be a local file
+                        validator = manifest_root / str(validator)
+
+                    v = kurra.shacl.validate(
+                        [data_graph, background_graph], str(validator)
+                    )
+                    if not v[0]:
+                        raise ManifestValidationError(
+                            f"the artifact {manifest_root / file} is invalid according to validator {validator}:\n\n{v[2]}"
+                        )
 
     return manifest_graph
