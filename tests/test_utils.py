@@ -74,8 +74,12 @@ def test_get_files_from_artifact():
 def test_get_identifier_from_file():
     f1 = TESTS_DIR / "demo-vocabs" / "vocabs" / "image-test.ttl"
 
-    i = get_identifier_from_file(f1)
-    assert i[0] == URIRef("https://example.com/demo-vocabs/image-test")
+    i1 = get_identifier_from_file(f1)
+    assert i1[0] == URIRef("https://example.com/demo-vocabs/image-test")
+
+    f2 = TESTS_DIR / "utils/main-entity-tests/artifact-unknown-class.ttl"
+    i2 = get_identifier_from_file(f2)
+    assert i2 is None  # URIRef("https://example.com/dataset/x")
 
 
 def test_get_manifest_paths_and_graph():
@@ -120,13 +124,46 @@ def test_make_httpx_client():
 def test_get_main_entity_iri_of_artifact():
     MANIFEST = TESTS_DIR / "demo-vocabs" / "manifest-conformance.ttl"
 
-    assert get_main_entity_iri_of_artifact(
-        MANIFEST.parent / "vocabs/image-test.ttl", MANIFEST
+    assert get_artifact_main_entity_iri(
+        MANIFEST.parent / "vocabs/image-test.ttl",
+        MANIFEST
     ) == URIRef("https://example.com/demo-vocabs/image-test")
 
-    assert get_main_entity_iri_of_artifact(
-        MANIFEST.parent / "vocabs/language-test.ttl", MANIFEST
+    assert get_artifact_main_entity_iri(
+        MANIFEST.parent / "vocabs/language-test.ttl",
+        MANIFEST
     ) == URIRef("https://example.com/demo-vocabs/language-test")
+
+    # specify the class in the manifest
+    assert get_artifact_main_entity_iri(
+        TESTS_DIR / "utils/main-entity-tests/artifact-unknown-class.ttl",
+        TESTS_DIR / "utils/main-entity-tests/manifest-class.ttl",
+    ) == URIRef("https://example.com/dataset/x")
+
+    # specify the class in the function
+    assert get_artifact_main_entity_iri(
+        TESTS_DIR / "utils/main-entity-tests/artifact-unknown-class.ttl",
+        TESTS_DIR / "utils/main-entity-tests/manifest-base.ttl",
+        atype=URIRef("http://rdfs.org/ns/void#Dataset"),
+    ) == URIRef("https://example.com/dataset/x")
+
+    # specify the instance in the manifest
+    assert get_artifact_main_entity_iri(
+        TESTS_DIR / "utils/main-entity-tests/artifact-unknown-class.ttl",
+        TESTS_DIR / "utils/main-entity-tests/manifest-instance.ttl",
+    ) == URIRef("https://example.com/dataset/x")
+
+    # specify the instance in the manifest in a different directory
+    assert get_artifact_main_entity_iri(
+        TESTS_DIR / "utils/main-entity-tests/artifact-unknown-class.ttl",
+        TESTS_DIR / "utils/main-entity-tests/sub/manifest-instance.ttl",
+    ) == URIRef("https://example.com/dataset/x")
+
+    # specify the instance in the manifest in a different directory 2
+    assert get_artifact_main_entity_iri(
+        TESTS_DIR / "utils/main-entity-tests/sub/subsub/artifact-unknown-class.ttl",
+        TESTS_DIR / "utils/main-entity-tests/sub/manifest-instance.2.ttl",
+    ) == URIRef("https://example.com/dataset/x")
 
 
 def test_get_version_indicators_local():

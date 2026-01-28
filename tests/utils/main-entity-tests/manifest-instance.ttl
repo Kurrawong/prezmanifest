@@ -1,0 +1,17 @@
+PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+PREFIX prez: <https://prez.dev/>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX schema: <https://schema.org/>
+
+[]
+    a prez:Manifest ;
+    prof:hasResource
+        [
+            prof:hasArtifact
+                [
+                    schema:contentLocation "artifact-unknown-class.ttl" ;
+                    schema:mainEntity <https://example.com/dataset/x> ;
+                ] ;
+            prof:hasRole mrr:ResourceData ;
+        ] ;
+.

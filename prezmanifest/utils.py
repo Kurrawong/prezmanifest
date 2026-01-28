@@ -42,18 +42,14 @@ KNOWN_PROFILES = {
 KNOWN_ENTITY_CLASSES = [
     SKOS.ConceptScheme,
     OWL.Ontology,
+    DCAT.Catalog,
+    DCAT.Dataset,
     DCAT.Resource,
     SDO.CreativeWork,
-    SDO.Dataset,
-    DCAT.Dataset,
-    SDO.DefinedTerm,
     SDO.DataCatalog,
-    DCAT.Catalog,
+    SDO.Dataset,
+    SDO.DefinedTerm,
 ]
-
-ENTITY_CLASSES_PER_PROFILE = {
-    "": "",
-}
 
 
 def path_or_url(s: str) -> Path | str:
@@ -119,7 +115,7 @@ def get_files_from_artifact(
 
 def get_identifier_from_file(file: Path) -> list[URIRef]:
     """Returns a list if RDFLib graph identifier (URIRefs) from a triples or quads file
-    for all owl:Ontology and skos:ConceptScheme objects"""
+    for all KNOWN_ENTITY_CLASSES objects"""
     if file.name.endswith(".ttl"):
         g = Graph().parse(file)
         for entity_class in KNOWN_ENTITY_CLASSES:
@@ -222,29 +218,118 @@ def make_httpx_client(
     return httpx.Client(auth=auth, timeout=timeout)
 
 
-def get_main_entity_iri_of_artifact(
+def get_artifact_main_entity_iri(
     artifact: Path,
     manifest: Path | tuple[Path, Path, Graph],
     artifact_graph: Graph = None,
     cc: URIRef = None,
     atype: URIRef = None,
 ) -> URIRef:
+    """Gets the IRI of the instance of the Main Entity in an artifact where the class of the Main Entity is either
+    one of KNOWN_ENTITY_CLASSES or supplied in the Manifest either as a class to search for - by using schema:additionalType
+     - or by directly indicating the IRI of the main Entity with schema:mainEntity"""
+
+    # load the manifest
+    # get Main Entity directly from Manifest mainEntity indicated
+    # load the artifact graph
+    # check artifact graph load
+    # get Main Entity class using specified atype
+    # get Main Entity class via Manifest additionalType indicated
+    # get Main Entity class via known profiles' classes
+    # get Main Entity classes from KNOWN_ENTITY_CLASSES static list
+    # build the query to look for the Main Entity in the artifact
+    # check artifact query return
+    # query the artifact for the Main Entity
+    # check the Main Entity query return
+    # return
+
+    known_entity_classes = []
+
+    # load the manifest
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
         manifest
     )
-    artifact_path = absolutise_path(artifact, manifest_root)
-    known_entity_classes = []
-    if cc is not None:
-        if cc in KNOWN_PROFILES.keys():
-            for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
-                known_entity_classes.append(str(m_e_c))
 
+    # get Main Entity directly from Manifest mainEntity indicated
+    import os
+
+    artifact_path_abs = absolutise_path(artifact, manifest_root)
+    artifact_path_rel = os.path.relpath(
+        artifact,
+        start=os.path.dirname(manifest_path)
+    )
+    artifact_file = artifact.name
+    # artifact_path_rel = Path(str(artifact_path_abs).replace(os.path.commonpath([artifact.parent, manifest_root]), "")) / artifact_file
+    q = ("""
+        PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+        PREFIX schema: <https://schema.org/>
+    
+        SELECT ?iri
+        WHERE {
+            VALUES ?cl {
+                "{artifact_path_abs}"
+                "{artifact_path_rel}"
+                "{artifact_file}"
+            }
+            ?resource prof:hasArtifact ?bn .
+            ?bn schema:contentLocation ?cl .            
+            ?bn schema:mainEntity ?iri .
+        }
+        """.replace("{artifact_path_abs}", str(artifact_path_abs))
+         .replace("{artifact_path_rel}", str(artifact_path_rel))
+         .replace("{artifact_file}", str(artifact_file)))
+
+    for r in manifest_graph.query(q):
+        return URIRef(r["iri"])
+
+    # load the artifact graph
+    g = artifact_graph if artifact_graph is not None else load_graph(artifact_path_abs)
+
+    # check artifact graph load
+    if not isinstance(g, Graph):
+        raise ValueError(f"Could not load a graph of the artifact at {artifact_path_abs}")
+
+    # get Main Entity class using specified atype
     if atype is not None:
         known_entity_classes.append(str(atype))
 
+    # get Main Entity class via Manifest additionalType indicated
+    if len(known_entity_classes) < 1:
+        q = ("""
+            PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+            PREFIX schema: <https://schema.org/>
+            
+            SELECT DISTINCT ?at
+            WHERE {
+                VALUES ?art {
+                    "{artifact_path_abs}"
+                    "{artifact_path_rel}"
+                    "{artifact_file}"
+                }
+                ?resource 
+                    prof:hasArtifact ?art ;        
+                    schema:additionalType ?at ;
+                .
+            }
+            """.replace("{artifact_path_abs}", str(artifact_path_abs))
+             .replace("{artifact_path_rel}", str(artifact_path_rel))
+             .replace("{artifact_file}", str(artifact_file)))
+
+        for r in manifest_graph.query(q):
+            known_entity_classes.append(r["at"])
+
+    # get Main Entity class via known profiles' classes
+    if len(known_entity_classes) < 1:
+        if cc is not None:
+            if cc in KNOWN_PROFILES.keys():
+                for m_e_c in KNOWN_PROFILES[cc]["main_entity_classes"]:
+                    known_entity_classes.append(str(m_e_c))
+
+    # get Main Entity classes from KNOWN_ENTITY_CLASSES static list
     if len(known_entity_classes) < 1:
         known_entity_classes = [str(x) for x in KNOWN_ENTITY_CLASSES]
 
+    # build the query to look for the Main Entity in the artifact
     known_entity_classes_str = f"<{'>\n                <'.join(known_entity_classes)}>"
     q = f"""
         SELECT ?me
@@ -257,27 +342,25 @@ def get_main_entity_iri_of_artifact(
         """
     mes = []
 
-    g = artifact_graph if artifact_graph is not None else load_graph(artifact_path)
-
-    if not isinstance(g, Graph):
-        raise ValueError(f"Could not load a graph of the artifact at {artifact_path}")
-
+    # query the artifact for the Main Entity
     for r in query(g, q, return_format="python", return_bindings_only=True):
         if r.get("me"):
             mes.append(r["me"])
 
+    # check the Main Entity query return
     if len(mes) != 1:
         if len(mes) > 1:
             raise ValueError(
-                f"The artifact at {artifact_path} has more than one Main Entity: {', '.join(mes)} "
+                f"The artifact at {artifact_path_abs} has more than one Main Entity: {', '.join(mes)} "
                 f"based on the class {cc if cc is not None else '(none given)'}. There must only be one."
             )
         else:
             raise ValueError(
-                f"The artifact at {artifact_path} has no recognizable Main Entity, "
+                f"The artifact at {artifact_path_abs} has no recognizable Main Entity, "
                 f"based on the classes {cc if cc is not None else '(none given)'}. There must be one."
             )
 
+    # return
     return URIRef(mes[0])
 
 
@@ -292,7 +375,7 @@ def get_version_indicators_local(
 
     # if we aren't given a Main Entity, let's look for one using the Main Entity Classes
     if version_indicators.get("main_entity") is None:
-        version_indicators["main_entity"] = get_main_entity_iri_of_artifact(
+        version_indicators["main_entity"] = get_artifact_main_entity_iri(
             artifact,
             (manifest_path, manifest_root, manifest_graph),
             artifact_graph,
@@ -490,8 +573,10 @@ def which_is_more_recent(
     return compare_version_indicators(version_indicators, remote)
 
 
-def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> dict:
-    """For each Artifact in the Manifest, return a dict:
+def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph]) -> dict:
+    """Extracts all the artifacts from a Manifest.
+
+    Returns a dict of:
 
     Artifact path,
     Main Entity,
@@ -500,10 +585,7 @@ def denormalise_artifacts(manifest: Path | tuple[Path, Path, Graph] = None) -> d
     Version IRI
     Version Info
     Role
-    Version Indicators
-
-    of each asset's path, main entity IRI, manifest role and version indicators"""
-
+    Version Indicators"""
     artifacts_info = {}
 
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(
@@ -729,6 +811,7 @@ def update_local_artifact(
 
 
 def get_background_graph(manifest: Path | tuple[Path, Path, Graph]) -> Graph:
+    """Returns the contents of all Manifest resources with role *CatalogueAndResourceLabels as a graph"""
     background_graph = Graph()
 
     # can't use get_manifest_paths_and_graph here as it uses validate

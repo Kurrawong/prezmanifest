@@ -1,0 +1,9 @@
+PREFIX : <https://example.com/dataset/>
+PREFIX schema: <https://schema.org/>
+PREFIX void: <http://rdfs.org/ns/void#>
+
+:x a void:Dataset .
+
+:a :b :c .
+
+:d :e :f .
