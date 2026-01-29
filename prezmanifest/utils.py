@@ -839,3 +839,17 @@ def get_background_graph(manifest: Path | tuple[Path, Path, Graph]) -> Graph:
                             background_graph += load_graph(file)
 
     return background_graph
+
+
+def make_dateModified(time:bool = False)->Literal:
+    from datetime import datetime
+    from rdflib.namespace import XSD
+
+    if time:
+        v = datetime.today().isoformat()[:19]
+        t = XSD.dateTime
+    else:
+        v = datetime.today().isoformat()[:10]
+        t = XSD.date
+
+    return Literal(v, datatype=t)

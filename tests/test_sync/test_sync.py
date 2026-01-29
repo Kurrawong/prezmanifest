@@ -3,13 +3,17 @@ import shutil
 from pathlib import Path
 
 import httpx
+import prezmanifest.utils
 from kurra.sparql import query
 from typer.testing import CliRunner
 
 from prezmanifest.loader import load
-from prezmanifest.syncer import sync
+from prezmanifest.syncer import sync, make_catalogue
 from prezmanifest.utils import artifact_file_name_from_graph_id
+from rdflib import URIRef, RDF, SDO, Graph
+from rdflib.compare import isomorphic
 
+import datetime
 runner = CliRunner()
 from prezmanifest.cli import app
 
@@ -163,3 +167,127 @@ def test_sync_sync_predicate(sparql_endpoint):
     shutil.move(MANIFEST_ROOT / "artifact6.ttx", MANIFEST_ROOT / "artifact6.ttl")
     for f in MANIFEST_ROOT.glob("http--*.ttl"):
         f.unlink()
+
+
+def test_make_catalogue():
+    MANIFEST_FILE_LOCAL = Path(__file__).parent / "local/manifest.ttl"
+    c = make_catalogue(MANIFEST_FILE_LOCAL, reuse_cat_iri=False, new_cat_iri="http://example.com/cat/x")
+    assert (URIRef("http://example.com/cat/x"), RDF.type, SDO.DataCatalog) in c
+
+    c = make_catalogue(MANIFEST_FILE_LOCAL, reuse_cat_iri=True)
+    assert (URIRef("https://example.com/sync-test"), RDF.type, SDO.DataCatalog) in c
+
+
+def test_make_catalogue_manifest_additions():
+    original = """PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX schema: <https://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+[]    a <https://prez.dev/Manifest> ;
+    prof:hasResource
+        [
+            prof:hasArtifact
+                "local/artifacts/*.ttl" ,
+                "local/artifact4.ttl" ,
+                "local/artifact5.ttl" ,
+                "local/artifact6.ttl" ,
+                [
+                    schema:contentLocation "local/artifact7.ttl" ;
+                    schema:mainEntity <http://example.com/dataset/7> ;
+                ] ,
+                [
+                    schema:contentLocation "local/artifact9.ttl" ;
+                    schema:dateModified "2025-03-02"^^xsd:date ;
+                    schema:mainEntity <http://example.com/dataset/9> ;
+                ] ;
+            prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
+        ] ;
+."""
+
+    target = prezmanifest.utils.load_graph(
+        """
+        PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+        PREFIX schema: <https://schema.org/>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        
+        []    a <https://prez.dev/Manifest> ;
+            prof:hasResource 
+                [
+                    prof:hasArtifact
+                        "local/artifacts/*.ttl" ,
+                        "local/artifact4.ttl" ,
+                        "local/artifact5.ttl" ,
+                        "local/artifact6.ttl" ,
+                        [
+                            schema:contentLocation "local/artifact7.ttl" ;
+                            schema:mainEntity <http://example.com/dataset/7> ;
+                        ] ,
+                        [
+                            schema:contentLocation "local/artifact9.ttl" ;
+                            schema:dateModified "2025-03-02"^^xsd:date ;
+                            schema:mainEntity <http://example.com/dataset/9> ;
+                        ] ;
+                    prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
+                ] ,
+                [
+                    prof:hasArtifact "catalogue.ttl" ;
+                    prof:hasRole <https://prez.dev/ManifestResourceRoles/CatalogueData> ;
+                ] ;
+        .""")
+
+    make_catalogue(Path(__file__).parent / "manifest-nocat.ttl", new_cat_iri="http://example.com/cat/y")
+
+    actual = prezmanifest.utils.load_graph(Path(__file__).parent / "manifest-nocat.ttl")
+
+    assert isomorphic(actual, target)
+
+    # cleanup
+    Path(Path(__file__).parent / "catalogue.ttl").unlink(missing_ok=True)
+    with open(Path(__file__).parent / "manifest-nocat.ttl", "w") as f:
+        f.write(original)
+
+
+def test_make_catalogue_new_iri():
+    original = prezmanifest.utils.load_graph(
+        """
+        PREFIX schema: <https://schema.org/>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+        <http://example.com/cat/x>
+            a schema:DataCatalog ;
+            schema:dateModified "{XXX}"^^xsd:date ;
+            schema:hasPart
+                <http://example.com/dataset/1> ,
+                <http://example.com/dataset/2> ,
+                <http://example.com/dataset/3> ;
+        .
+        """.replace("{XXX}", datetime.datetime.now().isoformat()[:10]))
+
+    original.serialize(format="longturtle", destination=Path(__file__).parent / "catalogue.2.ttl")
+
+    target = prezmanifest.utils.load_graph(
+        """
+        PREFIX schema: <https://schema.org/>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+        <http://example.com/cat/y>
+            a schema:DataCatalog ;
+            schema:dateModified "{XXX}"^^xsd:date ;
+            schema:hasPart
+                <http://example.com/dataset/1> ,
+                <http://example.com/dataset/2> ,
+                <http://example.com/dataset/3> ,
+                <http://example.com/dataset/4> ,
+                <http://example.com/dataset/5> ,
+                <http://example.com/dataset/6> ,
+                <http://example.com/dataset/7> ,
+                <http://example.com/dataset/9> ;
+        .
+        """.replace("{XXX}", datetime.datetime.now().isoformat()[:10]))
+
+    actual = make_catalogue(Path(__file__).parent / "manifest-cat.ttl", new_cat_iri="http://example.com/cat/y")
+
+    assert isomorphic(actual, target)
+
+    # cleanup
+    Path(Path(__file__).parent / "catalogue.2.ttl").unlink(missing_ok=True)
