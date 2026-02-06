@@ -534,17 +534,17 @@ def compare_version_indicators(first: dict, second: dict) -> VersionIndicatorCom
             second_score += 1
 
     if has_version_iri_comparison:
-        if first["version_iri"] > second["version_iri"]:
+        if str(first["version_iri"]) > str(second["version_iri"]):
             first_score += 1
-        elif first["version_iri"] == second["version_iri"]:
+        elif str(first["version_iri"]) == str(second["version_iri"]):
             pass
         else:
             second_score += 1
 
     if has_version_info_comparison:
-        if first["version_info"] > second["version_info"]:
+        if str(first["version_info"]) > str(second["version_info"]):
             first_score += 1
-        elif first["version_info"] == second["version_info"]:
+        elif str(first["version_info"]) == str(second["version_info"]):
             pass
         else:
             second_score += 1
