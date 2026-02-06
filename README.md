@@ -325,3 +325,4 @@ For use in _infracode_, note that the `pm sync` function can return the table ab
 * commit all updates: `git commit -a "..."`
 * make GitHub release
   * this will trigger pypi.yml workflow to publish to PyPI
+* update version in pyproject.toml to next release alpha and push
