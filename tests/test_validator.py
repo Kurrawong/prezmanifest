@@ -88,7 +88,7 @@ def test_validator_valid_conformance_all():
     try:
         validate(Path(__file__).parent / "demo-vocabs" / "manifest-conformance-all.ttl")
     except ManifestValidationError as e:
-        assert "Results (6)" in str(e)
+        assert "Results (8)" in str(e)
 
     # language-test.ttl is known to have 6 errors according to VocPub 4.10, image-test.ttl none
 

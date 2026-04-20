@@ -139,8 +139,6 @@ def get_manifest_paths_and_graph(
     """Reads either a Manifest file from a Path, or a Manifest file from a Path and its root directory,
     a Path, and the Manifest as a deserialized Graph and returns the Manifest Path, its root dir as a Path
     and its content as a Graph"""
-    if not Path(manifest).exists():
-        raise FileNotFoundError(f"Manifest file does not exist: {manifest}")
 
     if isinstance(manifest, Path):
         manifest_path = manifest

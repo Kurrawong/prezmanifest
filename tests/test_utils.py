@@ -7,6 +7,7 @@ from typer.testing import CliRunner
 
 import prezmanifest.loader
 from prezmanifest.utils import *
+from prezmanifest.validator import ManifestValidationError
 
 runner = CliRunner()
 import httpx
@@ -92,6 +93,9 @@ def test_get_manifest_paths_and_graph():
     assert extracted_file_path == MANIFEST
     assert manifest_root == MANIFEST.parent
     assert len(manifest_graph) == 21
+
+    with pytest.raises(ManifestValidationError):
+        extracted_file_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(Path("fake"))
 
 
 def test_get_catalogue_iri_from_manifest():
@@ -329,7 +333,8 @@ def test_denormalise_artifacts():
 
     assert x[manifest_root / "vocabs/image-test.ttl"]["file_size"] == 20324
 
-    m = TESTS_DIR / "demo-vocabs" / "manifest-conformance-all.ttl"
+    m = TESTS_DIR / "demo-vocabs" / "manifest-conformance.ttl"
+    print(Path(m).resolve())
     manifest_path, manifest_root, manifest_graph = get_manifest_paths_and_graph(m)
     x = denormalise_artifacts(m)
     assert manifest_root / "catalogue.ttl" in x.keys()

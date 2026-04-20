@@ -34,6 +34,9 @@ def validate(manifest: Path) -> Graph:
         Graph of validated manifest
     """
 
+    if not Path(manifest).is_file():
+        raise ManifestValidationError("Manifest file does not exist")
+
     # can't use get_manifest_paths_and_graph() here as that function uses validate()
     manifest_path = manifest
     manifest_root = Path(manifest).parent.resolve()

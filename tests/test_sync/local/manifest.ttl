@@ -11,11 +11,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             schema:name "Labels" ;
         ] ,
         [
-            prof:hasArtifact
-                "artifacts/*.ttl" ,
-                "artifact4.ttl" ,
-                "artifact5.ttl" ,
-                "artifact6.ttl" ,
+            prof:hasArtifact 
                 [
                     schema:contentLocation "artifact7.ttl" ;
                     schema:mainEntity <http://example.com/dataset/7> ;
@@ -24,7 +20,11 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                     schema:contentLocation "artifact9.ttl" ;
                     schema:dateModified "2025-03-02"^^xsd:date ;
                     schema:mainEntity <http://example.com/dataset/9> ;
-                ] ;
+                ] ,
+                "artifact4.ttl" ,
+                "artifact5.ttl" ,
+                "artifact6.ttl" ,
+                "artifacts/*.ttl" ;
             prof:hasRole <https://prez.dev/ManifestResourceRoles/ResourceData> ;
             schema:description "Catalogued datasets" ;
             schema:name "Resource Data" ;
