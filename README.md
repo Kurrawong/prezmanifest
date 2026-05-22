@@ -1,12 +1,12 @@
 # Prez Manifest
 
-This repository contains the `prezmanifest` Python package that provides a series of functions to work with Prez
-Manifests.
+Prez Manifest - pm - is a tool that performs data management functions, such as synchronising between RDF files in a version control repository and an RDF DB, and also a data model that provides the scaffolding for data to be managed by the tool. The tool is implemented as a Python application and library.
 
 ## Contents
 
-* [What is a Prez Manifest?](#what-is-a-prez-manifest)
+* [What is a pm Manifest?](#what-is-a-pm-manifest)
 * [Functions](#functions)
+* [Installation](#installation)
 * [Use](#use)
 * [Testing](#testing)
 * [Extending](#extending)
@@ -15,35 +15,72 @@ Manifests.
 * [Background concepts & other resources](#background-concepts--other-resources)
 * [Case Studies](#case-studies)
 
-## What is a Prez Manifest?
+## What is a pm Manifest?
 
-A Prez Manifest is an RDF file that describes and links to a set of resources that can be loaded into an RDF database
-for the [Prez graph database publication system](http://prez.dev) to provide access to. The Prez Manifest specification
-is online at: <https://prez.dev/manifest/>.
+A pm _Manifest_ is an RDF file that describes and links to a set of files, usually stored in version control, that can be validated and managed by the pm tool. Usual management goals are:
+
+* **validation** - checking content conforms to [SHACL Shapes Graphs](https://www.w3.org/TR/shacl12-core/#shapes-graph)
+* **synchronisation** - maintaining data in an RDF DB up-to-date with files
+* **labelling** - finding things that are missing labels and proving labels
+
+A simple Manifest file, for [Geoscience Australia's vocabularies]() online at <https://github.com/GeoscienceAustralia/ga-vocabs/blob/master/manifest.ttl>, looks like this:
+
+```turtle
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+PREFIX prez: <https://prez.dev/>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+PREFIX schema: <https://schema.org/>
+
+[]
+    a prez:Manifest ;
+    prof:hasResource
+        [
+            prof:hasartefact "catalogue.ttl" ;
+            prof:hasRole mrr:CatalogueData ;
+            schema:name "Catalogue Definition" ;
+        ] ,
+        [
+            prof:hasartefact "vocabularies/*.ttl" ;
+            prof:hasRole mrr:ResourceData ;
+            schema:name "Resource Data" ;
+            dcterms:conformsTo <https://linked.data.gov.au/def/vocpub/validator> ;
+        ] ,
+        [
+            prof:hasartefact "labels.ttl" ;
+            prof:hasRole mrr:CompleteCatalogueAndResourceLabels ;
+            schema:name "Labels" ;
+        ] ;
+.
+```
+
+In the file above, we have a `prez:Manifest` object which has 3 `prof:resource` instances, one for the "Catalogue Definition", the vocabularies - "Resource Data" - and "Labels". The vocabularies are shown to be conformant to the [VocPub profile of SKOS](https://linked.data.gov.au/def/vocpub/spec) which they will be validated against before any data synchronisation.
+
+The complete data model of a pm Manifest file is online at: <https://prez.dev/manifest/>.
 
 ## Functions
 
-The functions provided are:
+The functions provided my pm are discoverable by running the tool as a command line application - see [Command Line](#command-line) below - and are:
 
 * **validate**
     * performs SHACL validation on the Manifest, followed by existence checking for each resource - are they reachable
       by this script on the file system or over the Internet? Will also check
       any [Conformance Claims](#conformance-claims) given in the Manifest)
 * **label**
-    * lists all the IRIs for elements with a Manifest's Resources that don't have labels. Given a source of additional
-      labels, such as the [KurrawongAI Semantic Background](#kurrawongai-semantic-background), it can try to extract any
+    * lists all the IRIs for elements within a Manifest's resources that don't have labels. Given a source of additional
+      labels, it can try to extract any
       missing labels and insert them into a Manifest as an additional labelling resource
+        *  [KurrawongAI's Semantic Background](#kurrawongai-semantic-background) is included as a source of labels be default 
 * **document**
-    * **table**: can create a Markdown or ASCCIIDOC table of Resources from a Prez Manifest file for use in README files
+    * **table**: can create a Markdown or ASCIIDOC table of Resources from a Prez Manifest file for use in README files
       in repositories
     * **catalogue**: add the IRIs of resources within a Manifest's 'Resource Data' object to a catalogue RDF file
-* **load**
-    * extract all the content of all Resources listed in a Prez Manifest and load it into either a single RDF
-      multi-graph ('quads') file or into an RDF DB instance by using the Graph Store Protocol
 * **sync**
-    * synchronises some kinds of resources list in a Manifest with versions of them in a SPARQL Endpoint
+    * synchronises resources listed in a Manifest with versions of them in a SPARQL Endpoint
     * acts as `load` if run against an empty SPARQL Endpoint
     * does not yet load background resources
+*  **event**
+    * event-based Prez Manifests actions - for advanced systems use
 
 ## Installation
 
@@ -125,6 +162,11 @@ To find out more about each Command, ask for helo like this - for load:
 pm load -h
 ```
 
+> [!NOTE]
+> If (when?) pm runs into problems such as trying to synchronise resources between files and an RDF DB with missmatching version numbers, you can always run [kurra](https://github.com/kurrawong.kurra) commands to directly manage DB resources.
+> 
+> For example, you can run `kurra db gsp put {FILE} {SPARQL-ENDPOINT} -g {GRAPH-NAME}` to force a replacement of the grapf, `GRAPH-NAME`, in the RDF DB with the contents of the `FILE`.
+
 #### Logging
 
 You can control the verbosity of the command line tool by setting the `PM_LOG_LEVEL` environment variable to one of
@@ -155,7 +197,7 @@ loader tests to be executed as some use temporary test containers.
 Many functions have been placed into `prezmanifest/utils.py` and hopefully extensions can be made to individual
 functions there.
 
-For example, to extend the criteria `prezmanifest` uses to judge the newness of a local v. a remote artifacts for the
+For example, to extend the criteria `prezmanifest` uses to judge the newness of a local v. a remote artefacts for the
 `sync` function, see the [`compare_version_indicators()`](prezmanifest/utils.py#L397)
 
 ## License
@@ -200,14 +242,14 @@ produced by
 the [Indigenous Studies Unit](https://mspgh.unimelb.edu.au/centres-institutes/onemda/research-group/indigenous-studies-unit)
 at the [University of Melbourne](https://www.unimelb.edu.au).
 
-The catalogue is available online via an instance of the [Prez](https://prez.dev) system at <https://data.idnau.org>
+The catalogue is available online via an instance of the [Prez](https://prez.dev) system at <https://data.idnau.org/pid/isu-catalogue>
 and the content is managed in the GitHub repository <https://github.com/idn-au/isu-catalogue>.
 
 The catalogue container object is constructed as a `schema:DataCatalog` (and also a `dcat:Catalog`, for compatibility
 with legacy systems) containing multiple `schema:CreativeWork` instances with subtyping to indicate 'book', 'artwork'
 etc.
 
-The source of the catalogue metadata is the static RDF file `_background/catalogue-metadata.ttl` that was handwritten.
+The source of the catalogue metadata is the static RDF file `_background/catalogue-metadata.ttl` that was made by hand.
 
 The source of the resources' information is the CSV file `_background/datasets.csv` which was created by hand during a
 visit to the Indigenous Studies Unit. This CSV information was converted to RDF files in `resources/` using the custom
@@ -247,10 +289,10 @@ to improve the presentation of the data in Prez in the following ways:
     * the output of this command - a Markdown table - is visible in the ISU Catalogue repo's README file.
 8. The catalogue was prepared for upload
     * `pm load file isu-catalogue/manifest.ttl isu-catalogue.trig` was run
-    * it produced a single _trig_ file `isu-catalogue.trig` containing RDF graphs which can easily be uploaded to the
+    * it produced a single _trig_ file `isu-catalogue.trig` containing RDF graphs which was one-time uploaded to the
       database delivering the catalogue
-    * `pm load sparql isu-catalogue/manifest.ttl http://a-sparql-endpoint.com/ds -u username -p password` could have
-      been run to load the content directly into the ISU RDF DB, if it had been available
+9. The catalogue and repo were synchronised
+    * `pm sync` was then used repeatedly to synchronise updates to the files in version control with the RDF BY read by Prez
 
 ### Case Study: Sync
 
@@ -263,8 +305,8 @@ pm load sparql {PATH-TO-MANIFEST} {SPARQL-ENDPOINT}
 Going forward, I don't have to blow away all the content in the SPARQL Endpoint and reload everything whenever I have
 content changes, instead I can use the `sync` command.
 
-`sync` compares "version indicators" per artifact, determines which is more recent and then reports on whether the local
-artifact should be uploaded, teh remote one downloaded or whether there are new artifacts present locally or remotely.
+`sync` compares "version indicators" per artefact, determines which is more recent and then reports on whether the local
+artefact should be uploaded, teh remote one downloaded or whether there are new artefacts present locally or remotely.
 
 The `tests/test_sync/` directory in this repository contains a _local_ and a _remote_ manifest and content. Following
 the logic in the testing function `tests/test_sync/test_sync.py::test_sync`, if the _remote_ manifest is loaded, as per
@@ -278,27 +320,27 @@ You will see a report like this:
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ Artifact                          ┃ Main Entity                   ┃ Direction    ┃
+┃ artefact                          ┃ Main Entity                   ┃ Direction    ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ /../../../artifact4.ttl           │ http://example.com/dataset/4  │ upload       │
-│ /../../../artifact5.ttl           │ http://example.com/dataset/5  │ add-remotely │
-│ /../../../artifact6.ttl           │ http://example.com/dataset/6  │ download     │
-│ /../../../artifact7.ttl           │ http://example.com/dataset/7  │ upload       │
-│ /../../../artifact9.ttl           │ http://example.com/dataset/9  │ same         │
-│ /../../../artifacts/artifact1.ttl │ http://example.com/dataset/1  │ same         │
-│ /../../../artifacts/artifact2.ttl │ http://example.com/dataset/2  │ upload       │
-│ /../../../artifacts/artifact3.ttl │ http://example.com/dataset/3  │ upload       │
+│ /../../../artefact4.ttl           │ http://example.com/dataset/4  │ upload       │
+│ /../../../artefact5.ttl           │ http://example.com/dataset/5  │ add-remotely │
+│ /../../../artefact6.ttl           │ http://example.com/dataset/6  │ download     │
+│ /../../../artefact7.ttl           │ http://example.com/dataset/7  │ upload       │
+│ /../../../artefact9.ttl           │ http://example.com/dataset/9  │ same         │
+│ /../../../artefacts/artefact1.ttl │ http://example.com/dataset/1  │ same         │
+│ /../../../artefacts/artefact2.ttl │ http://example.com/dataset/2  │ upload       │
+│ /../../../artefacts/artefact3.ttl │ http://example.com/dataset/3  │ upload       │
 │ /../../../catalogue.ttl           │ https://example.com/sync-test │ same         │
 │ http://example.com/dataset/8      │ http://example.com/dataset/8  │ add-locally  │
 └───────────────────────────────────┴───────────────────────────────┴──────────────┘
 ```
 
-This is telling you, per artifact, what `sync` will do.
+This is telling you, per artefact, what `sync` will do.
 
-* the local copy of `artifact4.ttl` is newer than the remote one, so it wants to "upload"
-* the remote location is missing `artifact5.ttl`, so it wants to upload that too
-* `artifact9` is the "same" - no action required
-* `artifact6.ttl` is newer remotely, it should be downloaded
+* the local copy of `artefact4.ttl` is newer than the remote one, so it wants to "upload"
+* the remote location is missing `artefact5.ttl`, so it wants to upload that too
+* `artefact9` is the "same" - no action required
+* `artefact6.ttl` is newer remotely, it should be downloaded
 
 You can choose to have `sync` carry out all these actions or only some - default is all - by setting the `update_remote`
 and so on input parameters. Setting all to `False` will cause `sync` to do nothing and report only what it _would_ do if
