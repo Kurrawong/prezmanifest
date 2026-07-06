@@ -312,7 +312,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "2.3.3"
+version = "2.3.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -320,12 +320,12 @@ dependencies = [
     { name = "rdflib" },
     { name = "rich" },
     { name = "shacl-rules" },
-    { name = "sparqlkit" },
+    { name = "sparqlib" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/66/dfb200a0e5b549f9dce43e097aef0ad4a4303dd562f55197bb840a33078e/kurra-2.3.3.tar.gz", hash = "sha256:3187fe34042dec39b0cc100d8634bc2becfd8eefb341f808d663f34707b88706", size = 107189, upload-time = "2026-04-20T08:42:42.45Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/39/48/b248532a391b090d0af62b811147382fcfb21ff9b3db566e46713b747af5/kurra-2.3.7.tar.gz", hash = "sha256:8964664a41a3c2afd5c3bbb04e33af80e16989422eda0b2ecb4f80920c9b77d3", size = 111072, upload-time = "2026-07-06T23:05:06.826Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/b0/98fa993479bc3022e887014c50732233a6651bdebed80a0c2855802227ad/kurra-2.3.3-py3-none-any.whl", hash = "sha256:9ceb4aa2bb00ea685054bb272392f72ecbe9463c43310d15b333e2ffe38deb60", size = 33959, upload-time = "2026-04-20T08:42:40.849Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/12/c1f878500a168182bfbdc4e9427fa9bcd4c99898f614d4650312a21ab341/kurra-2.3.7-py3-none-any.whl", hash = "sha256:42d695a07f03229ead43f5eb1130283d9bcfc2bdbe006b3fa6255dfabc9d21b3", size = 34568, upload-time = "2026-07-06T23:05:05.384Z" },
 ]
 
 [[package]]
@@ -456,7 +456,7 @@ wheels = [
 
 [[package]]
 name = "prezmanifest"
-version = "1.2.1"
+version = "1.2.4"
 source = { editable = "." }
 dependencies = [
     { name = "dateutils" },
@@ -486,7 +486,7 @@ requires-dist = [
     { name = "azure-servicebus", marker = "extra == 'azure'", specifier = ">=7.14.3" },
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=2.2.3" },
+    { name = "kurra", specifier = ">=2.3.7" },
     { name = "labelify", specifier = ">=0.6.1" },
     { name = "rdf-delta", specifier = ">=0.2.5" },
     { name = "rdflib", specifier = ">=7.5.0" },
@@ -860,15 +860,15 @@ wheels = [
 ]
 
 [[package]]
-name = "sparqlkit"
-version = "0.4.1"
+name = "sparqlib"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "lark" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bb/8f/48475950a74a6188affc3449d7b3d3a554a53838280f702349cd4e803618/sparqlkit-0.4.1.tar.gz", hash = "sha256:0018e4c200348c6a4f28a60ad8bb6fdc18db985b7f762cf4280904c18ba210be", size = 142853, upload-time = "2026-01-26T14:11:56.195Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b4/4f/53156a73916287a75795eec8e46c9ff3926748c6f05d0d7b06a28a0b39f3/sparqlib-0.5.0.tar.gz", hash = "sha256:824b48c889980fa4613f3c591422a2c9613843ad0d43d64f17be5f2bf984c2a3", size = 142926, upload-time = "2026-02-09T05:09:43.58Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/96/4bc511a564db0797ddb7fb06b80d8e0c9d9f5bc4daaca0c56fb377064d2a/sparqlkit-0.4.1-py3-none-any.whl", hash = "sha256:680820029dbe39edf0f099b01580e78819d6cbabf09a7fc2ac81e88b2af6ae62", size = 32562, upload-time = "2026-01-26T14:11:55.18Z" },
+    { url = "https://files.pythonhosted.org/packages/52/2e/4d087ed8c62a340bf7e2ffba6f9ff9d6a0201c3b20086e1a1bd05c0964a0/sparqlib-0.5.0-py3-none-any.whl", hash = "sha256:4c6932c9ce7ef021f1db339216d38991e822dee3f12d05f7b40dd86c6776d401", size = 32529, upload-time = "2026-02-09T05:09:42.435Z" },
 ]
 
 [[package]]
