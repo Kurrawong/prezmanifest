@@ -191,7 +191,7 @@ def sync(
 
     if update_remote_catalogue:
         # TODO: work out why SILENT is needed. Why isn't the cat_iri graph known? Should have been uploaded by sync already
-        query(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>")
+        query(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>", http_client=http_client)
         upload(
             sparql_endpoint,
             cat_artifact_path,
