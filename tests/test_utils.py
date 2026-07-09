@@ -184,7 +184,7 @@ def test_get_version_indicators_local():
     with pytest.raises(ValueError):
         vi = {}
         get_version_indicators_local(
-            MANIFEST, TESTS_DIR / "demo-vocabs" / "vocabs" / "language-testx.ttl", vi
+            MANIFEST, TESTS_DIR / "demo-vocabs" / "language-testx.ttl", vi
         )
 
 

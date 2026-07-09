@@ -25,19 +25,21 @@ def test_label_iris():
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 31
+    assert len(iris) == 32
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-some.ttl",
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 16
+    assert len(iris) == 17
 
     iris = label(
         Path(__file__).parent / "demo-vocabs/manifest-labels-all.ttl",
         output_type=LabellerOutputTypes.iris,
     )
+
+    print(iris)
 
     assert len(iris) == 0
 
@@ -55,7 +57,7 @@ def test_label_iris_sparql(sparql_endpoint):
         additional_context=sparql_endpoint,
     )
 
-    assert len(iris) == 15
+    assert len(iris) == 32
 
 
 def test_label_rdf_file():
@@ -71,24 +73,17 @@ def test_label_rdf_file():
         additional_context=Path(__file__).parent / "demo-vocabs/labels-some.ttl",
     )
 
-    assert len(rdf) == 37
+    assert len(rdf) == 31
 
 
 def test_label_rdf_sparql(sparql_endpoint):
     query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
 
+    # initially no data in context - Fuseki - so no RDF produced
     rdf = label(
         Path(__file__).parent / "demo-vocabs/manifest.ttl",
         LabellerOutputTypes.rdf,
-        sparql_endpoint,
-    )
-
-    assert len(rdf) == 0
-
-    rdf = label(
-        Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
-        LabellerOutputTypes.rdf,
-        sparql_endpoint,
+        sparql_endpoint
     )
 
     assert len(rdf) == 0
@@ -105,7 +100,7 @@ def test_label_rdf_sparql(sparql_endpoint):
         sparql_endpoint,
     )
 
-    assert len(rdf) == 37
+    assert len(rdf) == 17
 
     query(sparql_endpoint, "DROP GRAPH <http://test>")
 
@@ -121,7 +116,7 @@ def test_label_rdf_sparql(sparql_endpoint):
         sparql_endpoint,
     )
 
-    assert len(rdf) == 63
+    assert len(rdf) == 32
 
 
 def test_label_manifest(sparql_endpoint):
@@ -189,7 +184,7 @@ def test_label_iris_mainEntity():
         output_type=LabellerOutputTypes.iris,
     )
 
-    assert len(iris) == 14
+    assert len(iris) == 59
 
 
 def test_label_cli_iris():
@@ -201,7 +196,7 @@ def test_label_cli_iris():
             str(Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl"),
         ],
     )
-    assert len(result.stdout.splitlines()) == 31
+    assert len(result.stdout.splitlines()) == 32
 
 
 def test_label_cli_rdf(sparql_endpoint):

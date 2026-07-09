@@ -9,7 +9,7 @@ from pathlib import Path
 
 import httpx
 from kurra.utils import load_graph
-from labelify import extract_labels, find_missing_labels
+from kurra.labels import get_missing_labels, find_missing_labels
 from rdflib import BNode, Graph, Literal
 from rdflib.namespace import PROF, RDF
 
@@ -29,7 +29,7 @@ def label(
     additional_context: Path | str | Graph = None,
     http_client: httpx.Client = None,
 ) -> set | Graph | None:
-    """ "Main function for labeller module"""
+    """Main function for labeller module"""
     if not isinstance(output_type, LabellerOutputTypes):
         raise ValueError(
             f"Invalid output_type value, must be one of {', '.join([x for x in LabellerOutputTypes])}"
@@ -46,12 +46,6 @@ def label(
     artifacts = denormalise_artifacts((manifest_path, manifest_root, manifest_graph))
 
     for k, v in artifacts.items():
-        if v["role"] in [MRR.CatalogueData, MRR.ResourceData]:
-            content_graph += load_graph(k)
-        elif v["role"] in [
-            MRR.CompleteCatalogueAndResourceLabels,
-            MRR.IncompleteCatalogueAndResourceLabels,
-        ]:
             context_graph += load_graph(k)
 
     # add labels for system IRIs
@@ -60,23 +54,19 @@ def label(
     if output_type == LabellerOutputTypes.iris:
         combined_graph = manifest_graph + content_graph + context_graph
 
-        iris_missing_labels = find_missing_labels(
-            combined_graph, additional_context, http_client=http_client
-        )
+        iris_missing_labels = find_missing_labels(combined_graph)
 
         return sorted(iris_missing_labels)
 
     elif output_type == LabellerOutputTypes.rdf:
-        if additional_context is None:
-            raise ValueError("You must provide additional context")
-
         combined_graph = manifest_graph + content_graph + context_graph
 
-        iris_missing_labels = find_missing_labels(
-            combined_graph, http_client=http_client
-        )
+        iris_missing_labels = find_missing_labels(combined_graph)
 
-        return extract_labels(iris_missing_labels, additional_context, http_client)
+        if additional_context is None:
+            additional_context = "https://fuseki.dev.kurrawong.ai/semback/sparql"
+
+        return get_missing_labels(iris_missing_labels, additional_context, "graph", http_client)
 
     else:  # output_type == LabellerOutputTypes.manifest
         # If this is selected, generate the "rdf" output and create a resource for it in the Manifest
