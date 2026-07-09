@@ -312,7 +312,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "2.3.7"
+version = "2.3.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -323,23 +323,9 @@ dependencies = [
     { name = "sparqlib" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/39/48/b248532a391b090d0af62b811147382fcfb21ff9b3db566e46713b747af5/kurra-2.3.7.tar.gz", hash = "sha256:8964664a41a3c2afd5c3bbb04e33af80e16989422eda0b2ecb4f80920c9b77d3", size = 111072, upload-time = "2026-07-06T23:05:06.826Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b7/d0/7f34ffc27e742430b0be46318bc5dcf3245b90b84df04b665eb9c5964d8d/kurra-2.3.8.tar.gz", hash = "sha256:391b5164b1f1152fedad099a21591528a1e9ac7febd9ff562ac89ddba2045faf", size = 111081, upload-time = "2026-07-09T13:33:20.317Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/12/c1f878500a168182bfbdc4e9427fa9bcd4c99898f614d4650312a21ab341/kurra-2.3.7-py3-none-any.whl", hash = "sha256:42d695a07f03229ead43f5eb1130283d9bcfc2bdbe006b3fa6255dfabc9d21b3", size = 34568, upload-time = "2026-07-06T23:05:05.384Z" },
-]
-
-[[package]]
-name = "labelify"
-version = "0.6.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "html5rdf" },
-    { name = "kurra" },
-    { name = "sparqlwrapper" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/34/f3/edf908c74a645e94a99f3040c35e3931c593001bee9d24ef824c799909fd/labelify-0.6.2.tar.gz", hash = "sha256:7814c1bb0b79726c705e5a27472990345e1b1b91a3473d927795c0aa280a9109", size = 198718, upload-time = "2026-03-27T00:36:31.953Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/f1/ed9bba007ed9e7b3a84e688d0465d629fa32c1b9e93936fe36352de76846/labelify-0.6.2-py3-none-any.whl", hash = "sha256:405c99eb4268a675c7fede8d3bdea318bff024bdd234502f1aa89f44547ebc30", size = 9762, upload-time = "2026-03-27T00:36:30.163Z" },
+    { url = "https://files.pythonhosted.org/packages/13/58/53f4e43c9985dd1e53eeb7fc583d59b3ed8e6541acebacdbe7fd0d18ecf6/kurra-2.3.8-py3-none-any.whl", hash = "sha256:61e0feaac2d530a7abd4f4a3131348ad24a8841a68143ab0f16f3d3e7d411b85", size = 34594, upload-time = "2026-07-09T13:33:19.199Z" },
 ]
 
 [[package]]
@@ -456,13 +442,12 @@ wheels = [
 
 [[package]]
 name = "prezmanifest"
-version = "1.2.6a0"
+version = "1.2.7"
 source = { editable = "." }
 dependencies = [
     { name = "dateutils" },
     { name = "gitpython" },
     { name = "kurra" },
-    { name = "labelify" },
     { name = "rdf-delta" },
     { name = "rdflib" },
     { name = "typer" },
@@ -486,10 +471,9 @@ requires-dist = [
     { name = "azure-servicebus", marker = "extra == 'azure'", specifier = ">=7.14.3" },
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=2.3.7" },
-    { name = "labelify", specifier = ">=0.6.1" },
+    { name = "kurra", specifier = ">=2.3.8" },
     { name = "rdf-delta", specifier = ">=0.2.5" },
-    { name = "rdflib", specifier = ">=7.5.0" },
+    { name = "rdflib", specifier = ">=7.6.0" },
     { name = "typer", specifier = ">=0.15.1,<0.16" },
 ]
 provides-extras = ["azure"]
@@ -869,18 +853,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b4/4f/53156a73916287a75795eec8e46c9ff3926748c6f05d0d7b06a28a0b39f3/sparqlib-0.5.0.tar.gz", hash = "sha256:824b48c889980fa4613f3c591422a2c9613843ad0d43d64f17be5f2bf984c2a3", size = 142926, upload-time = "2026-02-09T05:09:43.58Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/2e/4d087ed8c62a340bf7e2ffba6f9ff9d6a0201c3b20086e1a1bd05c0964a0/sparqlib-0.5.0-py3-none-any.whl", hash = "sha256:4c6932c9ce7ef021f1db339216d38991e822dee3f12d05f7b40dd86c6776d401", size = 32529, upload-time = "2026-02-09T05:09:42.435Z" },
-]
-
-[[package]]
-name = "sparqlwrapper"
-version = "2.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "rdflib" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4e/cc/453752fffa759ef41a3ceadb3f167e13dae1a74c1db057d9f6a7affa9240/SPARQLWrapper-2.0.0.tar.gz", hash = "sha256:3fed3ebcc77617a4a74d2644b86fd88e0f32e7f7003ac7b2b334c026201731f1", size = 98429, upload-time = "2022-03-13T23:14:00.671Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/89/176e3db96e31e795d7dfd91dd67749d3d1f0316bb30c6931a6140e1a0477/SPARQLWrapper-2.0.0-py3-none-any.whl", hash = "sha256:c99a7204fff676ee28e6acef327dc1ff8451c6f7217dcd8d49e8872f324a8a20", size = 28620, upload-time = "2022-03-13T23:13:58.969Z" },
 ]
 
 [[package]]
