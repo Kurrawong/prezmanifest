@@ -110,6 +110,15 @@ def sync(
                 "direction": direction,
                 "sync": v["sync"],
             }
+        if v["role"] in [MRR.IncompleteCatalogueAndResourceLabels, MRR.CompleteCatalogueAndResourceLabels]:
+            clear(sparql_endpoint, "http://background", http_client)
+            upload(
+                sparql_endpoint,
+                Path(k),
+                "http://background",
+                False,
+                http_client=http_client,
+            )
 
     # Check for things at remote not known in local
     q = """
@@ -215,7 +224,6 @@ def make_catalogue(
         cat_iri: the iri of the catalogue, if known
         reuse: whether to reuse the IRI of an existing catalogue if defined in the manifest
 
-
     Returns:
         a simple graph of the catalogue
         also writes back to the Manifest and overwrites or creates a catalogue artifact file
@@ -239,11 +247,9 @@ def make_catalogue(
     )
     manifest_graph: Graph
 
-
     # create the return graph
     c:Graph = None
     cat_path:Path = None
-
 
     # read, add or create the catalogue IRI
     # see if we already have one in the Manifest
