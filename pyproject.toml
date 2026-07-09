@@ -1,18 +1,17 @@
 [project]
 name = "prezmanifest"
-version = "1.2.7a"
+version = "1.2.7"
 description = "A Python package that provides a series of functions to work with Prez Manifests."
 authors = [{ name = "Nicholas Car", email = "nick@kurrawong.ai" }]
 requires-python = ">=3.12,<4.0"
 readme = "README.md"
 license = "BSD-3-Clause"
 dependencies = [
-    "kurra>=2.3.7",
-    "labelify>=0.6.1",
+    "kurra>=2.3.8",
     "typer>=0.15.1,<0.16",
     "dateutils>=0.6.12",
     "gitpython>=3.1.45",
-    "rdflib>=7.5.0",
+    "rdflib>=7.6.0",
     "rdf-delta>=0.2.5",
 ]
 
