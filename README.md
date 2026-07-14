@@ -140,20 +140,25 @@ pm -h
 
 Which will print something like this:
 
-```
-PrezManifest top-level Command Line Interface. Ask for help (-h) for each Command                        
-                                                                                                          
-╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --version  -v                                                                                          │
-│ --help     -h        Show this message and exit.                                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ─────────────────────────────────────────────────────────────────────────────────────────────╮
-│ validate   Validate the structure and content of a Prez Manifest                                       │
-│ sync       Synchronize a Prez Manifest's resources with loaded copies of them in a SPARQL Endpoint     │
-│ label      Discover labels missing from data in a in a Prez Manifest and patch them                    │
-│ document   Create documentation from a Prez Manifest                                                   │
-│ load       Load a Prez Manifest's content into a file or DB                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```bash
+Usage: pm [OPTIONS] COMMAND [ARGS]...
+
+PrezManifest top-level Command Line Interface. Ask for help (-h) for each Command
+
+╭─ Options ────────────────────────────────────────────────────────────────────────╮
+│ --version  -v                                                                    │
+│ --help     -h        Show this message and exit.                                 │
+╰──────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────╮
+│ validate  Validate the structure and content of a Prez Manifest                  │
+│ sync      Synchronize a Prez Manifest's resources with loaded copies of them in  │
+│           a SPARQL Endpoint                                                      │
+│ label     Discover labels missing from data in a in a Prez Manifest and patch    │
+│           them                                                                   │
+│ document  Create documentation from a Prez Manifest                              │
+│ load      Load a Prez Manifest's content into a file or DB                       │
+│ event     Event-based Prez Manifests actions                                     │
+╰──────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 To find out more about each Command, ask for helo like this - for load:
@@ -213,25 +218,6 @@ For all matters, please contact:
 **KurrawongAI**  
 <info@kurrawong.ai>  
 <https://kurrawong.ai>
-
-## Background concepts & other resources
-
-The admin documentation for Prez Manifests - what they are, how to make them etc., is online at <https://prez.dev>,
-however, here are also two concepts referred to above, summarised.
-
-### Conformance Claims
-
-A claim that some data conforms to a standard or a profile. In Prez Manifest, this is about indicating that a Resource
-should and is expected to conform to a standard.
-
-See the various Manifest files in `tests/demo-vocabs/` for examples of them in use for individual resources or all
-resources, e.g. `tests/demo-vocabs/manifest-conformance.ttl`
-
-### KurrawongAI Semantic Background
-
-[KurrawongAI](https://kurrawong.ai) makes available labels for all the elements of about 100 well-known ontologies and
-vocabularies at [KurrawongAI Semantic Background](https://github.com/Kurrawong/semantic-background). You can use this as a source (SPARQL Endpoint)
-of labels to patch content in Manifests that are missing labels with.
 
 ## Case Studies
 
@@ -358,6 +344,111 @@ For use in Python applications, just import prezmanifest - `uv add prezmanifest`
 
 For use in _infracode_, note that the `pm sync` function can return the table above in JSON by setting the
 `response format` input parameter, `-f`.
+
+## Manifest Data Model
+
+``` mermaid
+graph LR
+  Manifest --1:1-N--> Resource;
+  Resource --1:1--> artifact;
+  Resource --1:1--> role;
+  Resource --1:0-1--> name;
+  Resource --1:0-1--> decription;
+```
+
+The Manifest Model is simply a Manifest class, `prez:Manifest`, which MUST have 1 or more Resource Descriptors, `prof:ResourceDescriptor` indicated by the `prof:hasResource` predicate. 
+
+Each Resource Descriptor MUST have exactly one `prof:hasArtifact` predicate indicating an RDF literal resource (string) giving a file path or path pattern containing the resource information, relative to the manifest.
+
+Each Resource Descriptor MUST also have exactly one `prof:hasRole` predicate indicating a Concept from the _Manifest Resource Roles Vocabulary_.
+
+Each Resource Descriptor MAY have a `schema:name` and/r a `schema:description` predicate indicating literal resources naming and describing it.
+
+### Manifest Resource Roles Vocabulary
+
+This roles vocabulary contains the allowed roles that a resource can play with respect to a Manifest.
+
+The IRI of this vocabulary is:
+
+* `https://prez.dev/ManifestResourceRoles`
+    * the vocab namespace is `https://prez.dev/ManifestResourceRoles/`
+    * recommended namespace prefix is `mrr`
+
+Human-readable form:
+
+| Concept IRI                               | Label                                   | Definition                                                                                                          | Parent                         |
+|-------------------------------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| `mrr:ContainerData`                       | Container Data                          | Data for the container, usually a Catalogue, including the identity of it and each item fo content                  | -                              |
+| `mrr:ContentData`                         | Content Data                            | Data for the content of the container                                                                               | -                              |
+| `mrr:ContainerAndContentModel`            | Container & Content Model               | The default model for the container and the content. Must be a set of SAHCL Shapes                                  | -                              |
+| `mrr:ContainerModel`                      | Container Model                         | The default model for the container. Must be a set of SAHCL Shapes                                                  | `mrr:containerAndContentModel` |
+| `mrr:ContentModel`                        | Content Model                           | The default model for the content. Must be a set of SAHCL Shapes                                                    | `mrr:containerAndContentModel` |
+| `mrr:CompleteContainerAndContentLabels`   | Complete Content and Container Labels   | All the labels - possibly indluding names, descriptions & seeAlso links - for the Container and Content objects     | -                              |
+| `mrr:IncompleteContainerAndContentLabels` | Incomplete Content and Container Labels | Some of the labels - possibly indluding names, descriptions & seeAlso links - for the Container and Content objects | -                              |
+
+* <https://github.com/Kurrawong/prezmanifest/blob/main/prezmanifest/mrr.ttl>
+
+### Validation
+
+#### SHACL Validation
+
+This [SHACL](https://www.w3.org/TR/shacl/) validator Shapes Graph file can be used by SHACL validation software such as 
+[pySHACL](https://pypi.org/project/pyshacl/), to test the validity of a Manifest's RDF file with respect to this model:
+
+* <https://github.com/Kurrawong/prezmanifest/blob/main/prezmanifest/validator.ttl>
+
+This Shapes Graph is also loaded in to KurrawongAI's Semantic Background and is available via their validator tool 
+online and can be selected there for use via the "Use Validators" button:
+
+* <https://tools.kurrawong.ai/validate>
+
+#### pm validation
+
+Validation beyond just SHACL is needed for an effective manifest as the `manifest.ttl` file necessarily indicates 
+other resources that must be present and correct for the whole manifest to work. To validate all aspects of a manifest,
+use the in-build PrezManifest command: `pm validate {PATH-TO-MANIFEST-FILE}`.
+
+This function also validates the contents linked to in the manifest as per their [Conformance Claims](#conformance-claims).
+
+This pm validation is automatically performed before other pm commands like `sync`.
+
+#### Conformance Claims
+
+A claim that some data conforms to a standard or a profile. In Prez Manifest, this is about indicating that a Resource
+is expected to conform to a standard.
+
+In the [Geoscience Australia Vocabs' manifest](https://github.com/GeoscienceAustralia/ga-vocabs/blob/master/manifest.ttl),
+there is a conformance claim for the vocabs to the [VocPub Profile's Validator](https://linked.data.gov.au/def/vocpub/validator)
+which looks like this:
+
+```turtle
+#...
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX mrr: <https://prez.dev/ManifestResourceRoles/>
+PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+        
+[
+    prof:hasArtifact "vocabularies/*.ttl" ;
+    prof:hasRole mrr:ResourceData ;
+    dcterms:conformsTo <https://linked.data.gov.au/def/vocpub/validator> ;
+] .
+#...
+```
+
+`pm validate` will acquire validators indicated in conformance claims, either from KurrawongAI's Semantic Background, or
+from a locally-supplied SHACL validator Shapes Graph, and will validate all resources within that manifest resource with
+it. In the GA Vocabs above, all vocabulary files in the path `"vocabularies/*.ttl"` will be validated with VocPub.
+
+### Semantic Background
+
+[KurrawongAI](https://kurrawong.ai) makes available about 100 well-known ontologies, 50 or so Shapes GRaph validators
+and many vocabularies within its _Semantic Background_, an online reference dataset of RDF content that PrezManifest can 
+access. this allows pm to acquire many labels for RDF elements within a manifest's resources and to validate resource 
+without the user needing to supply anything.
+
+You can see exactly what's in the Semantic Background, which is set up using PrezManifest manifests, here:
+
+* <https://github.com/Kurrawong/semantic-background>
 
 ## Release Procedure
 
