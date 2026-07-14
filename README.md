@@ -12,8 +12,8 @@ Prez Manifest - pm - is a tool that performs data management functions, such as 
 * [Extending](#extending)
 * [License](#license)
 * [Contact](#contact)
-* [Background concepts & other resources](#background-concepts--other-resources)
 * [Case Studies](#case-studies)
+* [Manifest Data Model](#manifest-data-model)
 
 ## What is a pm Manifest?
 
