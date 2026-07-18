@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from kurra.db.gsp import upload
+from kurra.db.gsp import upload, delete
 from kurra.sparql import query
 from rdflib import Graph
 from rdflib.compare import isomorphic
@@ -9,6 +9,7 @@ from typer.testing import CliRunner
 
 from prezmanifest.cli import app
 from prezmanifest.labeller import LabellerOutputTypes, label
+from prezmanifest.validator import ManifestValidationError
 
 runner = CliRunner()
 
@@ -61,9 +62,9 @@ def test_label_iris_sparql(sparql_endpoint):
 
 
 def test_label_rdf_file():
-    with pytest.raises(ValueError):
+    with pytest.raises(ManifestValidationError):
         label(
-            Path(__file__).parent / "demo-vocabs/manifest-labels-none.ttl",
+            Path(__file__).parent / "demo-vocabs/manifest-labels-nonex.ttl",
             output_type=LabellerOutputTypes.rdf,
         )
 
@@ -73,11 +74,11 @@ def test_label_rdf_file():
         additional_context=Path(__file__).parent / "demo-vocabs/labels-some.ttl",
     )
 
-    assert len(rdf) == 31
+    assert len(rdf) == 17
 
 
 def test_label_rdf_sparql(sparql_endpoint):
-    query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
+    delete(sparql_endpoint, "http://test")
 
     # initially no data in context - Fuseki - so no RDF produced
     rdf = label(
@@ -102,7 +103,7 @@ def test_label_rdf_sparql(sparql_endpoint):
 
     assert len(rdf) == 17
 
-    query(sparql_endpoint, "DROP GRAPH <http://test>")
+    delete(sparql_endpoint, "http://test")
 
     upload(
         sparql_endpoint,
@@ -120,7 +121,7 @@ def test_label_rdf_sparql(sparql_endpoint):
 
 
 def test_label_manifest(sparql_endpoint):
-    query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
+    delete(sparql_endpoint, "http://test")
 
     upload(
         sparql_endpoint,
@@ -200,7 +201,7 @@ def test_label_cli_iris():
 
 
 def test_label_cli_rdf(sparql_endpoint):
-    query(sparql_endpoint, "DROP GRAPH <http://test>")
+    delete(sparql_endpoint, "http://test")
 
     upload(
         sparql_endpoint,
@@ -225,12 +226,12 @@ def test_label_cli_rdf(sparql_endpoint):
         ],
     )
     g = Graph().parse(data=result.stdout, format="turtle")
-    assert len(g) == 52
+    assert len(g) == 25
 
 
 # TODO: fix not working test
 # def test_label_cli_manifest(sparql_endpoint):
-#     query(sparql_endpoint, "DROP SILENT GRAPH <http://test>")
+#    delete(sparql_endpoint, "http://test")
 #
 #     upload(
 #         sparql_endpoint,

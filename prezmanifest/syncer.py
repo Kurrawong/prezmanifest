@@ -2,7 +2,7 @@ from mailbox import MMDF
 from pathlib import Path
 
 import httpx
-from kurra.db.gsp import clear, upload
+from kurra.db.gsp import clear, upload, delete
 from kurra.sparql import query
 from kurra.utils import load_graph
 from rdflib import Graph, URIRef, BNode, Literal
@@ -132,6 +132,7 @@ def sync(
             }
         }
         """.replace("xxx", str(cat_iri))
+
     for x in query(
         sparql_endpoint,
         q,
@@ -199,8 +200,7 @@ def sync(
                 )
 
     if update_remote_catalogue:
-        # TODO: work out why SILENT is needed. Why isn't the cat_iri graph known? Should have been uploaded by sync already
-        query(sparql_endpoint, f"DROP SILENT GRAPH <{cat_iri}>", http_client=http_client)
+        delete(sparql_endpoint, cat_iri, http_client=http_client)
         upload(
             sparql_endpoint,
             cat_artifact_path,

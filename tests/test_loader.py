@@ -3,7 +3,7 @@ from pathlib import Path
 
 import httpx
 import pytest
-from kurra.db.gsp import upload
+from kurra.db.gsp import upload, delete
 from kurra.sparql import query
 from rdflib import Dataset, URIRef
 from typer.testing import CliRunner
@@ -70,7 +70,7 @@ def test_fuseki_query(sparql_endpoint):
 
     assert r[0]["count"] == 2
 
-    q = "DROP GRAPH <XXX>".replace("XXX", TESTING_GRAPH)
+    delete(sparql_endpoint, TESTING_GRAPH)
 
     r = query(sparql_endpoint, q)
 
