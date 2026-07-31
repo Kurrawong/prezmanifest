@@ -7,7 +7,7 @@ import httpx
 from kurra.file import load_graph
 from kurra.sparql import query
 from rdflib import BNode, Dataset, Graph, Literal, Node, URIRef
-from rdflib.namespace import DCAT, OWL, PROF, RDF, SDO, SKOS
+from rdflib.namespace import DCAT, OWL, PROF, RDF, SDO, SH, SKOS
 
 import prezmanifest
 from prezmanifest.definednamespaces import MRR, PREZ
@@ -49,6 +49,7 @@ KNOWN_ENTITY_CLASSES = [
     SDO.DataCatalog,
     SDO.Dataset,
     SDO.DefinedTerm,
+    SH.ShapesGraph,
 ]
 
 
