@@ -49,7 +49,7 @@ KNOWN_ENTITY_CLASSES = [
     SDO.DataCatalog,
     SDO.Dataset,
     SDO.DefinedTerm,
-    SH.ShapesGraph,
+    URIRef("http://www.w3.org/ns/shacl#ShapesGraph"),
 ]
 
 
