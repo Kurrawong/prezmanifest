@@ -312,7 +312,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "3.0.3"
+version = "3.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -323,9 +323,9 @@ dependencies = [
     { name = "sparqlib" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/01/c98f3d745eadd10e2ed26887ff07975b1d63a76d35f866ecf94b7c5105e6/kurra-3.0.3.tar.gz", hash = "sha256:2f6532c8a7b4cde179097414dccfaa7eea5afed7501e06eac85c082c30290c85", size = 144906, upload-time = "2026-08-02T03:51:47.776Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/2f/87dfb86830c973461da8f991c59973c27390daa8b5d945087989eb90a1a3/kurra-3.0.4.tar.gz", hash = "sha256:27207139a76097bcbf1da2f6bd56b5ebd5ea520487ac07d6a162f5385ce25084", size = 144901, upload-time = "2026-08-04T07:33:36.989Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c0/d6/89cfb2661558793e8a304f3c9de1891e4602896255b66823f97ec169d9b7/kurra-3.0.3-py3-none-any.whl", hash = "sha256:e7a2b36d57998fa7fb9aefc9abe64ae18d22514a2b8c997e9698b7f29d8495ff", size = 38807, upload-time = "2026-08-02T03:51:46.516Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/1a/39200fb24d74f0371c0bf713da54021ff5d13dac3156fac39729313ef81b/kurra-3.0.4-py3-none-any.whl", hash = "sha256:24a25bbc18fcf820d36c750a433ea55a7002eadf4f96a9a7a421a8159ac46898", size = 38804, upload-time = "2026-08-04T07:33:35.876Z" },
 ]
 
 [[package]]
@@ -442,7 +442,7 @@ wheels = [
 
 [[package]]
 name = "prezmanifest"
-version = "1.2.11a0"
+version = "1.2.12a0"
 source = { editable = "." }
 dependencies = [
     { name = "dateutils" },
@@ -471,7 +471,7 @@ requires-dist = [
     { name = "azure-servicebus", marker = "extra == 'azure'", specifier = ">=7.14.3" },
     { name = "dateutils", specifier = ">=0.6.12" },
     { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "kurra", specifier = ">=3.0.3" },
+    { name = "kurra", specifier = ">=3.0.4" },
     { name = "rdf-delta", specifier = ">=0.2.5" },
     { name = "rdflib", specifier = ">=7.6.0" },
     { name = "typer", specifier = ">=0.15.1,<0.16" },
