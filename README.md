@@ -1,3 +1,8 @@
+> [!IMPORTANT]  
+> This tool is now deprecated and will not be maintained.
+> 
+> Please use [kgm](https://github.com/kurrawong/kgm), the release 2.0.0 of which is identical to the release of this tool 1.2.12
+
 # Prez Manifest
 
 Prez Manifest - pm - is a tool that performs data management functions, such as synchronising between RDF files in a version control repository and an RDF DB, and also a data model that provides the scaffolding for data to be managed by the tool. The tool is implemented as a Python application and library.
